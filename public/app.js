@@ -416,6 +416,11 @@ $('#auth-form').addEventListener('submit', async e => {
     ? { email: form.email.value, username: form.username.value, displayName: form.displayName.value, password: form.password.value, turnstileToken: form.querySelector('[name="cf-turnstile-response"]')?.value || '' }
     : { login: form.username.value, password: form.password.value };
   const btn = $('#auth-submit');
+  // Quick feedback only; the server (server/namefilter.js) is what actually enforces this.
+  if (register && /\x64is(cord|band)/i.test(body.username)) {
+    $('#auth-error').textContent = "That name isn't allowed on Zuno. Please pick something else.";
+    return;
+  }
   btn.disabled = true;
   try {
     if (register && turnstileSiteKey && !body.turnstileToken) throw new Error('Please complete the bot verification first.');

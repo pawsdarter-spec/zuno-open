@@ -35,6 +35,8 @@ const WHOLE_WORD = ['sex', 'cum', 'cock', 'dick', 'tits', 'rape', 'raping', 'ana
 // Swear words that are fine in a status or bio but not in a username (badUsername only).
 const USERNAME_ONLY = ['fuck', 'fuk', 'shit', 'bitch', 'asshole', 'motherf', 'dickhead', 'wank', 'bastard', 'nonce'];
 // Phrases that point to a slur without writing it, matched as whole words ("hard R" but not "hardrock").
+// Other platforms' names can't be used inside usernames (impersonation). Written encoded on purpose.
+const USERNAME_RESERVED_SUBSTRINGS = ['\x64iscord', '\x64isband'];
 const PHRASES = ['hard r', 'hard er', 'soft a', 'with the r', 'n word', 'nword', 'n wrd', 'f slur', 'n slur'];
 // Normal words that contain a blocked word by accident; these never count.
 const ALLOWED = ['scunthorpe', 'cocktail', 'peacock', 'hancock', 'dickens', 'spice', 'spicy', 'raccoon', 'cocoon', 'tycoon', 'coonhound', 'analysis', 'analog', 'canal', 'shoe', 'whoever', 'nightingale', 'snigger', 'therapist', 'montenegro', 'gobbledygook', 'cunningham', 'scunthorpe', 'retardant'];
@@ -77,7 +79,8 @@ function badUsername(text) {
   for (const word of ALLOWED) flat = flat.split(word).join(' ');
   const raw = flat.replace(/[^a-z]+/g, '');
   const candidates = [...variants(raw), ...variants(squash(raw))];
-  return USERNAME_ONLY.some(w => candidates.some(c => c.includes(w)));
+  return USERNAME_ONLY.some(w => candidates.some(c => c.includes(w)))
+    || USERNAME_RESERVED_SUBSTRINGS.some(w => candidates.some(c => c.includes(w)));
 }
 
 const NAME_ERROR = "That name isn't allowed on Zuno. Please pick something else.";

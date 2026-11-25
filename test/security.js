@@ -60,6 +60,17 @@ step('Turnstile is off without keys, and the secret key never reaches the browse
   assert.ok(!JSON.stringify(data).toLowerCase().includes('secret'));
 });
 
+step('reserved names inside usernames are refused by the server, punctuation included', async () => {
+  const a = '\x64iscord', b = '\x64isband';
+  for (const username of [`${a}fan`, `my${b}alt`, a.split('').join('.'), `${b.slice(0, 3)}.${b.slice(3)}.user`]) {
+    const { res } = await request('POST', '/api/register', {
+      headers: { 'X-Forwarded-For': `10.9.0.${++fakeIp}` },
+      body: { email: `reserved${fakeIp}@test.dev`, username, password: 'testing123', displayName: 'Reserved test' },
+    });
+    assert.equal(res.status, 400, `${username} must be rejected`);
+  }
+});
+
 step('sign-in cookies: set on login, cleared on logout', async () => {
   const u = await register('cookiecat');
   const login = await request('POST', '/api/login', { body: { username: 'cookiecat', password: 'testing123' } });

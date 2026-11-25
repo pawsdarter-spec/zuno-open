@@ -28,7 +28,7 @@ const WHY = {
   other: "it breaks Zuno's rules",
 };
 
-const SYSTEM = `You moderate short profile text on Zuno, a chat app for all ages (13+), like Discord.
+const SYSTEM = `You moderate short profile text on Zuno, a chat app for all ages (13+).
 You get one or more fields people want to show publicly: usernames, display names, custom statuses, pronouns, bios, nicknames and voice channel statuses.
 Decide for each field whether it's allowed.
 

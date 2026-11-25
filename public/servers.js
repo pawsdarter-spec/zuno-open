@@ -222,7 +222,7 @@ function openVoice(serverId, channelId) {
   $('#vc-chat').addEventListener('click', () => openChannel(serverId, channelId, { chat: true }));
   renderRail();
   renderServerSidebar();
-  // Clicking a voice channel joins it, like Discord.
+  // Clicking a voice channel joins it.
   if (Calls.room !== 'vc:' + channelId) Calls.joinVoice(serverId, channelId);
   renderVoiceStage();
 }

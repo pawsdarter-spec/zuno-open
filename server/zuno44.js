@@ -13,7 +13,7 @@ module.exports = function (z) {
   });
   for (const k of ['mute_members', 'deafen_members', 'move_members']) if (!z.PERM_KEYS.includes(k)) z.PERM_KEYS.push(k);
 
-  // sv.voiceMod = { userId: { mute: true, deafen: true } }: stays until someone takes it off, like Discord.
+  // sv.voiceMod = { userId: { mute: true, deafen: true } }: stays until someone takes it off.
   const modOf = (sv, uid) => sv?.voiceMod?.[uid] || null;
   const serverOfRoom = roomId => (String(roomId).startsWith('vc:') ? z.findChannel(String(roomId).slice(3)) : null);
   // Whatever someone's app says, a server-muted person stays muted (everyone else's app silences

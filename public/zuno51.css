@@ -3,7 +3,7 @@
 
 /* ---------- phones ---------- */
 @media (max-width: 760px) {
-  /* Message box, Discord style: one soft filled box, plain icons, a rounded-square send button. */
+  /* Message box: one soft filled box, plain icons, a rounded-square send button. */
   .composer .composer-box { min-height: 50px; border-radius: 25px !important; padding: 5px 5px 5px 4px; gap: 0; align-items: flex-end;
     background: color-mix(in srgb, var(--text) 8%, var(--main)); box-shadow: none; }
   .composer .composer-box:focus-within { box-shadow: none; }
@@ -45,7 +45,7 @@
   .acts51 > button:active { transform: scale(.95); }
 }
 
-/* ---------- big screens: a Discord-like frame ---------- */
+/* ---------- big screens: one frame ---------- */
 html.frame51 .app { gap: 0; padding: 0; background: var(--rail); }
 html.frame51 .titlebar:not(.hidden) ~ .app { padding-top: var(--tb, 32px); }
 html.frame51 .app > .rail { background: transparent; border-radius: 0; box-shadow: none; backdrop-filter: none; padding: 12px 0 var(--dock51, 88px); }
@@ -80,6 +80,6 @@ html.frame51 .main .composer-box > button:not(.composer-send) { color: var(--mut
 html.frame51 .main .composer-box > button:not(.composer-send):hover { color: var(--header); }
 html.frame51 .main .composer-plus { width: 28px; height: 28px; border-radius: 50%; margin: 0 10px 0 4px; display: grid; place-items: center; }
 
-/* Thin, quiet scrollbars like Discord's. */
+/* Thin, quiet scrollbars. */
 html.frame51 .app :is(#messages, .sidebar-scroll, .member-panel, .profile-panel) { scrollbar-width: thin; scrollbar-color: color-mix(in srgb, var(--text) 18%, transparent) transparent; }
 html.frame51 .app .sidebar-scroll:not(:hover) { scrollbar-color: transparent transparent; }

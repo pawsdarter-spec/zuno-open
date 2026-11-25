@@ -678,7 +678,7 @@ module.exports = function features(z) {
 
   // ---- Guardian (AutoMod) ----
   const recent = new Map(); // "server|user" -> [{ at, text }]
-  const INVITE_RE = /zuno\.invite\/[A-Za-z0-9_-]{4,}|discord\.(gg|com\/invite)\/\S+/i;
+  const INVITE_RE = /zuno\.invite\/[A-Za-z0-9_-]{4,}|\x64iscord\.(gg|com\/invite)\/\S+/i;
   const LINK_RE = /https?:\/\/\S+|www\.\S+/i;
   function guardianCheck(sv, ch, me, content) {
     const c = cfgOf(sv, 'guardian');

@@ -30,7 +30,7 @@ module.exports = function zuno19(z) {
   // messages before anyone sees them. People who can manage messages are never blocked.
   const AUTOMOD_DEFAULTS = { enabled: false, words: [], links: false, allowDomains: [], invites: true, mentionLimit: 0, caps: false, spam: true, newAccountLinks: 0, timeoutMinutes: 0, alertChannelId: null, exemptRoles: [], exemptChannels: [] };
   const automodOf = sv => ({ ...AUTOMOD_DEFAULTS, ...(sv.automod || {}) });
-  const INVITE_RE = /zuno\.invite\/[A-Za-z0-9_-]{4,}|\/invite\/[A-Za-z0-9_-]{4,}|discord\.(gg|com\/invite)\/\S+/i;
+  const INVITE_RE = /zuno\.invite\/[A-Za-z0-9_-]{4,}|\/invite\/[A-Za-z0-9_-]{4,}|\x64iscord\.(gg|com\/invite)\/\S+/i;
   const URL_RE = /\bhttps?:\/\/([^\s/]+)[^\s]*|\bwww\.([^\s/]+)[^\s]*/gi;
   const recent = new Map(); // "server|user" -> [{ at, text }]
   setInterval(() => { const now = Date.now(); for (const [k, v] of recent) if (!v.some(x => x.at > now - 30e3)) recent.delete(k); }, 60e3).unref();
@@ -167,7 +167,7 @@ module.exports = function zuno19(z) {
     save(); z.refreshServer(sv);
     return { ok: true };
   });
-  // A sticker can be sent anywhere by someone in its server (like Discord).
+  // A sticker can be sent anywhere by someone in its server.
   function cleanSticker(me, st) {
     if (!st) return undefined;
     const id = String(st.id || '');

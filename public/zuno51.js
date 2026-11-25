@@ -1,8 +1,8 @@
 // ======================= Zuno 0.51 =======================
 // Phones: emoji, GIF and sticker pickers open as a sheet where the keyboard would be, and never pop
 // the keyboard up (it only comes up when you tap a search box yourself). Picking an emoji keeps the
-// sheet open, like Discord. Profiles open as a sheet from the bottom that you can drag down to close.
-// Big screens: a Discord-like frame (one panel with a rounded corner, your account bar across the
+// sheet open. Profiles open as a sheet from the bottom that you can drag down to close.
+// Big screens: one frame (one panel with a rounded corner, your account bar across the
 // bottom of the left side).
 (() => {
   const phone51 = () => (typeof isPhone === 'function' ? isPhone() : innerWidth < 760);
@@ -72,7 +72,7 @@
     if (!document.documentElement.classList.contains('pk51')) return;
     const t = e.target;
     if (t.closest?.('.emoji-picker, #layer .sticker-pop, #layer .menu')) return;
-    // The emoji button while the sheet is open switches to the keyboard, like Discord.
+    // The emoji button while the sheet is open switches to the keyboard.
     const btn = t.closest?.('#composer-emoji, #composer-gif, #composer-more');
     $$('.emoji-picker.cmp51').forEach(p => p.classList.remove('cmp51'));
     closeSheet();
@@ -91,7 +91,7 @@
   const layer = $('#layer');
   if (layer) new MutationObserver(later).observe(layer, { childList: true });
 
-  // ---------- message box: the ⋯ button tucks away while you type (like Discord) ----------
+  // ---------- message box: the ⋯ button tucks away while you type ----------
   document.addEventListener('input', e => {
     if (e.target.id !== 'composer-input') return;
     const box = e.target.closest('.composer-box');
@@ -192,7 +192,7 @@
     };
   }
 
-  // ---------- big screens: Discord-like frame ----------
+  // ---------- big screens: one frame ----------
   // The account bar (and the voice bar above it) move into a dock across the bottom of the dock
   // and the side list. Moved back when the window gets narrow.
   const wide = () => matchMedia('(min-width: 1000px)').matches && !matchMedia('(pointer: coarse)').matches;

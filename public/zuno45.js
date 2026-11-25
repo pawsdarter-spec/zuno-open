@@ -202,7 +202,7 @@
 }
 
 // ======================= calls: tiles always fit the screen =======================
-// Like Discord: everyone's tile is as big as it can be while all of them fit in the space there is
+// Everyone's tile is as big as it can be while all of them fit in the space there is
 // (next to the voice channel's chat too), instead of a fixed width that stacked them off screen.
 {
   const GAP = 12;
@@ -448,7 +448,7 @@ if (window.zunoDesktop?.onActivity) window.zunoDesktop.onActivity(a => {
 }
 
 // Voice & Video: noise suppression has levels (Off / Standard / Strong) and the mic has an input
-// sensitivity, like Discord. Strong and a manual sensitivity use a voice gate (see calls.js).
+// sensitivity. Strong and a manual sensitivity use a voice gate (see calls.js).
 {
   const set = change => { try { localStorage.setItem('zuno_voice_settings', JSON.stringify({ ...Calls.voiceSettings(), ...change })); } catch {} };
   const _renderVoiceSettings45 = renderVoiceSettings;
@@ -495,7 +495,7 @@ if (window.zunoDesktop?.onActivity) window.zunoDesktop.onActivity(a => {
   };
 }
 
-// Forwarding, like Discord: a preview of what you're forwarding, pick up to 5 places (recent chats
+// Forwarding: a preview of what you're forwarding, pick up to 5 places (recent chats
 // first, then groups and channels), one Send button. Forwarded messages say where they're from and
 // can jump to the original.
 {
@@ -617,7 +617,7 @@ if (window.zunoDesktop?.onActivity) window.zunoDesktop.onActivity(a => {
   };
 }
 
-// Replying without pinging: the reply bar has an "@ On / Off" switch, like Discord.
+// Replying without pinging: the reply bar has an "@ On / Off" switch.
 {
   const _renderComposerExtras45 = renderComposerExtras;
   renderComposerExtras = function (...a) {
@@ -682,7 +682,7 @@ if (window.zunoDesktop?.onActivity) window.zunoDesktop.onActivity(a => {
   };
 }
 
-// Server profiles, like Discord: a banner picture just for this server, and profile cards that say
+// Server profiles: a banner picture just for this server, and profile cards that say
 // which one you're looking at, with a switch to see the person's main profile too.
 {
   const mainFor = new Set(); // people whose main profile you switched to

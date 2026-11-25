@@ -1,0 +1,39 @@
+/* ======================= Zuno 0.52: pictures on phones ======================= */
+@media (max-width: 760px) {
+  .lb33-ov.v52 { background: rgba(0, 0, 0, .92); transition: background-color .2s; }
+  .lb33-ov.v52 .lb33-bar, .lb33-ov.v52 .lb38-nav { display: none !important; }
+  .lb33-ov.v52 .lb33-stage { margin: 0; cursor: default; }
+  .lb33-ov.v52 .lb33-img { -webkit-touch-callout: none; user-select: none; -webkit-user-select: none; will-change: transform; }
+  .lb33-ov.v52 :is(.lb33-x47, .lb38-count, .lbm52) { transition: opacity .2s, transform .25s cubic-bezier(.2, .9, .3, 1); }
+  .lb33-ov.v52 .lb33-x47 { top: calc(env(safe-area-inset-top) + 12px); left: 12px; right: auto; background: rgba(0, 0, 0, .5); }
+  .lb33-ov.v52 .lb38-count { top: calc(env(safe-area-inset-top) + 20px); }
+  .lb33-ov.v52.ui52-off :is(.lb33-x47, .lb38-count) { opacity: 0; transform: translateY(-12px); pointer-events: none; }
+  .lb33-ov.v52.ui52-off .lbm52 { opacity: 0; transform: translateY(24px); pointer-events: none; }
+
+  /* Who sent it, at the bottom. */
+  .lbm52 { position: fixed; left: 0; right: 0; bottom: 0; z-index: 3; padding: 28px 16px calc(14px + env(safe-area-inset-bottom));
+    background: linear-gradient(to top, rgba(0, 0, 0, .85), rgba(0, 0, 0, .6) 70%, transparent); color: #fff; }
+  .lbm52-head { display: flex; align-items: center; gap: 12px; }
+  .lbm52-who { display: flex; align-items: baseline; gap: 10px; min-width: 0; }
+  .lbm52-who b { font-size: 17px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .lbm52-who span { font-size: 13px; color: rgba(255, 255, 255, .65); white-space: nowrap; }
+  .lbm52-text { margin: 4px 0 0 52px; font-size: 16px; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
+  .lbm52-react { margin: 10px 0 0 52px; display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 16px; border-radius: 12px;
+    background: rgba(255, 255, 255, .1); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .14); color: #fff; font-size: 15px; font-weight: 600; }
+  .lbm52-react svg { width: 22px; height: 22px; }
+  .lbm52-react:active { transform: scale(.96); }
+
+  /* Hold a picture: the menu. */
+  .lbs52 { position: fixed; inset: 0; z-index: 10; }
+  .lbs52-dim { position: absolute; inset: 0; background: rgba(0, 0, 0, .55); animation: fade .18s ease-out; }
+  .lbs52-sheet { position: absolute; left: 0; right: 0; bottom: 0; padding: 10px 14px calc(14px + env(safe-area-inset-bottom)); border-radius: 22px 22px 0 0;
+    background: var(--sidebar); box-shadow: 0 -10px 30px rgba(0, 0, 0, .4); animation: up51 .28s cubic-bezier(.2, .9, .3, 1); transition: transform .22s cubic-bezier(.2, .9, .3, 1); }
+  .lbs52.out .lbs52-sheet { transform: translate3d(0, 100%, 0); }
+  .lbs52.out .lbs52-dim { opacity: 0; transition: opacity .2s; }
+  .lbs52-grab { width: 40px; height: 5px; border-radius: 3px; margin: 0 auto 12px; background: color-mix(in srgb, var(--text) 30%, transparent); }
+  .lbs52-list { border-radius: 16px; overflow: hidden; background: color-mix(in srgb, var(--text) 6%, transparent); }
+  .lbs52-list > button { width: 100%; display: flex; align-items: center; gap: 18px; height: 56px; padding: 0 18px; color: var(--header); font-size: 17px; text-align: left; position: relative; }
+  .lbs52-list > button + button::before { content: ""; position: absolute; top: 0; left: 58px; right: 0; height: 1px; background: var(--border); }
+  .lbs52-list > button:active { background: color-mix(in srgb, var(--text) 8%, transparent); }
+  .lbs52-list > button svg { width: 24px; height: 24px; flex: none; }
+}

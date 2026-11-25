@@ -413,7 +413,7 @@ ACT42_ICON.listening = 'music';
 
 // ======================= slash commands fold into the bot's answer =======================
 // Your "/roll 2d6" shrinks to a small line, and the bot's answer shows right under it with
-// "Paws used /roll" on top, like Discord.
+// "Paws used /roll" on top.
 function foldCommands44() {
   const conv = typeof activeConv === 'function' && activeConv();
   const msgs = conv && state.convos[conv]?.messages;
@@ -460,7 +460,7 @@ new MutationObserver(() => { cancelAnimationFrame(fold44); fold44 = requestAnima
 }
 
 // ======================= channel settings, the simple way =======================
-// The gear on a channel opens its own settings page (like Discord): Overview and Permissions on the
+// The gear on a channel opens its own settings page: Overview and Permissions on the
 // left, Delete at the bottom, and a "you have unsaved changes" bar. The big list of every channel is
 // still in Server Settings › Channels & Categories.
 function openChannelSettings44(svIn, channelId, tab = 'overview') {

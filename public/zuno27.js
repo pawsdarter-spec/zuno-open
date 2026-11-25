@@ -805,7 +805,7 @@ if (window.zunoDesktop?.overlay) {
   let last = '';
   setInterval(() => {
     const p = overlayPrefs();
-    // (0.45.1) Only over games, like Discord: a game is running and Zuno isn't the window in front.
+    // (0.45.1) Only over games: a game is running and Zuno isn't the window in front.
     const overGame = !!window.zunoGame45 && !document.hasFocus();
     const people = Calls.room && p.on && overGame ? Calls.participants().map(id => {
       const u = user(id) || { displayName: '?' }, st = Calls.peerState(id);

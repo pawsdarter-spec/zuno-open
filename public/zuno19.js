@@ -117,7 +117,7 @@ async function ssAutomod(body, sv) {
         <label class="field">Words or phrases, one per line or separated by commas<span class="hint" style="display:block;margin-top:4px">Whole words only. Put * at the start or end to also catch it inside other words (like *bad*).</span>
           <textarea name="words" rows="4" placeholder="badword&#10;*spoiler*">${esc((c.words || []).join('\n'))}</textarea></label></div>
       <div class="setting-group"><h4 class="setting-head">Links</h4>
-        ${ssToggle('invites', 'Block invites to other servers', 'Zuno and Discord invite links.', c.invites)}
+        ${ssToggle('invites', 'Block invites to other servers', 'Zuno and other invite links.', c.invites)}
         ${ssToggle('links', 'Block all links', 'Except the sites you allow below.', c.links)}
         <label class="field">Allowed sites<span class="hint" style="display:block;margin-top:4px">Like youtube.com, one per line. Only used when links are blocked.</span><textarea name="allowDomains" rows="2" placeholder="youtube.com&#10;twitch.tv">${esc((c.allowDomains || []).join('\n'))}</textarea></label>
         <label class="field">New accounts can't post links for<select name="newAccountLinks" class="sc-select">${[[0, 'No limit'], [10, '10 minutes'], [60, '1 hour'], [1440, '1 day'], [10080, '1 week']].map(([v, l]) => `<option value="${v}"${c.newAccountLinks === v ? ' selected' : ''}>${l}</option>`).join('')}</select></label></div>

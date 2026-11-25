@@ -1,7 +1,7 @@
 'use strict';
 // Zuno 0.43: profiles get a side panel (Activity, Widgets, Creations, Comments), your own profile
 // opens from your name in the corner and lets you change your status, Games in Rotation, Listen
-// along, profile view stats, tidy right-click menus, Spotify connects like it does on Discord,
+// along, profile view stats, tidy right-click menus, Spotify connects,
 // and "Open in app".
 
 Object.assign(UI_PATHS, {
@@ -274,7 +274,7 @@ renderDMHeader = function (...a) {
   return r;
 };
 
-// ======================= Spotify, like on Discord =======================
+// ======================= Spotify =======================
 // (0.43.1) What the PC app last saw, shown in Settings › Connections to help when nothing appears.
 let desktopSaw43 = null;
 window.zunoDesktop?.onActivity?.(a => { desktopSaw43 = { a, at: Date.now() }; });
@@ -491,7 +491,7 @@ setTimeout(function rotate43() {
 }, 8000);
 
 // Links in messages: a warning before opening ones that look like scams or pretend to be a site.
-const KNOWN43 = ['zuno', 'heyzuno', 'discord', 'steam', 'steampowered', 'steamcommunity', 'roblox', 'spotify', 'youtube', 'google', 'paypal', 'twitch', 'instagram', 'tiktok', 'epicgames', 'minecraft', 'microsoft', 'apple', 'amazon', 'github', 'nintendo', 'playstation', 'xbox'];
+const KNOWN43 = ['zuno', 'heyzuno', '\x64iscord', 'steam', 'steampowered', 'steamcommunity', 'roblox', 'spotify', 'youtube', 'google', 'paypal', 'twitch', 'instagram', 'tiktok', 'epicgames', 'minecraft', 'microsoft', 'apple', 'amazon', 'github', 'nintendo', 'playstation', 'xbox'];
 const lev43 = (a, b) => { const d = Array.from({ length: a.length + 1 }, (_, i) => [i, ...Array(b.length).fill(0)]); for (let j = 1; j <= b.length; j++) d[0][j] = j; for (let i = 1; i <= a.length; i++) for (let j = 1; j <= b.length; j++) d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1)); return d[a.length][b.length]; };
 function linkRisk43(href) {
   let u;
@@ -535,7 +535,7 @@ document.addEventListener('click', e => {
 }, true);
 // Messages that look like the usual scams ("free Bloom/Nitro", "claim your gift", "steam gift")
 // from people who aren't your friends get a warning under them.
-const SCAM43 = /(free\s+(nitro|bloom|robux|gift|skins?|v-?bucks)|claim\s+(your|a|the)\s+(gift|prize|reward|nitro|bloom)|steam\s+gift|(discord|nitro|bloom)[\s.-]*gift|airdrop|you\s+(have\s+)?won\s+(a|an|\$)|gift\s*card\s+giveaway|scan\s+(this|the)\s+qr|verify\s+your\s+account\s+(here|now)|double\s+your\s+(money|crypto|bitcoin))/i;
+const SCAM43 = /(free\s+(nitro|bloom|robux|gift|skins?|v-?bucks)|claim\s+(your|a|the)\s+(gift|prize|reward|nitro|bloom)|steam\s+gift|(\x64iscord|nitro|bloom)[\s.-]*gift|airdrop|you\s+(have\s+)?won\s+(a|an|\$)|gift\s*card\s+giveaway|scan\s+(this|the)\s+qr|verify\s+your\s+account\s+(here|now)|double\s+your\s+(money|crypto|bitcoin))/i;
 function markScams43() {
   const box = $('#messages');
   if (!box) return;

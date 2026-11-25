@@ -63,7 +63,7 @@ module.exports = function (z) {
     return { code };
   });
   route('POST', '/api/handoff/redeem', async ({ body, req }) => {
-    z.limit('redeem:' + z.clientIp(req), 20, 3600e3, 'Too many tries. Log in normally.');
+    z.limit('redeem:' + z.visitorTag(req), 20, 3600e3, 'Too many tries. Log in normally.');
     const h = handoffs.get(String(body.code || ''));
     handoffs.delete(String(body.code || ''));
     if (!h || h.exp < Date.now() || !data.users[h.uid] || data.users[h.uid].deleted) fail(400, 'That link expired. Log in normally.');

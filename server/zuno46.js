@@ -777,11 +777,11 @@ module.exports.safety = function (z) {
     return devView(me, req);
   });
 
-  // Founder-only: shows which address the server thinks you're on, to check that rate limits can't be
-  // dodged with made-up headers. Nothing is stored.
+  // Founder-only: checks that speed limits can't be dodged with made-up headers. It shows only
+  // whether the request came through Cloudflare, your network and your scrambled visitor tag (never
+  // a full address). Nothing is stored.
   route('GET', '/api/admin/ip-check', async ({ me, req }) => {
     if (!z.isFounder(me.id)) fail(403, 'Only the founder can see this.');
-    const h = req.headers;
-    return { chosen: z.clientIp(req), cfConnectingIp: h['cf-connecting-ip'] || null, xForwardedFor: h['x-forwarded-for'] || null, trueClientIp: h['true-client-ip'] || null, socket: req.socket.remoteAddress || null, cfRay: h['cf-ray'] || null };
+    return { visitorTag: z.visitorTag(req), network: z.networkOf(req), viaCloudflare: !!req.headers['cf-ray'] };
   });
 };

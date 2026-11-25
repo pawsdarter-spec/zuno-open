@@ -71,7 +71,8 @@
   </ul>
   <h3>Things collected as you use Zuno</h3>
   <ul>
-    <li><b>Logins:</b> for each device you're logged in on: when you logged in and were last active, the kind of browser or app, and its internet (IP) address. This powers your Devices list, new-login alerts and protection against people flooding or attacking Zuno. Your Devices page shows the rough city of each login, looked up from its IP address.</li>
+    <li><b>Logins:</b> for each device you're logged in on: when you logged in and were last active, the kind of browser or app, and the <b>network</b> it connected from. Zuno never saves your full IP address: only the first part is kept (203.0.113.47 becomes 203.0.113.x; for IPv6, the first 48 bits), which is shared by many connections and can't point to yours. This powers your Devices list (with a rough city) and new-login alerts.</li>
+    <li><b>Speed limits:</b> to stop people flooding Zuno, each request is counted for a few minutes by a scrambled tag of its address. The tag is made with a random key that only lives in the server's memory and changes on every restart, so it can't be turned back into an address, and it's never written down.</li>
     <li><b>What's read:</b> which messages you've read, so Zuno can show what's new.</li>
     <li><b>Activity you choose to share:</b> if the desktop app is on, the game you're playing (from a list of known games) or the song you're listening to. You can turn this off.</li>
   </ul>
@@ -101,7 +102,7 @@
     <li><b>Anthropic</b> (Claude) double-checks names, bios, statuses and nicknames for slurs and abuse when you save them, and writes a chat summary when you press "Catch me up". Only that text is sent.</li>
     <li><b>KLIPY</b> provides GIF search. Your searches go through Zuno's server, so KLIPY doesn't see who you are.</li>
     <li><b>Translation</b> (Google Translate, with MyMemory as a backup) gets the text of a message only when you press Translate.</li>
-    <li><b>ipwho.is</b> gets a login's IP address to show its rough city on your Devices page.</li>
+    <li><b>ipwho.is</b> gets a login's network (the shortened address above, never the full one) to show its rough city on your Devices page.</li>
     <li><b>Services you connect or use:</b> Spotify (if you connect it), and public lookups for music, games, GitHub profiles, Wikipedia and link previews, which only get what's being looked up.</li>
     <li><b>Things your browser loads:</b> YouTube (videos in chat and Watch Together), Google Fonts (Zuno's fonts), jsDelivr (emoji pictures) and cdnjs (maps). Like any website, these see your IP address when your browser loads them.</li>
     <li><b>Phone notifications</b> travel through your browser or phone maker's push service (like Google or Apple), encrypted so they can't read them.</li>

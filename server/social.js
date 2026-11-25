@@ -771,7 +771,7 @@ module.exports = function social(z) {
     return { mfa: true, ticket };
   });
   route('POST', '/api/login/2fa', async ({ body, req }) => {
-    z.limit('mfa:' + z.clientIp(req), 10, 5 * 60e3, 'Too many tries. Wait a few minutes.');
+    z.limit('mfa:' + z.visitorTag(req), 10, 5 * 60e3, 'Too many tries. Wait a few minutes.');
     const k = sha(body.ticket), t = tickets.get(k);
     if (!t || t.exp < Date.now() || t.tries >= 5) { tickets.delete(k); fail(401, 'That took too long. Log in again.'); }
     const u = data.users[t.uid];

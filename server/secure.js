@@ -123,11 +123,11 @@ module.exports = function secure(z) {
   });
   // Logging in with a passkey: no username or password, the passkey says who you are.
   route('POST', '/api/login/passkey/options', async ({ req }) => {
-    z.limit('pk:' + z.clientIp(req), 30, 5 * 60e3);
+    z.limit('pk:' + z.visitorTag(req), 30, 5 * 60e3);
     return { challenge: newChallenge('get'), rpId: rpIdOf(req), timeout: 120000, userVerification: 'preferred' };
   }, { auth: false });
   route('POST', '/api/login/passkey', async ({ body, req }) => {
-    z.limit('pkl:' + z.clientIp(req), 20, 5 * 60e3, 'Too many tries. Wait a few minutes.');
+    z.limit('pkl:' + z.visitorTag(req), 20, 5 * 60e3, 'Too many tries. Wait a few minutes.');
     checkClientData(req, body.clientDataJSON, 'get');
     const id = String(body.id || '');
     const user = Object.values(data.users).find(u => (u.passkeys || []).some(k => k.id === id));
@@ -158,7 +158,7 @@ module.exports = function secure(z) {
   hooks.newSession.push((user, req) => {
     if (!user || user.bot || user.system || !req) return;
     const d = deviceOf(req);
-    const ip = z.clientIp(req);
+    const net = String(z.networkOf(req) || 'unknown').replace(/\.0$/, '.x').replace(/::$/, ':…'); // the network only
     const first = !user.knownDevices;
     user.knownDevices ||= [];
     const known = user.knownDevices.find(x => x.key === d.key);
@@ -168,8 +168,8 @@ module.exports = function secure(z) {
     const when = new Date().toUTCString().replace(' GMT', ' UTC');
     // (0.43.1) "This wasn't me" logs out everywhere and locks the account until a new password.
     const notMe = z.notMeLink?.(user);
-    systemMessage(user.id, `🔐 **New login to your account**\n${d.label} · ${when} · IP ${ip}\n\nIf this was you, you're all set. If not, open **Settings › My Account**, log out the devices you don't recognize and change your password right away.${notMe ? `\n\n**This wasn't you?** [Lock my account now](${notMe})` : ''}`);
-    if (user.email && z.sendMail) z.sendMail(user.email, 'New login to your Zuno account', `<div style="font-family:system-ui,sans-serif;max-width:480px;margin:auto;padding:24px"><h2>New login to Zuno</h2><p>Someone just logged into <b>${user.username}</b> from <b>${d.label}</b> (IP ${ip}) at ${when}.</p><p>If this was you, there's nothing to do.</p>${notMe ? `<p><a href="${notMe}" style="display:inline-block;padding:10px 16px;border-radius:8px;background:#e5484d;color:#fff;text-decoration:none;font-weight:600">This wasn't me: lock my account</a></p><p style="color:#666;font-size:13px">That logs everyone out of your account and emails you a link to pick a new password.</p>` : '<p>If not, change your password and log out other devices in Settings › My Account.</p>'}</div>`).catch?.(() => {});
+    systemMessage(user.id, `🔐 **New login to your account**\n${d.label} · ${when} · network ${net}\n\nIf this was you, you're all set. If not, open **Settings › My Account**, log out the devices you don't recognize and change your password right away.${notMe ? `\n\n**This wasn't you?** [Lock my account now](${notMe})` : ''}`);
+    if (user.email && z.sendMail) z.sendMail(user.email, 'New login to your Zuno account', `<div style="font-family:system-ui,sans-serif;max-width:480px;margin:auto;padding:24px"><h2>New login to Zuno</h2><p>Someone just logged into <b>${user.username}</b> from <b>${d.label}</b> (network ${net}) at ${when}.</p><p>If this was you, there's nothing to do.</p>${notMe ? `<p><a href="${notMe}" style="display:inline-block;padding:10px 16px;border-radius:8px;background:#e5484d;color:#fff;text-decoration:none;font-weight:600">This wasn't me: lock my account</a></p><p style="color:#666;font-size:13px">That logs everyone out of your account and emails you a link to pick a new password.</p>` : '<p>If not, change your password and log out other devices in Settings › My Account.</p>'}</div>`).catch?.(() => {});
   });
 
   // ======================= end-to-end encrypted DMs =======================

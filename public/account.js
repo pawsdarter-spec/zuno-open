@@ -128,7 +128,7 @@ async function renderSecurity(body) {
       $('#sec-count', wrap).textContent = sessions.length;
       box.innerHTML = sessions.map(s => `<div class="sec-dev" data-sid="${esc(s.id)}"><span class="sec-ico">${uiIcon(/iPhone|Android/.test(s.agent) ? 'phone' : /Electron|Zuno/.test(s.agent) ? 'monitor' : 'laptop')}</span>
         <div style="flex:1;min-width:0"><b>${esc(deviceName(s.agent))}</b>${s.current ? ' <span class="ok-pill">This device</span>' : ''}
-          <div class="muted small">${s.lastSeen ? `Last active ${fmtTime(s.lastSeen)}` : ''}${s.createdAt ? ` · logged in ${fmtDay(s.createdAt)}` : ''}${s.ip ? ` · IP ${esc(s.ip)}` : ''}</div></div>
+          <div class="muted small">${s.lastSeen ? `Last active ${fmtTime(s.lastSeen)}` : ''}${s.createdAt ? ` · logged in ${fmtDay(s.createdAt)}` : ''}${s.network ? ` · network ${esc(s.network)}` : ''}</div></div>
         ${s.current ? '' : '<button class="icon-btn danger" data-out title="Log out this device">✕</button>'}</div>`).join('');
       $$('[data-out]', box).forEach(b => b.addEventListener('click', async () => { try { await api('DELETE', `/api/me/sessions/${b.closest('[data-sid]').dataset.sid}`); drawDevices(); } catch (err) { toast(err.message, true); } }));
       $('#sec-others', wrap).classList.toggle('hidden', sessions.length < 2);

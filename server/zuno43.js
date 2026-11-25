@@ -264,7 +264,7 @@ module.exports = function (z) {
   hooks.rawRoutes.push({ path: '/not-me', fn: async (req, res, url) => {
     if (req.method === 'POST') {
       const f = await readForm(req);
-      try { z.limit('notme:' + z.clientIp(req), 10, 15 * 60e3); } catch { return sendPage(res, 429, pageHtml('Slow down', '<p>Try again in a few minutes.</p>')); }
+      try { z.limit('notme:' + z.visitorTag(req), 10, 15 * 60e3); } catch { return sendPage(res, 429, pageHtml('Slow down', '<p>Try again in a few minutes.</p>')); }
       const u = findNotMe(f.get('t'));
       if (!u) return sendPage(res, 400, pageHtml('That link expired', '<p style="color:#8ea6a1">Open Zuno and change your password in Settings › My Account instead.</p>'));
       u.notMe = [];
@@ -322,7 +322,7 @@ module.exports = function (z) {
     })();
   });
   route('POST', '/api/login/email-code', async ({ body, req, res }) => {
-    z.limit('emcode:' + z.clientIp(req), 15, 10 * 60e3, 'Too many tries. Wait a few minutes.');
+    z.limit('emcode:' + z.visitorTag(req), 15, 10 * 60e3, 'Too many tries. Wait a few minutes.');
     const k = sha(body.ticket), t = emailTickets.get(k);
     if (!t || t.exp < Date.now() || t.tries >= 5) { emailTickets.delete(k); fail(401, 'That took too long. Log in again.'); }
     z.limit('emcode-acct:' + t.uid, 12, 3600e3, 'Too many wrong codes for this account. Wait an hour and try again.');

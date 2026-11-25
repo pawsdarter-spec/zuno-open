@@ -74,7 +74,7 @@ async function verifyTurnstile(token, req) {
     const response = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({ secret: TURNSTILE_SECRET_KEY, response: token.trim(), remoteip: clientIp(req) }),
+      body: new URLSearchParams({ secret: TURNSTILE_SECRET_KEY, response: token.trim() }), // (0.53.1) the visitor's address isn't passed on
       signal: AbortSignal.timeout(8000),
     });
     if (!response.ok) throw new Error(`Turnstile returned HTTP ${response.status}`);
@@ -483,13 +483,17 @@ function limit(key, max, windowMs, message = 'Slow down a little and try again i
   if (++b.count > max) fail(429, message);
 }
 setInterval(() => { const now = Date.now(); for (const [k, b] of buckets) if (b.resetAt < now) buckets.delete(k); }, 60000).unref();
-// Someone's real address, for speed limits, login alerts and the device map. On Render, Zuno sits
-// behind Cloudflare, which sets CF-Connecting-IP itself and refuses requests that try to fake it.
-// X-Forwarded-For can't be trusted on its own: anyone can put anything at the start of it.
-// (0.53.1) Cloudflare's own header is only believed when the request really came through
-// Cloudflare (the hop Render saw is one of Cloudflare's addresses). With Cloudflare set to "DNS
-// only", anyone could send a made-up CF-Connecting-IP (or extra X-Forwarded-For entries) and look
-// like a new person on every request, slipping past every speed limit.
+// ======================= internet addresses (IPs): never kept =======================
+// Zuno never saves anyone's IP address. What it uses:
+// - networkOf(req): the request's address cut down to its network ("203.0.113.0" for IPv4, the
+//   first 48 bits for IPv6). That's all a login keeps, for the rough city on your Devices page and
+//   new-login alerts. It can't point to one connection.
+// - visitorTag(req): a scrambled tag of the address, made with a random key that only lives in
+//   memory and changes every restart. Speed limits count by this tag for a few minutes; it can't be
+//   turned back into an address, and nothing with it is ever written down.
+// The full address itself only exists while a request is being answered.
+// On Render, the real address is the last X-Forwarded-For hop (or Cloudflare's own header, but only
+// when the request really came through Cloudflare): anyone can write anything before that.
 const CF_V4 = ['173.245.48.0/20', '103.21.244.0/22', '103.22.200.0/22', '103.31.4.0/22', '141.101.64.0/18', '108.162.192.0/18', '190.93.240.0/20', '188.114.96.0/20', '197.234.240.0/22', '198.41.128.0/17', '162.158.0.0/15', '104.16.0.0/13', '104.24.0.0/14', '172.64.0.0/13', '131.0.72.0/22']
   .map(c => { const [ip, bits] = c.split('/'); return [ip.split('.').reduce((a, o) => (a << 8) + Number(o), 0) >>> 0, Number(bits)]; });
 const CF_V6 = ['2400:cb00:', '2606:4700:', '2803:f800:', '2405:b500:', '2405:8100:', '2a06:98c', '2a06:98d', '2a06:98e', '2a06:98f', '2c0f:f248:'];
@@ -501,38 +505,53 @@ function isCloudflare(ip) {
   const n = parts.reduce((a, o) => (a << 8) + (Number(o) & 255), 0) >>> 0;
   return CF_V4.some(([base, bits]) => (n >>> (32 - bits)) === (base >>> (32 - bits)));
 }
-function clientIp(req) {
-  if (req.zunoIp) return req.zunoIp;
-  let ip;
+function rawAddress(req) {
+  if (req.zunoAddr) return req.zunoAddr;
+  let a;
   if (process.env.RENDER) {
-    // Render adds the address it saw last; anything before that was written by the sender.
     const hops = String(req.headers['x-forwarded-for'] || '').split(',').map(x => x.trim()).filter(Boolean);
     const seen = hops[hops.length - 1] || req.socket.remoteAddress || '?';
     const cf = String(req.headers['cf-connecting-ip'] || '').trim();
-    ip = cf && isCloudflare(seen) ? cf : seen;
-  } else if (process.env.ZUNO_TRUST_XFF === '1') ip = String(req.headers['x-forwarded-for'] || '').split(',')[0].trim() || req.socket.remoteAddress || '?';
-  else ip = req.socket.remoteAddress || '?';
-  ip = ip.replace(/^::ffff:/, '').slice(0, 64);
-  req.zunoIp = ip;
-  return ip;
+    a = cf && isCloudflare(seen) ? cf : seen;
+  } else if (process.env.ZUNO_TRUST_XFF === '1') a = String(req.headers['x-forwarded-for'] || '').split(',')[0].trim() || req.socket.remoteAddress || '?';
+  else a = req.socket.remoteAddress || '?';
+  req.zunoAddr = a.replace(/^::ffff:/, '').slice(0, 64);
+  return req.zunoAddr;
 }
-// (0.53.1) The shield: every request (pages, files, the API) counts against its address before any
-// other work is done. Too many in 10 seconds gets a tiny "slow down"; keep going and the address is
-// shut out for a while with no work done at all, so a flood can't eat the server's time.
+// An address cut down to its network: 203.0.113.47 -> 203.0.113.0, 2001:db8:abcd:12::1 -> 2001:db8:abcd::
+function networkOfAddr(a) {
+  a = String(a || '').replace(/^::ffff:/, '').toLowerCase();
+  if (/^\d+\.\d+\.\d+\.\d+$/.test(a)) return a.split('.').slice(0, 3).join('.') + '.0';
+  if (a.includes(':')) {
+    const full = a.includes('::') ? (() => { const [h, t] = a.split('::'); const hs = h ? h.split(':') : [], ts = t ? t.split(':') : []; return [...hs, ...Array(Math.max(0, 8 - hs.length - ts.length)).fill('0'), ...ts]; })() : a.split(':');
+    return full.slice(0, 3).map(x => x.replace(/^0+(?=.)/, '')).join(':') + '::';
+  }
+  return null;
+}
+const networkOf = req => networkOfAddr(rawAddress(req));
+const TAG_KEY = crypto.randomBytes(32); // in memory only, new every restart
+function visitorTag(req) {
+  if (req.zunoTag) return req.zunoTag;
+  req.zunoTag = 'v' + crypto.createHmac('sha256', TAG_KEY).update(rawAddress(req)).digest('base64url').slice(0, 18);
+  return req.zunoTag;
+}
+const blockTag = req => 'b' + crypto.createHmac('sha256', TAG_KEY).update(networkOf(req) || '?').digest('base64url').slice(0, 18);
+// (0.53.1) The shield: every request (pages, files, the API) counts against its visitor tag before
+// any other work is done. Too many in 10 seconds gets a tiny "slow down"; keep going and that visitor
+// is shut out for a while with no work done at all, so a flood can't eat the server's time.
 const SHIELD_WINDOW = 10e3, SHIELD_MAX = Number(process.env.ZUNO_SHIELD_MAX) || 160, SHIELD_JAIL = 10 * 60e3;
-const shieldMap = new Map(); // ip -> { n, reset, over, jail }
-const blockJail = new Map(); // "a.b.c" block -> { ips, until }
-// Addresses to always turn away, from the ZUNO_BLOCK setting on Render (comma-separated starts of
-// addresses, like "149.13.193.,203.0.113.").
+const shieldMap = new Map(); // visitor tag -> { n, reset, over, jail } (memory only)
+const blockJail = new Map(); // network tag -> { tags, until } (memory only)
+// Networks to always turn away, from the ZUNO_BLOCK setting on Render (comma-separated starts of
+// addresses, like "149.13.193."). Checked against the request, never stored.
 const BLOCKED_PREFIXES = String(process.env.ZUNO_BLOCK || '').split(',').map(x => x.trim()).filter(x => x.length >= 4);
-const ipBlock = ip => (ip.includes(':') ? ip.split(':').slice(0, 3).join(':') + '::/48' : ip.split('.').slice(0, 3).join('.') + '.0/24');
 function shieldBlocks(req, res) {
-  const ip = clientIp(req), now = Date.now();
-  let b = shieldMap.get(ip);
-  if (!b) { b = { n: 0, reset: now + SHIELD_WINDOW, over: 0, jail: 0 }; shieldMap.set(ip, b); }
+  const tag = visitorTag(req), now = Date.now();
+  let b = shieldMap.get(tag);
+  if (!b) { b = { n: 0, reset: now + SHIELD_WINDOW, over: 0, jail: 0 }; shieldMap.set(tag, b); }
   if (b.jail > now) { refuse(res, 429); return true; }
-  if (BLOCKED_PREFIXES.some(p => ip.startsWith(p))) { refuse(res, 403); return true; }
-  const block = ipBlock(ip), bj = blockJail.get(block);
+  if (BLOCKED_PREFIXES.length && BLOCKED_PREFIXES.some(p => rawAddress(req).startsWith(p))) { refuse(res, 403); return true; }
+  const block = blockTag(req), bj = blockJail.get(block);
   if (bj?.until > now) { refuse(res, 429); return true; }
   if (b.reset < now) { b.n = 0; b.reset = now + SHIELD_WINDOW; b.over = Math.max(0, b.over - 1); }
   // App files are cheap (kept in memory) and a page load asks for many: they count a quarter.
@@ -540,12 +559,14 @@ function shieldBlocks(req, res) {
   b.n += req.url.startsWith('/api/') || req.url.startsWith('/uploads/') || req.url.startsWith('/files/') ? 1 : 0.25;
   if (b.n <= SHIELD_MAX) return false;
   if ((was <= SHIELD_MAX && ++b.over >= 3) || (was < SHIELD_MAX * 3 && b.n >= SHIELD_MAX * 3)) {
-    b.jail = now + SHIELD_JAIL; console.warn(`Shield: ${ip} shut out for 10 minutes (flooding).`);
-    // Three flooding addresses from one block (the same /24, or /48 for IPv6): the whole block is
-    // shut out for an hour, so moving to the next address doesn't help.
-    const j = blockJail.get(block) || { ips: new Set(), until: 0 };
-    j.ips.add(ip); blockJail.set(block, j);
-    if (j.ips.size >= 3 && j.until < now) { j.until = now + 60 * 60e3; console.warn(`Shield: the whole ${block} block shut out for an hour.`); }
+    b.jail = now + SHIELD_JAIL;
+    // Three flooding visitors from one network (the same /24, or /48 for IPv6): the whole network
+    // is shut out for an hour, so moving to the next address doesn't help. The log names only the
+    // network (so it can be added to ZUNO_BLOCK), never a full address.
+    const j = blockJail.get(block) || { tags: new Set(), until: 0 };
+    j.tags.add(tag); blockJail.set(block, j);
+    console.warn(`Shield: a visitor from ${networkOf(req)}/${String(networkOf(req)).includes(':') ? 48 : 24} was shut out for 10 minutes (flooding).`);
+    if (j.tags.size >= 3 && j.until < now) { j.until = now + 60 * 60e3; console.warn(`Shield: the whole ${networkOf(req)} network was shut out for an hour.`); }
   }
   refuse(res, 429);
   return true;
@@ -568,7 +589,7 @@ function shedsLoad(req, res) {
 function refuse(res, code) {
   try { res.writeHead(code, { 'Content-Type': 'application/json', 'Retry-After': '60', Connection: 'close', 'Cache-Control': 'no-store' }); res.end('{"error":"Too many requests. Wait a minute and try again."}'); } catch {}
 }
-setInterval(() => { const now = Date.now(); for (const [k, b] of shieldMap) if (b.reset < now - 60e3 && b.jail < now) shieldMap.delete(k); for (const [k, j] of blockJail) if (j.until < now && ![...j.ips].some(ip => shieldMap.get(ip)?.jail > now)) blockJail.delete(k); }, 60e3).unref();
+setInterval(() => { const now = Date.now(); for (const [k, b] of shieldMap) if (b.reset < now - 60e3 && b.jail < now) shieldMap.delete(k); for (const [k, j] of blockJail) if (j.until < now && ![...j.tags].some(t => shieldMap.get(t)?.jail > now)) blockJail.delete(k); }, 60e3).unref();
 // Route-level limits: [method, path pattern, max, window, who]
 const LIMITS = [
   ['POST', /^\/api\/register$/, 5, 10 * 60e3, 'ip', 'Too many new accounts from here. Try again later.'],
@@ -583,12 +604,12 @@ const LIMITS = [
 ];
 function checkLimits(req, pathname, me) {
   // An overall ceiling on top of the per-action limits, so one person or script can't flood the API.
-  if (!me) limit('api-ip:' + clientIp(req), 300, 60e3, 'Too many requests. Wait a minute and try again.');
+  if (!me) limit('api-visitor:' + visitorTag(req), 300, 60e3, 'Too many requests. Wait a minute and try again.');
   else if (req.method !== 'GET' && !me.bot) limit('api-w:' + me.id, 300, 60e3, "You're doing that too fast. Wait a minute.");
   // (0.53.1) Reading has a ceiling too (a logged-in script could fetch heavy pages endlessly).
   if (me && !me.bot) limit('api-r:' + me.id, 900, 60e3, 'Too many requests. Wait a minute and try again.');
   for (const [method, re, max, win, who, msg] of LIMITS) {
-    if (req.method === method && re.test(pathname)) limit(`${re}:${who === 'ip' ? clientIp(req) : me?.id || clientIp(req)}`, max, win, msg);
+    if (req.method === method && re.test(pathname)) limit(`${re}:${who === 'ip' ? visitorTag(req) : me?.id || visitorTag(req)}`, max, win, msg);
   }
 }
 
@@ -799,10 +820,10 @@ route('POST', '/api/login', async ({ body, req, res }) => {
   if (lock && lock.n >= 10 && Date.now() - lock.at < 15 * 60e3) fail(429, 'Too many wrong passwords for this account. Wait 15 minutes, or reset your password.');
   const passwordOk = await checkPassword(String(body.password || ''), user ? user.passwordHash : DUMMY_HASH);
   // (0.43.1) Wrong passwords from one network are capped too (it can't just try account after account).
-  const ipKey = 'ip:' + clientIp(req), ipLock = loginFails.get(ipKey);
-  if (ipLock && ipLock.n >= 30 && Date.now() - ipLock.at < 15 * 60e3) fail(429, 'Too many wrong passwords from this network. Wait 15 minutes.');
+  const visitorKey = 'visitor:' + visitorTag(req), visitorLock = loginFails.get(visitorKey);
+  if (visitorLock && visitorLock.n >= 30 && Date.now() - visitorLock.at < 15 * 60e3) fail(429, 'Too many wrong passwords from this network. Wait 15 minutes.');
   if (!user || !passwordOk) {
-    loginFails.set(ipKey, { n: (ipLock && Date.now() - ipLock.at < 15 * 60e3 ? ipLock.n : 0) + 1, at: ipLock && Date.now() - ipLock.at < 15 * 60e3 ? ipLock.at : Date.now() });
+    loginFails.set(visitorKey, { n: (visitorLock && Date.now() - visitorLock.at < 15 * 60e3 ? visitorLock.n : 0) + 1, at: visitorLock && Date.now() - visitorLock.at < 15 * 60e3 ? visitorLock.at : Date.now() });
     if (user) {
       const n = (lock && Date.now() - lock.at < 15 * 60e3 ? lock.n : 0) + 1;
       loginFails.set(user.id, { n, at: Date.now() });
@@ -3519,7 +3540,7 @@ route('POST', '/api/webhooks/:whId/:token', async ({ params, body, req }) => {
   if (!found || found.w.tokenHash !== sha(params.token)) fail(404, 'Unknown webhook.');
   const { sv, w } = found;
   limit('wh:' + w.id, 30, 60e3, 'This webhook is posting too fast (30 a minute).');
-  limit('whip:' + clientIp(req), 60, 60e3, 'Too many webhook posts from here.');
+  limit('whip:' + visitorTag(req), 60, 60e3, 'Too many webhook posts from here.');
   const ch = sv.channels.find(c => c.id === w.channelId);
   if (!ch) fail(404, 'The channel for this webhook is gone.');
   const content = String(body.content ?? body.text ?? '').replace(/\r\n/g, '\n').trim().slice(0, 2000);
@@ -4209,7 +4230,7 @@ async function handleRequest(req, res) {
       if (me && isSuspended(me) && req.method !== 'GET' && !['/api/logout', '/api/rtc/leave', '/api/appeal'].includes(url.pathname) && !url.pathname.endsWith('/read'))
         fail(403, me.suspendedUntil >= FOREVER ? 'This account is banned from Zuno.' : "Your account is in a timeout, so you can't do that right now.");
       checkLimits(req, url.pathname, me);
-      if (token && data.sessions[token] && typeof data.sessions[token] === 'object' && data.sessions[token].ip !== clientIp(req)) data.sessions[token].ip = clientIp(req);
+      if (token && data.sessions[token] && typeof data.sessions[token] === 'object' && data.sessions[token].net !== networkOf(req)) { data.sessions[token].net = networkOf(req); delete data.sessions[token].ip; } // only the network, never the address
       const params = Object.fromEntries(r.keys.map((k, i) => [k, decodeURIComponent(m[i + 1])]));
       // An id like "__proto__" would look up the built-in object instead of a user or server.
       if (Object.values(params).some(v => UNSAFE_KEYS.has(v))) fail(404, 'Not found.');
@@ -4244,7 +4265,7 @@ function start(port = PORT, { quiet = false } = {}) {
       if (!quiet) {
         console.log(`\n  Zuno is running!\n`);
         console.log(`  On this computer:   http://localhost:${port}`);
-        for (const addrs of Object.values(os.networkInterfaces())) {
+        if (!process.env.RENDER) for (const addrs of Object.values(os.networkInterfaces())) {
           for (const a of addrs || []) {
             if (a.family === 'IPv4' && !a.internal) console.log(`  On your Wi-Fi:      http://${a.address}:${port}`);
           }
@@ -4260,10 +4281,10 @@ module.exports = { start, flush };
 
 // Everything added in 0.14 (accounts, pins, polls, nicknames, Zuno bots, themes…) lives in features.js.
 const feat = require('./features')({
-  checkEmail: burner.checkEmail, checkName, badUsername, NAME_ERROR, cleanName, stripInvisible, topPos, judgeText, staffGuard, pruneDevices, data, save, route, fail, hooks, clean, newId, send, emit, publicUser, privateMe, broadcastUser, postMessage, systemMessage,
+  checkEmail: burner.checkEmail, networkOf, networkOfAddr, checkName, badUsername, NAME_ERROR, cleanName, stripInvisible, topPos, judgeText, staffGuard, pruneDevices, data, save, route, fail, hooks, clean, newId, send, emit, publicUser, privateMe, broadcastUser, postMessage, systemMessage,
   channelConv, channelConvFor, dmConv, groupConv, convOf, findChannel, findMessage, getServer, getManagedServer, ensureRoles, need, can, permsIn, canView, basePerms,
   outranks, canEditRole, roleById, rolesOf, audit, refreshServer, serverSummary, officialServer, isStaff, needStaff, hasBloom, isBlocked, areFriends,
-  hashPassword, checkPassword, MIN_PASSWORD, createSession, endSessions, sessionFor, limit, clientIp, sniff, storeUpload, removeUpload, PERM_INFO, PERM_KEYS,
+  hashPassword, checkPassword, MIN_PASSWORD, createSession, endSessions, sessionFor, limit, visitorTag, sniff, storeUpload, removeUpload, PERM_INFO, PERM_KEYS,
   DEFAULT_EVERYONE, SYSTEM_ID, PUBLIC_URL, EMAIL_RE, USERNAME_RE, devBot, rooms, roomMembers, leaveRoom, streams, isOnline, effectiveStatus, sha, dmKey,
   PKG, lastPost, removeMember, streamWrite, needReauth, isFounder,
 });
@@ -4271,13 +4292,13 @@ const ctx2 = {
   isFounder, officialServer, messagePreview, checkName, badUsername, NAME_ERROR, cleanName, stripInvisible, topPos, judgeText, noteAttachmentFile: a => { if (a?.thumb) fileToAttachment.set(path.basename(a.thumb), a.id); }, purgeBannedAccount, restoreBannedAccount, tellFounder, APPEAL_DAYS,
   staffGuard, isManager, overStaff, pruneDevices, liveSids, sessionSid, data, save, route, fail, hooks, clean, newId, send, emit, publicUser, privateMe, broadcastUser, postMessage, systemMessage,
   dmConv, groupConv, channelConv, findMessage, getServer, ensureRoles, need, can, refreshServer, audit, isStaff, needStaff, isBlocked, areFriends,
-  friendIds, createSession, endSessions, limit, clientIp, sniff, storeUpload, removeUpload, PERM_INFO, PERM_KEYS, SYSTEM_ID, PUBLIC_URL, dmKey,
+  friendIds, createSession, endSessions, limit, visitorTag, sniff, storeUpload, removeUpload, PERM_INFO, PERM_KEYS, SYSTEM_ID, PUBLIC_URL, dmKey,
   isOnline, PREF_BOOLS, PREF_DEFAULTS, checkPassword, sha, crypto, UPLOAD_DIR, needReauth, sessionCookie, tokenKey, REAUTH_MSG, rooms, roomMembers, permsIn, findChannel, DEFAULT_EVERYONE, convOf,
   hasBloom, perksFor, serverSummary, rolesOf, roleById, outranks, canView, getManagedServer, leaveRoom, streams, effectiveStatus, sessionFor, hashPassword, MIN_PASSWORD,
-  PKG, streamWrite, dmRecord, clientIp, ACCENTS, BLOOM_ACCENTS, voiceUpdate, canEditRole, checkGrant, basePerms, SERVER_COLORS, channelConvFor, sendMail: (...a) => feat.sendMail(...a), feat,
+  PKG, streamWrite, dmRecord, ACCENTS, BLOOM_ACCENTS, voiceUpdate, canEditRole, checkGrant, basePerms, SERVER_COLORS, channelConvFor, sendMail: (...a) => feat.sendMail(...a), feat,
   invitePreview, DISCOVERY_TAGS, effectiveStatus, isFounder, CONFIG, appView, devBot, getManagedServer, audit, isOnline,
   outranks, canReadAttachment, rolesOf, badgesFor, REPORT_REASONS, joinServer, friendIds, USERNAME_RE, STAFF_NAMES,
-  removeMember, channelMessagesOf: id => data.channelMessages[id], userByName, checkEmail: burner.checkEmail,
+  removeMember, channelMessagesOf: id => data.channelMessages[id], userByName, checkEmail: burner.checkEmail, networkOf, networkOfAddr,
   svLimits: () => ({ emoji: 50, sounds: 24, level: 0 }), // Server Blooming raises these (community.js)
 };
 const social = require('./social')(ctx2);

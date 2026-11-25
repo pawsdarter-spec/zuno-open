@@ -613,7 +613,7 @@ module.exports = function zuno19(z) {
     return { codes };
   });
   route('POST', '/api/recover', async ({ body, req }) => {
-    z.limit('recover:' + z.clientIp(req), 8, 15 * 60e3, 'Too many tries. Wait 15 minutes and try again.');
+    z.limit('recover:' + z.visitorTag(req), 8, 15 * 60e3, 'Too many tries. Wait 15 minutes and try again.');
     const login = String(body.login || '').trim().toLowerCase();
     const u = Object.values(data.users).find(x => human(x) && (x.username === login || (x.email || '').toLowerCase() === login));
     if (u) z.limit('recover-acct:' + u.id, 10, 3600e3, 'Too many tries for this account. Wait an hour and try again.');
@@ -634,7 +634,8 @@ module.exports = function zuno19(z) {
   }, { auth: false });
 
   // ======================= where you're logged in (on a map) =======================
-  // Approximate location from each session's internet address (city level, never exact).
+  // Rough location from each login's network (city level, never exact). A login only keeps its
+  // network ("203.0.113.0"), never a full address.
   const geoCache = new Map();
   const isLocalIp = ip => !ip || ip === '?' || /^(127\.|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|::1|fc|fd|fe80|::ffff:127\.)/i.test(ip);
   async function geo(ip) {
@@ -646,13 +647,13 @@ module.exports = function zuno19(z) {
     if (g) { geoCache.set(ip, g); if (geoCache.size > 5000) geoCache.delete(geoCache.keys().next().value); }
     return g;
   }
-  hooks.newSession.push((u, req, token) => { if (data.sessions[token]) data.sessions[token].ip = z.clientIp(req); });
+  hooks.newSession.push((u, req, token) => { if (data.sessions[token]) data.sessions[token].net = z.networkOf(req); });
   const sessionId = t => String(t).slice(0, 16); // sessions are stored by their token's fingerprint
   route('GET', '/api/me/sessions/map', async ({ me, token }) => {
     const mine = Object.entries(data.sessions).filter(([, s]) => (typeof s === 'string' ? s : s.uid) === me.id);
     const out = [];
     for (const [t, s] of mine) {
-      const g = await geo(s.ip);
+      const g = await geo(s.net);
       out.push({ id: sessionId(t), current: t === token, agent: s.agent || '', lastSeen: s.lastSeen || null, createdAt: s.createdAt || null, ...(g || {}) });
     }
     return { sessions: out.sort((a, b) => b.current - a.current || (b.lastSeen || 0) - (a.lastSeen || 0)) };

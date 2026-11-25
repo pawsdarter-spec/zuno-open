@@ -162,4 +162,30 @@ module.exports = function (z) {
     const unread = (me.notifs || []).filter(n => n.at > (me.notifsSeenAt || 0) && !n.read).length;
     z.send(me.id, 'notif', { unread });
   });
+
+  // ======================= no full IP addresses kept (one-time cleanup) =======================
+  // (0.53.1) Logins used to keep their full address, and new-login alerts printed it. Both are cut
+  // down to the network ("203.0.113.x") once, here; from now on only the network is ever kept.
+  if (!data.ipsCut531) {
+    let n = 0;
+    for (const sess of Object.values(data.sessions || {})) {
+      if (!sess || typeof sess !== 'object' || !('ip' in sess)) continue;
+      sess.net = z.networkOfAddr(sess.ip); delete sess.ip; n++;
+    }
+    const cutText = t => String(t)
+      .replace(/\b(IP|network) (\d{1,3}\.\d{1,3}\.\d{1,3})\.\d{1,3}\b/g, 'network $2.x')
+      .replace(/\b(IP|network) ([0-9a-f]{1,4}:[0-9a-f]{1,4}:[0-9a-f]{1,4})(:[0-9a-f:]*)?/gi, 'network $2:…');
+    for (const dm of Object.values(data.dms || {})) {
+      const list = dm?.messages || [];
+      for (let i = 0; i < list.length; i++) {
+        const m = list[i];
+        if (m.authorId !== z.SYSTEM_ID || typeof m.content !== 'string' || !/\bIP \S/.test(m.content)) continue;
+        const next = cutText(m.content);
+        if (next !== m.content) { list[i] = { ...m, content: next }; n++; } // a new object, so the save notices it
+      }
+    }
+    data.ipsCut531 = true;
+    save();
+    if (n) console.log(`Cut ${n} stored addresses down to their network.`);
+  }
 };

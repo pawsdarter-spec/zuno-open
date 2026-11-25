@@ -124,7 +124,7 @@ module.exports = function features(z) {
   route('GET', '/api/me/sessions', async ({ me, token }) => ({
     sessions: Object.entries(data.sessions).filter(([, s]) => (typeof s === 'string' ? s : s.uid) === me.id)
       .filter(([, s]) => !s.dieAt)
-      .map(([t, s]) => ({ id: sessionId(t), current: t === token, createdAt: s.createdAt || null, lastSeen: s.lastSeen || null, agent: s.agent || '', ip: s.ip ? String(s.ip).replace(/(\d+\.\d+)\.\d+\.\d+$/, '$1.x.x').replace(/^([0-9a-f]+:[0-9a-f]+):.*$/i, '$1:…') : null }))
+      .map(([t, s]) => ({ id: sessionId(t), current: t === token, createdAt: s.createdAt || null, lastSeen: s.lastSeen || null, agent: s.agent || '', network: s.net ? String(s.net).replace(/\.0$/, '.x').replace(/::$/, ':…') : null }))
       .sort((a, b) => b.current - a.current || (b.lastSeen || 0) - (a.lastSeen || 0)),
   }));
   route('DELETE', '/api/me/sessions/:id', async ({ me, params, token }) => {
@@ -141,7 +141,7 @@ module.exports = function features(z) {
 
   // Forgot password: emails a link when email is set up. Otherwise staff can make a link for you.
   route('POST', '/api/password/forgot', async ({ body, req }) => {
-    z.limit('forgot:' + z.clientIp(req), 5, 15 * 60e3, 'Too many reset requests. Try again in a few minutes.');
+    z.limit('forgot:' + z.visitorTag(req), 5, 15 * 60e3, 'Too many reset requests. Try again in a few minutes.');
     if (!MAIL_KEY()) return { ok: true, email: false, message: "Password reset emails aren't set up on this Zuno yet. Ask Zuno Staff in Zuno Official, or email the team, for a reset link." };
     const login = clean(body.login, 254).toLowerCase();
     const u = users().find(x => !x.bot && !x.system && (login.includes('@') ? x.email === login : x.username === login));
@@ -159,7 +159,7 @@ module.exports = function features(z) {
     return { ok: true, email: true, message: "If that account has an email, a reset link is on its way. Check your inbox (and spam)." };
   }, { auth: false });
   route('POST', '/api/password/reset', async ({ body, req }) => {
-    z.limit('reset:' + z.clientIp(req), 10, 15 * 60e3);
+    z.limit('reset:' + z.visitorTag(req), 10, 15 * 60e3);
     prune(data.resets);
     const r = data.resets[sha(body.token)];
     if (!r || !data.users[r.uid]) fail(400, 'This reset link has expired or was already used. Ask for a new one.');

@@ -1,10 +1,9 @@
 {
-  "version": "0.50.0",
-  "title": "Much smoother",
+  "version": "0.50.1",
+  "title": "Smoother swipes and official links",
   "items": [
-    "New messages no longer make the whole chat redraw: only the new one is added, so busy chats stay smooth (especially on phones) and pictures and videos above stay put.",
-    "The loading screen used to keep animating invisibly in the background after Zuno opened, making phones work non-stop. It's now removed once Zuno is ready, so Zuno sits almost completely still when you're not doing anything.",
-    "Switching chats is lighter, and nothing animates while Zuno is in the background.",
-    "Lots of small behind-the-scenes speed-ups for phones."
+    "Phones: swiping to open and close your chats and friends is much smoother. Only the chat panel moves while you drag, and scrolling never waits on it.",
+    "Phones: Friends, Requests and Bloom now fit on one line.",
+    "Zuno Official has a new #official-links channel with every official Zuno link in one place: the PC app, status page, Terms, Privacy Policy, security reports, our open source code and an invite for your friends."
   ]
 }

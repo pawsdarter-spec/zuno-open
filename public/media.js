@@ -287,7 +287,7 @@ mediaHtml = function (m) {
   const grid = imgs.length > 1 && m.id;
   const rest = atts.filter(a => a.kind !== 'voice' && !(grid && a.kind === 'image'));
   const html = _mediaHtmlM({ ...m, attachments: rest.length ? rest : undefined });
-  const links = m.content && !m.pending ? linksIn(m.content).map(embedHtml).join('') : '';
+  const links = m.content && !m.pending && !m.noEmbed ? linksIn(m.content).map(embedHtml).join('') : '';
   return voice.map(voiceHtml).join('') + (grid ? galleryHtml(imgs, m.id) : '') + html + links;
 };
 

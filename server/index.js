@@ -4174,6 +4174,7 @@ require('./zuno46')(ctx2);
 require('./zuno46').reviews(ctx2);
 require('./zuno46').safety(ctx2);
 require('./zuno47')(ctx2);
+require('./zuno50')(ctx2);
 
 // Zuno's big lookup tables (users, servers, sessions…) don't inherit JavaScript's built-in object,
 // so an id like "__proto__" or "constructor" finds nothing instead of something unexpected. Done in

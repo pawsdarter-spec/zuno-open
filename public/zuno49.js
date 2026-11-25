@@ -23,15 +23,20 @@ const isPhone49 = () => VW <= 760;
   };
   const main = () => app.querySelector('.main');
   const width = () => innerWidth - PEEK;
-  const setX = x => { const m = main(); if (m) m.style.transform = `translateX(${Math.max(0, Math.min(width(), x))}px)`; app.style.setProperty('--nav49', Math.max(0, Math.min(1, x / width())).toFixed(3)); };
+  // (0.50.1) Only the chat panel moves, and at most once per frame: no style changes on the rest
+  // of the app (they made the browser redo every element's style on each finger movement).
+  let raf = 0, pendingX = 0, mEl = null;
+  const setX = x => {
+    pendingX = Math.max(0, Math.min(width(), x));
+    if (raf) return;
+    raf = requestAnimationFrame(() => { raf = 0; if (mEl) mEl.style.transform = `translate3d(${pendingX}px,0,0)`; });
+  };
   const finish = open => {
     const m = main();
-    app.classList.add('drag49-end');
+    cancelAnimationFrame(raf); raf = 0;
     if (m) m.style.transform = '';
-    app.style.removeProperty('--nav49');
     app.classList.toggle('show-nav', open);
-    if (open) { renderDMList?.(); } else document.activeElement?.blur?.();
-    setTimeout(() => app.classList.remove('drag49-end'), 320);
+    if (!open) document.activeElement?.blur?.();
   };
 
   document.addEventListener('touchstart', e => {
@@ -50,7 +55,6 @@ const isPhone49 = () => VW <= 760;
     const t = e.touches[0];
     const dx = t.clientX - g.x0, dy = t.clientY - g.y0;
     if (!g.decided) {
-      if (Math.abs(dx) > Math.abs(dy) && e.cancelable) e.preventDefault(); // keep the browser's own back-swipe out of it
       if (Math.abs(dx) < 10 && Math.abs(dy) < 10) return;
       g.decided = true;
       g.horiz = Math.abs(dx) > Math.abs(dy) * 1.3;
@@ -60,7 +64,7 @@ const isPhone49 = () => VW <= 760;
       else if (!g.open && dx > 0) g.mode = 'open';
       else if (g.open && dx < 0) g.mode = 'close';
       else { g = null; return; }
-      if (g.mode !== 'reply') app.classList.add('drag49');
+      if (g.mode !== 'reply') { mEl = main(); mEl?.classList.add('drag49m'); } // only the chat panel changes, so nothing else is restyled
     }
     g.pts.push([t.clientX, performance.now()]);
     if (g.pts.length > 6) g.pts.shift();
@@ -74,9 +78,8 @@ const isPhone49 = () => VW <= 760;
       g.row.style.setProperty('--sw49', Math.min(1, -x / 64).toFixed(2));
       return;
     }
-    if (e.cancelable) e.preventDefault(); // the page doesn't scroll while you drag the menu
     setX(g.mode === 'open' ? dx : width() + dx);
-  }, { passive: false });
+  }, { passive: true }); // never holds up scrolling; sideways swipes are Zuno's through touch-action in the CSS
 
   const end = () => {
     if (!g || !g.mode) { g = null; return; }
@@ -90,7 +93,7 @@ const isPhone49 = () => VW <= 760;
       setTimeout(() => { row.style.transition = ''; row.classList.remove('swipe49', 'ready49'); row.style.removeProperty('--sw49'); }, 260);
       if (go) startReply(row.dataset.id);
     } else {
-      app.classList.remove('drag49');
+      mEl?.classList.remove('drag49m');
       const at = g.mode === 'open' ? dx : width() + dx; // where the chat is now
       // A quick flick decides on its own; a slow drag goes by how far it got.
       const open = Math.abs(v) > 0.45 ? v > 0 : at > width() / 2;
@@ -123,6 +126,13 @@ renderSidebar = function (...a) {
     row.className = 'chips49';
     items[0].before(row);
     row.append(...items);
+  }
+  // Short names, so all the chips fit on a phone.
+  for (const [id, from, to] of [['nav-requests', 'Message Requests', 'Requests'], ['nav-bloom', 'Zuno Bloom', 'Bloom']]) {
+    const b = document.getElementById(id);
+    if (!b) continue;
+    for (const n of b.childNodes) if (n.nodeType === 3 && n.textContent.trim() === from) n.textContent = n.textContent.replace(from, to);
+    for (const sp of b.querySelectorAll('span')) if (sp.childElementCount === 0 && sp.textContent.trim() === from) sp.textContent = to;
   }
   if (!$('.mh49', top)) {
     top.insertAdjacentHTML('afterbegin', `<div class="mh49"><h2>Messages</h2><div class="mh49-row">

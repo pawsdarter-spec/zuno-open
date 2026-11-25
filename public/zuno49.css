@@ -5,19 +5,17 @@
 @media (max-width: 760px) {
   /* ---------- the chat slides over the menu ---------- */
   .app, .app.show-nav { grid-template-columns: 72px 1fr 56px !important; }
-  .app > .main, .app.show-nav > .main { display: flex !important; position: fixed; inset: 0; z-index: 30; will-change: transform; transform: translateX(0); transition: transform .32s cubic-bezier(.22, 1, .36, 1), box-shadow .32s; }
-  .app.show-nav > .main { transform: translateX(calc(100vw - 56px)); box-shadow: -10px 0 30px rgba(0, 0, 0, .45); border-radius: 18px 0 0 18px; overflow: hidden; }
+  .app > .main, .app.show-nav > .main { display: flex !important; position: fixed; inset: 0; z-index: 30; will-change: transform; transform: translate3d(0, 0, 0); transition: transform .3s cubic-bezier(.22, 1, .36, 1); box-shadow: -10px 0 30px rgba(0, 0, 0, .45); contain: layout paint; }
+  .app.show-nav > .main { transform: translate3d(calc(100vw - 56px), 0, 0); }
   .app.show-nav > .main > * { pointer-events: none; }
-  .app.drag49 > .main { transition: none; box-shadow: -10px 0 30px rgba(0, 0, 0, calc(.45 * var(--nav49, 0))); border-radius: calc(18px * var(--nav49, 0)) 0 0 calc(18px * var(--nav49, 0)); overflow: hidden; }
-  .app.drag49 .rail, .app.drag49 .sidebar { opacity: calc(.55 + .45 * var(--nav49, 0)); }
-  .app .rail, .app .sidebar { transition: opacity .3s; }
-  .app:not(.show-nav):not(.drag49) .rail, .app:not(.show-nav):not(.drag49) .sidebar { opacity: .55; }
+  .app > .main.drag49m { transition: none; }
   body.has-tabbar38 .app:not(.show-nav) > .main { bottom: calc(64px + env(safe-area-inset-bottom)); }
   html.desktop .app > .main { top: var(--tb, 0px); }
 
   /* Sideways swipes belong to Zuno (not the browser's back gesture); things that scroll sideways keep theirs. */
   html, body { overscroll-behavior-x: none; }
-  .app { touch-action: pan-y pinch-zoom; }
+  /* Each scrolling area decides for itself, so it's set on all of them, not just the app. */
+  .app, .app :is(#messages, .messages, .sidebar-scroll, #dm-list, .members, .member-list, .friends, #friend-list, .main, .chat, .body-row) { touch-action: pan-y pinch-zoom; }
   .app :is(pre, code, .tb-tools, .topbar, .gallery, .quick-react, .chips49, input, textarea, .zp, video, [data-noswipe]) { touch-action: auto; }
 
   /* ---------- swipe a message left to reply ---------- */
@@ -39,10 +37,12 @@
   .mh49-add svg { flex: none; width: 18px; height: 18px; }
   .mh49-new { width: 40px; background: var(--brand) !important; color: var(--ink) !important; }
   /* Friends / Requests / Bloom become a tidy row of chips. */
-  .chips49 { display: flex; gap: 6px; padding: 2px 8px 8px; overflow-x: auto; scrollbar-width: none; touch-action: pan-x; }
+  .chips49 { display: flex; gap: 5px; padding: 2px 8px 8px; overflow-x: auto; scrollbar-width: none; touch-action: pan-x; }
   .chips49::-webkit-scrollbar { display: none; }
   .chips49 > .nav-item { flex: none; display: inline-flex; width: auto; min-height: 34px !important; margin: 0; padding: 0 12px; border-radius: 999px !important; font-size: 13.5px !important; gap: 6px; white-space: nowrap; background: color-mix(in srgb, var(--text) 6%, transparent); }
-  .chips49 > .nav-item svg, .chips49 > .nav-item img { width: 16px; height: 16px; }
+  .chips49 > .nav-item svg { display: none; } /* words only, so Friends, Requests and Bloom all fit */
+  .chips49 > .nav-item img { width: 15px; height: 15px; }
+  .chips49 > .nav-item { padding: 0 10px !important; font-size: 13px !important; gap: 5px !important; }
   .chips49 > .nav-item.active { background: var(--selected); }
 
   /* ---------- smaller people ---------- */

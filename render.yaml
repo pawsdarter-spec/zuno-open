@@ -1,0 +1,30 @@
+# One-click deploy of the Zuno server on Render (render.com).
+# In Render: New > Blueprint > pick this repository. Render reads this file.
+services:
+  - type: web
+    name: zuno
+    runtime: node
+    # The server has no packages to install, so the build step only checks the code.
+    buildCommand: node --check server/index.js
+    startCommand: node server/index.js
+    healthCheckPath: /healthz
+    autoDeploy: true
+    # Accounts and messages (zuno.sqlite) live on this disk so they survive restarts. Uploads too, unless cloud storage is set up.
+    disk:
+      name: zuno-data
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: ZUNO_DATA_DIR
+        value: /var/data
+      - key: NODE_VERSION
+        value: "22"
+      # Usernames that get the Zuno Staff badge (comma-separated). Staff can give it to others in the app.
+      - key: ZUNO_STAFF
+        value: veil
+      # GIF search key from klipy.com/developers. Set its value in the Render dashboard (it stays private).
+      - key: KLIPY_KEY
+        sync: false
+      # Zuno Bloom payments: paste your Stripe secret key here in the Render dashboard. Zuno sets up its Stripe webhook by itself.
+      - key: STRIPE_SECRET_KEY
+        sync: false

@@ -1,0 +1,171 @@
+/* Zuno 0.29 */
+
+/* ---------- profile comments: their own panel to the right of the profile ---------- */
+.overlay .modal.has-pcm { max-width: 720px; width: auto; display: flex; align-items: stretch; gap: 10px; }
+.modal.has-pcm > .pcard { width: 360px; flex: none; }
+.pcm-side { position: relative; width: 320px; flex: none; min-height: 440px; border-radius: var(--radius); background: var(--floating); box-shadow: inset 0 0 0 1px var(--border); overflow: hidden; }
+.pcm-in { position: absolute; inset: 0; display: flex; flex-direction: column; }
+.pcm-head { display: flex; align-items: center; gap: 8px; padding: 14px 16px 10px; border-bottom: 1px solid var(--border); }
+.pcm-head b { color: var(--header); font-family: var(--display); font-size: 15px; }
+.pcm-n { min-width: 20px; height: 20px; padding: 0 6px; border-radius: 10px; background: var(--input); color: var(--muted); font-size: 12px; font-weight: 700; display: grid; place-items: center; }
+.pcm-visitors { margin-left: auto; }
+.pcm-list { flex: 1; min-height: 0; overflow-y: auto; padding: 10px 12px; display: flex; flex-direction: column; gap: 12px; overscroll-behavior: contain; }
+.pcm-c { display: flex; gap: 10px; align-items: flex-start; }
+.pcm-c [data-cprof] { cursor: pointer; }
+.pcm-av { flex: none; }
+.pcm-bub { flex: 1; min-width: 0; padding: 8px 10px; border-radius: 4px 12px 12px 12px; background: var(--input); }
+.pcm-meta { display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap; margin-bottom: 2px; }
+.pcm-meta b { color: var(--header); font-size: 13.5px; }
+.pcm-meta b:hover { text-decoration: underline; }
+.pcm-own { font-size: 10px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; color: var(--brand); }
+.pcm-t { font-size: 14px; line-height: 1.4; overflow-wrap: anywhere; white-space: pre-wrap; }
+.pcm-del { width: 28px; height: 28px; flex: none; opacity: 0; transition: opacity .12s; }
+.pcm-del svg { width: 15px; height: 15px; }
+.pcm-c:hover .pcm-del, .pcm-del:focus-visible { opacity: .75; }
+.pcm-del:hover { opacity: 1 !important; color: #fa777c; }
+@media (hover: none) { .pcm-del { opacity: .6; } }
+.pcm-empty { margin: auto; display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center; color: var(--muted); padding: 20px; }
+.pcm-empty > span:first-child { font-size: 30px; opacity: .8; }
+.pcm-empty b { color: var(--header); }
+.pcm-form { padding: 10px 12px 12px; border-top: 1px solid var(--border); background: color-mix(in srgb, var(--floating) 80%, var(--rail)); }
+.pcm-form textarea { width: 100%; resize: none; min-height: 58px; max-height: 120px; padding: 9px 12px; border-radius: 10px; background: var(--input); color: var(--text); border: 1px solid var(--border); font: inherit; font-size: 14px; line-height: 1.35; }
+.pcm-form textarea:focus { outline: none; border-color: var(--brand); box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 22%, transparent); }
+.pcm-bar { display: flex; align-items: center; justify-content: space-between; margin-top: 8px; }
+.pcm-note { padding: 12px 16px; border-top: 1px solid var(--border); color: var(--muted); font-size: 13px; text-align: center; }
+@media (max-width: 760px) {
+  .overlay .modal.has-pcm { flex-direction: column; max-width: 360px; width: 100%; }
+  .modal.has-pcm > .pcard { width: 100%; }
+  .pcm-side { width: 100%; min-height: 0; }
+  .pcm-in { position: static; max-height: 70vh; }
+}
+
+/* ---------- Settings › Profiles: server tag & badges ---------- */
+.tp-grid { grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); }
+.tp-opt { justify-content: center; min-height: 72px; }
+.tp-opt .srv-tag { margin: 0; height: 20px; font-size: 12px; padding: 0 8px; }
+.tp-opt small { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tp-opt:disabled { opacity: .6; }
+.tp-none { margin-top: 6px; padding: 10px 12px; border-radius: 10px; background: var(--input); }
+.bp-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.bp-opt { display: flex; align-items: center; gap: 8px; padding: 6px 12px 6px 6px; border-radius: 999px; background: var(--input); box-shadow: inset 0 0 0 1px var(--border); transition: opacity .15s, box-shadow .15s, transform .2s var(--spring); }
+.bp-opt:hover { transform: translateY(-1px); box-shadow: inset 0 0 0 1px var(--brand); }
+.bp-ico { width: 24px; height: 24px; display: grid; place-items: center; }
+.bp-ico svg, .bp-ico img { width: 24px; height: 24px; }
+.bp-name { font-size: 13px; color: var(--header); font-weight: 600; }
+.bp-eye { font-size: 11px; font-weight: 700; color: var(--brand); }
+.bp-opt.off { opacity: .55; }
+.bp-opt.off .bp-ico { filter: grayscale(1); }
+.bp-opt.off .bp-name { text-decoration: line-through; color: var(--muted); }
+.bp-opt.off .bp-eye { color: var(--muted); }
+
+/* ---------- Senior Bug Hunter shines a little ---------- */
+.pbadge:has([id^="bgBugGold"]) svg { filter: drop-shadow(0 0 3px rgba(245, 184, 46, .55)); }
+
+/* ---------- the mascot stays small in empty lists and dialogs ---------- */
+.fp-empty .zm, .fm-empty .zm { width: 72px; height: 60px; margin: 0 auto 8px; }
+.empty-state .zm { width: 88px; height: 74px; margin-bottom: 10px; }
+.voice-empty .zm { width: 96px; height: 80px; }
+.clips-dlg .fp-empty { padding: 26px 14px; }
+.clips-dlg .fp-empty > div { max-width: 420px; margin: 0 auto; line-height: 1.45; }
+
+/* ---------- polish ---------- */
+/* Profile buttons never spill their text out of the button */
+.pcard .pc-actions .btn { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pcard .pc-actions { flex-wrap: wrap; }
+.pcard .pc-actions .btn { flex: 1 1 130px; }
+/* The role picker never runs off the screen */
+.menu.role-picker { max-height: min(420px, calc(100vh - 16px)); display: flex; flex-direction: column; }
+.menu.role-picker .rp-list { flex: 1; min-height: 0; overflow-y: auto; }
+/* Softer focus rings that match the brand */
+:where(button, a, [tabindex]):focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+/* Long names don't push things around in lists */
+.ch-item, .dm-item .name, .member .name { min-width: 0; }
+
+/* The top of a chat: a quiet loading row instead of a button */
+.load-more.lm-auto { align-self: stretch; height: 44px; margin: 4px 0; background: none !important; box-shadow: none; color: var(--muted); font-weight: 500; font-size: 13px; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: default; }
+.load-more.lm-auto::before { content: ""; width: 14px; height: 14px; border-radius: 50%; border: 2px solid color-mix(in srgb, var(--muted) 35%, transparent); border-top-color: var(--brand); animation: lm-spin .8s linear infinite; }
+@keyframes lm-spin { to { transform: rotate(360deg); } }
+html.reduce-motion .load-more.lm-auto::before { animation: none; }
+
+/* ---------- the opened profile ---------- */
+.overlay .modal.pf29-modal { max-width: 460px; }
+.overlay .modal.pf29-modal.has-pcm { max-width: 800px; }
+.overlay .modal.pf29-modal.pcm-closed { max-width: 460px; }
+.modal.pcm-closed > .pcm-side { display: none; }
+.modal.pf29-modal > .pcard, .modal.pf29-modal.has-pcm > .pcard { width: 460px; }
+.modal.pf29-modal .pcm-side { min-height: 520px; }
+.pcard.pf29 { box-shadow: 0 18px 50px rgba(0, 0, 0, .45); }
+.pcard.pf29 .banner { height: 150px; }
+.pcard.pf29.has-bg::after { inset: 150px 0 0; }
+.pcard.pf29 .pc-head { height: 66px; padding: 12px 18px 0; }
+.pcard.pf29 .pc-head .avatar { top: -58px; left: 20px; box-shadow: 0 0 0 7px var(--floating); }
+.pcard.pf29.themed .pc-head .avatar { box-shadow: 0 0 0 7px var(--pt1) !important; }
+.pf-zoom { cursor: zoom-in; transition: transform .2s var(--spring); }
+.pf-zoom:hover { transform: scale(1.03); }
+.pf-bar { position: relative; margin-left: auto; display: flex; align-items: center; gap: 8px; }
+.pf-bar > .btn { height: 38px; padding: 0 18px; border-radius: 11px; font-weight: 700; flex: none; }
+.pf-bar > .btn svg { margin-right: 2px; }
+.pf-dots { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 11px; background: rgba(0, 0, 0, .35); color: var(--header); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .08); transition: background .12s; }
+.pf-dots:hover { background: rgba(0, 0, 0, .55); }
+.pf-menu { position: absolute; top: 46px; right: 0; z-index: 20; min-width: 230px; padding: 6px; border-radius: 14px; background: var(--floating); box-shadow: 0 14px 34px rgba(0, 0, 0, .5), inset 0 0 0 1px var(--border); display: none; flex-direction: column; gap: 2px; }
+.pf-menu.open { display: flex; animation: modal-in .2s var(--spring); }
+.pf-menu .pf-mi { all: unset; box-sizing: border-box; display: flex; align-items: center; gap: 10px; width: 100%; min-height: 36px; padding: 0 10px; border-radius: 8px; font-size: 14px; font-weight: 500; color: var(--text); cursor: pointer; }
+.pf-menu .pf-mi:hover, .pf-menu .pf-mi:focus-visible { background: var(--hover); color: var(--header); }
+.pf-menu .pf-mi[disabled] { opacity: .5; cursor: default; }
+.pf-menu .pf-mi svg { width: 16px; height: 16px; }
+.pf-menu .pf-mi img { width: 18px; height: 18px; }
+.pf-menu .pc-block, .pf-menu [data-a=remove] { color: #fa777c; }
+.pf-menu .pc-staff { color: var(--muted); font-size: 13px; }
+.pf-ico { width: 18px; text-align: center; }
+.pf-sep { height: 1px; margin: 4px 6px; background: var(--border); }
+.pf-close { position: absolute; top: 12px; right: 12px; z-index: 6; width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; background: rgba(0, 0, 0, .5); color: #fff; font-size: 14px; backdrop-filter: blur(6px); transition: background .12s, transform .2s var(--spring); }
+.pf-close:hover { background: rgba(0, 0, 0, .75); transform: rotate(90deg); }
+.pcard.pf29 .pc-sound { top: 12px; right: 52px; left: auto; }
+.pcard.pf29 .pc-body { margin: 0 18px 0; padding: 16px 18px 14px; background: rgba(0, 0, 0, .22); border-radius: 16px; }
+.pcard.pf29 .pc-name { font-size: 26px; font-weight: 800; letter-spacing: -.01em; }
+.pcard.pf29 .pc-uname { color: var(--text); font-size: 14px; margin-top: 2px; }
+.pf-dot { opacity: .5; margin: 0 2px; }
+.pcard.pf29 .pf-chips { position: static; display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 2px; padding: 0; background: none !important; backdrop-filter: none; }
+.pcard.pf29 .pf-chips .pbadge { display: grid; place-items: center; width: auto; min-width: 32px; height: 30px; padding: 0 7px; border-radius: 9px; background: rgba(0, 0, 0, .3); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .09); }
+.pcard.pf29 .pf-chips .pbadge svg, .pcard.pf29 .pf-chips .pbadge img { width: 20px; height: 20px; }
+.pcard.pf29 .pc-body hr { border: 0; border-top: 1px solid rgba(255, 255, 255, .08); margin: 12px 0; }
+.pcard.pf29 .pc-body h4 { margin: 14px 0 6px; font-size: 12px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; color: var(--header); }
+.pcard.pf29 .pc-bio { font-size: 14.5px; line-height: 1.45; }
+.pcard.pf29 .pc-note { border-radius: 10px; }
+.pcard.pf29 .pc-msg { margin: 12px 18px 0; height: 46px; border-radius: 12px; box-shadow: inset 0 0 0 1px var(--border); }
+.pf-crow { all: unset; box-sizing: border-box; display: flex; align-items: center; gap: 8px; width: 100%; margin: 12px 0 0; padding: 10px 0; border-top: 1px solid rgba(255, 255, 255, .08); border-bottom: 1px solid rgba(255, 255, 255, .08); cursor: pointer; color: var(--header); font-size: 14px; }
+.pf-crow:hover .pf-see { text-decoration: underline; }
+.pf-chev { display: inline-block; width: 12px; font-size: 18px; line-height: 1; transition: transform .2s var(--spring); }
+.pf-crow.open .pf-chev { transform: rotate(90deg); }
+.pf-cn { min-width: 20px; height: 20px; padding: 0 6px; border-radius: 10px; background: rgba(0, 0, 0, .3); display: grid; place-items: center; font-size: 12px; font-weight: 700; color: var(--muted); }
+.pf-see { margin-left: auto; color: var(--brand); font-size: 13px; font-weight: 600; }
+.pf-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 20px 14px; font-size: 12px; color: var(--muted); }
+.pf-id { all: unset; display: inline-flex; align-items: center; gap: 5px; padding: 3px 8px; border-radius: 7px; cursor: pointer; font-family: ui-monospace, monospace; }
+.pf-id:hover { background: var(--hover); color: var(--header); }
+@media (max-width: 760px) {
+  .overlay .modal.pf29-modal, .overlay .modal.pf29-modal.has-pcm { max-width: 460px; width: 100%; }
+  .modal.pf29-modal > .pcard, .modal.pf29-modal.has-pcm > .pcard { width: 100%; }
+  .pcard.pf29 .banner { height: 120px; }
+  .pcard.pf29.has-bg::after { inset: 120px 0 0; }
+  .pcard.pf29 .pc-head .avatar { width: 92px !important; height: 92px !important; top: -50px; }
+  .pf-bar > .btn { padding: 0 14px; }
+  .modal.pf29-modal .pcm-side { min-height: 0; }
+}
+
+/* Messages that are only emoji never sit in a bubble: not your own, not in any chat theme. */
+html[data-msgstyle] .msg .content.jumbo, html[data-msgstyle] #main .msg .content.jumbo, html[data-msgstyle] #main[class] .msg.mine .content.jumbo, html[data-msgstyle] #main[class] .msg:not(.mine) .content.jumbo {
+  background: none !important; box-shadow: none !important; padding: 0 !important; border-radius: 0 !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important;
+}
+.msg .content.jumbo .edited { font-size: 11px; vertical-align: middle; }
+.pcard.pf29 .pc-head { z-index: 3; }
+.pf-menu { background: color-mix(in srgb, var(--floating) 100%, #000 0%); isolation: isolate; }
+.pf-menu .pf-mi { border: 0 !important; margin: 0 !important; }
+/* Badge labels on the opened profile open to the right, inside the card, so they never cover the name. */
+.pcard.pf29 .pf-chips .pbadge-tip { right: auto; left: -4px; bottom: calc(100% + 8px); max-width: 240px; }
+.pcard.pf29 .pf-chips .pbadge:nth-last-child(-n+2):nth-child(n+6) .pbadge-tip { left: auto; right: -4px; }
+.srv-tag .st-cemoji { width: 13px; height: 13px; object-fit: contain; margin-right: 1px; }
+.tp-opt .srv-tag .st-cemoji { width: 15px; height: 15px; }
+.st-cem { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.st-cem-b { width: 38px; height: 38px; border-radius: 10px; display: grid; place-items: center; background: var(--input); box-shadow: inset 0 0 0 1px var(--border); }
+.st-cem-b img { width: 26px; height: 26px; object-fit: contain; }
+.st-cem-b.on { box-shadow: inset 0 0 0 2px var(--brand); background: color-mix(in srgb, var(--brand) 15%, var(--input)); }

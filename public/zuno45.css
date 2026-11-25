@@ -1,0 +1,227 @@
+/* Zuno 0.45 */
+
+/* Name fonts with letters that lean or swirl past their box (script fonts, italics) no longer get
+   their last letter cut off: a little room on the right, taken back with a negative margin so
+   nothing moves. */
+[data-nf]:not([data-nf="default"]), [data-nx="gradient"], [data-nx="animated"], [data-nx="rainbow"] { padding-inline-end: .22em; margin-inline-end: -.22em; padding-block: .06em; margin-block: -.06em; }
+
+/* The member drawer on phones is solid even with an app background (it was see-through). */
+html.has-app-bg .profile-panel.drawer-open, html.has-app-bg .member-panel.drawer-open { background: var(--sidebar); }
+
+/* Zuno Official in Switch Accounts */
+.acct-official45 { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 8px; width: 100%; }
+.acct-official45 img { width: 20px; height: 20px; border-radius: 6px; }
+.acct-official45-note { margin: 6px 0 0; text-align: center; }
+
+/* ======================= start-up skeleton =======================
+   A sketch of the app shows the moment the page opens, instead of a blank screen. */
+.splash { place-items: stretch; }
+.splash .splash-inner { display: none; }
+.sk45 { display: grid; grid-template-columns: 72px 260px 1fr; gap: 8px; padding: 8px; height: 100%; box-sizing: border-box; }
+.sk45 > div { border-radius: 16px; display: flex; flex-direction: column; gap: 10px; padding: 12px; box-sizing: border-box; overflow: hidden; }
+.sk45-rail { background: var(--rail); align-items: center; padding: 10px 0 !important; }
+.sk45-rail i { width: 48px; height: 48px; border-radius: 16px; flex: none; }
+.sk45-side { background: var(--sidebar); }
+.sk45-side b { height: 34px; border-radius: 10px; }
+.sk45-side b.r { height: 40px; margin-left: 4px; width: 80%; }
+.sk45-side span { height: 10px; width: 50%; margin: 10px 0 2px; border-radius: 6px; }
+.sk45-main { background: var(--main); }
+.sk45-main b.top { height: 30px; width: 40%; border-radius: 10px; }
+.sk45-msgs { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; gap: 18px; }
+.sk45-msgs p { margin: 0; display: grid; grid-template-columns: 40px 1fr; column-gap: 12px; row-gap: 8px; }
+.sk45-msgs p i { width: 40px; height: 40px; border-radius: 50%; grid-row: span 3; }
+.sk45-msgs p b { height: 12px; border-radius: 6px; width: 70%; }
+.sk45-msgs p b.s { width: 40%; }
+.sk45-main b.box { height: 46px; border-radius: 12px; }
+.sk45 :is(i, b, span) { display: block; background: linear-gradient(90deg, rgba(255,255,255,.05) 25%, rgba(255,255,255,.1) 50%, rgba(255,255,255,.05) 75%); background-size: 200% 100%; animation: sk45-shine 1.4s linear infinite; }
+.splash.gone .sk45 :is(i, b, span) { animation: none; }
+@keyframes sk45-shine { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+@media (max-width: 760px) { .sk45 { grid-template-columns: 1fr; } .sk45-rail, .sk45-side { display: none !important; } }
+@media (prefers-reduced-motion: reduce) { .sk45 :is(i, b, span) { animation: none; } }
+
+/* ======================= running lighter ======================= */
+/* Messages more than ~25 up from the newest, and long member lists, skip drawing while off screen.
+   (Hovering one draws it normally, so its buttons and decorations are never cut off.) */
+#messages > .msg:nth-last-child(n+26):not(:hover):not(:focus-within):not(.editing) { content-visibility: auto; contain-intrinsic-size: auto 46px; }
+#messages > .msg.head:nth-last-child(n+26):not(:hover):not(:focus-within):not(.editing) { contain-intrinsic-size: auto 72px; }
+.members > .member:nth-child(n+40):not(:hover) { content-visibility: auto; contain-intrinsic-size: auto 44px; }
+/* Nothing moves while Zuno is hidden. */
+html.hidden45 * { animation-play-state: paused !important; }
+
+/* ======================= calls: tiles fit the screen ======================= */
+.call-tiles.fit45 { align-content: center; }
+.call-tiles.fit45 > .tile { width: var(--fit45-w) !important; max-width: none; height: auto !important; aspect-ratio: 16 / 10; flex: none; }
+/* Next to the voice channel's chat the buttons stay on one line (smaller), so hanging up is always there. */
+@media (min-width: 761px) {
+  #main.vc-chat:has(> #call-slot.call-panel) #call-slot .call-controls { flex-wrap: nowrap; gap: 6px; }
+  #main.vc-chat:has(> #call-slot.call-panel) #call-slot .call-controls .call-btn { width: 44px; height: 44px; flex: none; }
+  #main.vc-chat:has(> #call-slot.call-panel) #call-slot .call-controls .call-btn.ptt-btn { width: auto; }
+  #main.vc-chat:has(> #call-slot.call-panel) > #call-slot { overflow: hidden; }
+}
+
+/* ======================= games: close vote ======================= */
+.gv45 { margin: 0 0 10px; padding: 10px 12px; border-radius: 12px; background: color-mix(in srgb, var(--brand) 10%, var(--input)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--brand) 35%, transparent); display: flex; flex-direction: column; gap: 8px; }
+.gv45-top { display: flex; flex-direction: column; gap: 2px; }
+.gv45-btns { display: flex; gap: 6px; flex-wrap: wrap; }
+.gv45-lists { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.gv45-lists > div { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.gv45-label { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; }
+.gv45-label.yes { color: #fa777c; }
+.gv45-label.no { color: var(--brand); }
+.gv45-who { display: flex; align-items: center; gap: 6px; min-width: 0; font-size: 13px; }
+.gv45-who b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+
+/* ======================= looks ======================= */
+/* One set of sizes for corners and shadows, so menus, windows and pop-ups match. */
+:root {
+  --r-sm45: 8px; --r-md45: 12px; --r-lg45: 16px;
+  --sh1-45: 0 1px 2px rgba(0, 0, 0, .25), 0 0 0 1px rgba(255, 255, 255, .04);
+  --sh2-45: 0 8px 24px rgba(0, 0, 0, .35), 0 0 0 1px rgba(255, 255, 255, .05);
+  --sh3-45: 0 18px 48px rgba(0, 0, 0, .5), 0 0 0 1px rgba(255, 255, 255, .06);
+}
+#layer .menu, .menu.m-sheet { border-radius: var(--r-md45); box-shadow: var(--sh2-45); }
+#layer .dialog.modal { border-radius: var(--r-lg45); box-shadow: var(--sh3-45); }
+#toast { border-radius: var(--r-md45); box-shadow: var(--sh2-45); }
+
+/* Moving between chats, channels and pages fades in softly. */
+#main.in45 > :not(.topbar):not(#call-slot) { animation: in45 .18s var(--ease-out, ease-out) both; }
+@keyframes in45 { from { opacity: .35; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+.settings-main.in45 > * { animation: in45 .16s var(--ease-out, ease-out) both; }
+@media (prefers-reduced-motion: reduce) { #main.in45 > *, .settings-main.in45 > * { animation: none !important; } }
+html.perf43 #main.in45 > *, html.perf43 .settings-main.in45 > * { animation: none !important; }
+
+/* Messages: the one under your mouse is highlighted, and its buttons float above it. */
+html:not([data-msgstyle="bubbles"]) #messages > .msg:hover { background: color-mix(in srgb, var(--text, #fff) 3.5%, transparent); }
+#messages .msg .msg-tools { border-radius: var(--r-sm45); box-shadow: var(--sh2-45); }
+
+/* Empty lists and pop-ups show a clean icon instead of Zuno the mascot every time. */
+:is(.empty-state, .fp-empty, .pi-empty, .ep-empty, .fm-empty, .pf43-empty) > .zm { display: none !important; }
+:is(.empty-state, .fp-empty, .pi-empty, .ep-empty, .fm-empty, .pf43-empty):has(> .zm)::before {
+  content: ""; display: block; width: 56px; height: 56px; margin: 4px auto 12px; border-radius: 18px;
+  background: color-mix(in srgb, var(--brand) 14%, transparent) center / 28px no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2304c5ae' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 13h4.5l1.5 3h6l1.5-3H21'/%3E%3Cpath d='M5.4 5.9 3 13v5a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-5l-2.4-7.1A2 2 0 0 0 16.7 4.5H7.3a2 2 0 0 0-1.9 1.4z'/%3E%3C/svg%3E");
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--brand) 30%, transparent);
+}
+#toast > .zm, #layer .dialog.modal > .zm { display: none; }
+
+/* The panel at the bottom left: clearer buttons, and muted / deafened show in red. */
+#user-panel .icon-btn { border-radius: 10px; transition: background .12s, color .12s; }
+#user-panel .icon-btn:hover { background: color-mix(in srgb, var(--text, #fff) 8%, transparent); }
+#user-panel .icon-btn.off { color: #f87171; background: color-mix(in srgb, #f87171 14%, transparent); }
+#user-panel .icon-btn.off:hover { background: color-mix(in srgb, #f87171 22%, transparent); }
+#user-panel .me-btn { border-radius: 10px; transition: background .12s; }
+#user-panel .me-btn:hover { background: color-mix(in srgb, var(--text, #fff) 7%, transparent); }
+
+/* Picture grids: 5 or more pictures show two big ones on top (like Discord). */
+.gallery.g5 { grid-template-columns: repeat(6, 1fr); }
+.gallery.g5 .gal-item { grid-column: span 2; }
+.gallery.g5 .gal-item:nth-child(-n+2) { grid-column: span 3; aspect-ratio: 4 / 3; }
+.gallery { border-radius: var(--r-md45); }
+
+/* Link cards: a little more room and a soft shadow. */
+.embed { box-shadow: var(--sh1-45); }
+
+/* Messages that couldn't be sent */
+#messages .msg.failed45 { opacity: 1 !important; }
+#messages .msg.failed45 :is(.content, .msg-body, .markup) { opacity: .6; }
+.sf45 { display: flex; align-items: center; gap: 8px; margin: 4px 0 0 var(--msg-indent, 56px); font-size: 12.5px; color: #f87171; }
+.sf45 button { background: none; border: 0; padding: 0; color: var(--text); font: inherit; font-weight: 700; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
+.sf45 button:hover { color: var(--brand); }
+
+/* Animated profile pictures: a still picture unless you hover, they talk, or it's their profile.
+   (0.45.1.1) The two pictures swap by showing one and hiding the other, so the avatar's own layout
+   (positioned or not, like reply previews) is never touched. */
+.avatar > img.still45 { display: block; width: 100%; height: 100%; object-fit: cover; border-radius: inherit; pointer-events: none; }
+.avatar:has(> img.still45) > img.anim45 { display: none; }
+:is(.msg:hover, .member:hover, .dm-row:hover, #dm-list a:hover, .voice-user:hover, .speaking, [data-speak].speaking, .tile.speaking, .avatar:hover, .pcard, .pf43-side) .avatar > img.anim45 { display: block; }
+:is(.msg:hover, .member:hover, .dm-row:hover, #dm-list a:hover, .voice-user:hover, .speaking, [data-speak].speaking, .tile.speaking, .avatar:hover, .pcard, .pf43-side) .avatar > img.still45 { display: none; }
+
+/* Profile effects play over everything on the card: the picture, its decoration and the buttons
+   (clicks still go through to them). */
+.pcard > .pfx, .pcard .pfx.pfx-community { z-index: 8 !important; }
+.pf43-side .pfx, .pf43 > .pfx { z-index: 8 !important; }
+
+/* Voice & Video: noise levels and sensitivity */
+.seg45 { display: inline-flex; padding: 3px; border-radius: 10px; background: var(--input); gap: 2px; flex: none; }
+.seg45 button { border: 0; background: none; color: var(--muted); font: inherit; font-size: 13px; font-weight: 600; padding: 6px 12px; border-radius: 8px; cursor: pointer; }
+.seg45 button.on { background: var(--brand); color: var(--ink, #062); }
+.sens45-bar { display: flex; flex-direction: column; gap: 8px; margin: 4px 0 6px; }
+.sens45-bar.auto { opacity: .55; }
+.sens45-meter { position: relative; height: 10px; border-radius: 6px; background: var(--input); overflow: hidden; }
+.sens45-meter i { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: #f0b232; transition: width .1s linear; }
+.sens45-meter i.over { background: #3ba55d; }
+.sens45-meter b { position: absolute; top: -2px; bottom: -2px; width: 2px; background: #fff; transform: translateX(-1px); }
+.sens45-bar input[type=range] { width: 100%; accent-color: var(--brand); }
+
+/* Forwarding */
+.fw45 { width: min(460px, 94vw); }
+.fw45-list { max-height: 300px; overflow-y: auto; margin: 8px 0; display: flex; flex-direction: column; gap: 2px; }
+.fw45-head { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); margin: 8px 4px 4px; }
+.fw45-row { display: flex; align-items: center; gap: 10px; padding: 6px 8px; border-radius: 10px; cursor: pointer; }
+.fw45-row:hover { background: color-mix(in srgb, var(--text, #fff) 6%, transparent); }
+.fw45-row.on { background: color-mix(in srgb, var(--brand) 14%, transparent); }
+.fw45-row .fp-who { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.fw45-row .fp-who small { color: var(--muted); }
+.fw45-row input { width: 18px; height: 18px; accent-color: var(--brand); flex: none; }
+.fw45-sv { width: 32px; height: 32px; border-radius: 10px; object-fit: cover; flex: none; display: grid; place-items: center; font-weight: 700; }
+.fw45-prev { display: flex; gap: 10px; padding: 10px 12px; border-radius: 10px; background: var(--input); border-left: 3px solid var(--muted); margin-bottom: 8px; }
+.fw45-prev b { font-size: 13px; }
+.fw45-prev-text { font-size: 13px; color: var(--muted); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; white-space: pre-wrap; }
+.fw45-note { width: 100%; box-sizing: border-box; }
+.fwd45 { border-left-color: var(--muted); background: color-mix(in srgb, var(--text, #fff) 3%, transparent); }
+.fwd45 .fwd-h { display: flex; align-items: center; gap: 6px; }
+.fwd45-ico svg { width: 14px; height: 14px; display: block; }
+.fwd45-who { display: flex; align-items: center; gap: 6px; font-size: 13px; margin: 2px 0 4px; }
+.fwd45-jump { background: none; border: 0; padding: 0; color: var(--brand); font: inherit; cursor: pointer; }
+.fwd45-jump:hover { text-decoration: underline; }
+.tp45 input[type=datetime-local] { width: 100%; box-sizing: border-box; color-scheme: dark; }
+.tp45-prev { display: flex; flex-direction: column; gap: 4px; padding: 10px 12px; border-radius: 10px; background: var(--input); margin-top: 6px; }
+.reply-bar .rp45 { margin-left: auto; border: 0; background: none; font: inherit; font-size: 12px; font-weight: 800; color: var(--muted); cursor: pointer; padding: 2px 8px; border-radius: 6px; }
+.reply-bar .rp45.on { color: var(--brand); }
+.reply-bar .rp45:hover { background: color-mix(in srgb, var(--text, #fff) 8%, transparent); }
+
+/* Mod View */
+.mv45 { width: min(560px, 94vw); max-height: 86vh; overflow-y: auto; }
+.mv45-head { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.mv45-head h3 { margin: 0; }
+.mv45-head > div { flex: 1; min-width: 0; }
+.mv45-facts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+.mv45-facts > div { background: var(--input); border-radius: 10px; padding: 8px 10px; display: flex; flex-direction: column; gap: 2px; }
+.mv45-facts span { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+.mv45-facts b { font-size: 14px; }
+.mv45-facts b.warn { color: #f0b232; }
+.mv45-sec { margin-top: 12px; }
+.mv45-sec h4 { margin: 0 0 6px; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+.mv45-roles { display: flex; flex-wrap: wrap; gap: 6px; }
+.mv45-role { font-size: 12px; font-weight: 600; padding: 3px 8px 3px 6px; border-radius: 999px; background: var(--input); display: inline-flex; align-items: center; gap: 6px; }
+.mv45-role::before { content: ""; width: 10px; height: 10px; border-radius: 50%; background: var(--rc); }
+.mv45-list { display: flex; flex-direction: column; gap: 4px; max-height: 200px; overflow-y: auto; }
+.mv45-row, .mv45-msg { display: flex; flex-direction: column; gap: 2px; padding: 6px 10px; border-radius: 8px; background: var(--input); text-align: left; }
+.mv45-msg { border: 0; color: var(--text); font: inherit; cursor: pointer; }
+.mv45-msg:hover { background: color-mix(in srgb, var(--brand) 12%, var(--input)); }
+.mv45-msg > span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mv45-add { display: flex; gap: 6px; margin-top: 6px; }
+.mv45-add input { flex: 1; }
+.mv45-del { padding: 0; font-size: inherit; }
+
+/* Server profiles */
+.pc-svprof.sp45 { border: 0; background: color-mix(in srgb, var(--brand) 14%, transparent); color: var(--text); font: inherit; font-size: 12px; padding: 3px 8px; border-radius: 8px; cursor: pointer; margin: 2px 0 4px; text-align: left; }
+.pc-svprof.sp45 b { color: var(--brand); font-weight: 700; }
+.pc-svprof.sp45:hover { background: color-mix(in srgb, var(--brand) 22%, transparent); }
+.sp45-prev { height: 90px; border-radius: 10px; background: var(--input) center / cover no-repeat; display: grid; place-items: center; margin: 6px 0; }
+.mv45-head .avatar { flex: none; }
+.mv45-add input { background: var(--input); color: var(--text); border: 0; border-radius: 8px; padding: 8px 10px; font: inherit; }
+.fw45-note { background: var(--input); color: var(--text); border: 0; border-radius: 10px; padding: 10px 12px; font: inherit; }
+.fwd45-who .avatar { position: static !important; left: auto !important; top: auto !important; margin: 0 !important; flex: none; width: 18px !important; height: 18px !important; }
+
+/* Masked links */
+.ml45 { max-width: 440px; }
+.ml45-url { display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; border-radius: 10px; background: var(--input); word-break: break-all; }
+.ml45-url span { color: var(--muted); font-size: 12.5px; }
+.ml45-trust { display: flex; align-items: center; gap: 8px; margin: 12px 0 4px; font-size: 13px; color: var(--muted); }
+.ml45-trust input { accent-color: var(--brand); }
+/* Bot is thinking */
+.bt45 { display: flex; align-items: center; gap: 6px; margin: 6px 16px 8px 56px; font-size: 13px; color: var(--muted); }
+.bt45 b { color: var(--text); font-weight: 600; }
+.bt45 i { width: 5px; height: 5px; border-radius: 50%; background: var(--muted); animation: bt45 1s infinite ease-in-out; }
+.bt45 i:nth-of-type(2) { animation-delay: .15s; } .bt45 i:nth-of-type(3) { animation-delay: .3s; }
+@keyframes bt45 { 0%, 80%, 100% { opacity: .3; transform: translateY(0); } 40% { opacity: 1; transform: translateY(-3px); } }

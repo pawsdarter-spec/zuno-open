@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Zuno</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Zuno is a free app for chatting, calling and hanging out with your friends. Servers, voice channels, video calls, screen share and profiles that feel like you.">
+<link rel="icon" href="img/logo.png" type="image/png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Fredoka:wght@500;600;700&display=swap">
+<style>
+/* Layout: a left-aligned hero where Zuno hangs onto the app window, then three
+   screenshot-and-story rows that alternate sides, a short extras list, and a closing download. */
+:root {
+  --abyss: #0c1312;   /* page */
+  --lagoon: #121918;  /* bands */
+  --kelp: #1a2322;    /* raised surfaces */
+  --foam: #cffbf5;    /* the mascot's body, headings on dark */
+  --mint: #04c5ae;    /* the one accent */
+  --mint-deep: #0aa896;
+  --sun: #ffc23d;     /* sparkles only */
+  --text: #dce8e5;
+  --muted: #8ea6a1;
+  --line: rgba(207, 251, 245, .09);
+  --display: "Fredoka", "Figtree", "Segoe UI", system-ui, sans-serif;
+  --body: "Figtree", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --spring: cubic-bezier(.34, 1.56, .64, 1);
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; background: var(--abyss); color: var(--text); font: 17px/1.6 var(--body); -webkit-font-smoothing: antialiased; }
+img { max-width: 100%; display: block; }
+a { color: var(--mint); }
+:focus-visible { outline: 2px solid var(--mint); outline-offset: 3px; border-radius: 6px; }
+.wrap { max-width: 1160px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+
+/* ---------- top bar ---------- */
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--abyss); }
+.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 9; background: color-mix(in srgb, var(--abyss) 86%, transparent); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); }
+.top .wrap { display: flex; align-items: center; gap: 24px; height: 64px; }
+.brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--foam); font: 600 22px var(--display); }
+.brand img { width: 32px; height: 32px; border-radius: 9px; }
+.top nav { display: flex; gap: 22px; margin-left: auto; }
+.top nav a { color: var(--muted); text-decoration: none; font-weight: 600; font-size: 15px; }
+.top nav a:hover { color: var(--foam); }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; border: 0; border-radius: 14px; font: 700 16px var(--body); text-decoration: none; cursor: pointer; transition: transform .18s var(--spring), background .15s, box-shadow .15s; }
+.btn-small { height: 40px; padding: 0 16px; background: var(--kelp); color: var(--foam); font-size: 15px; }
+.btn-small:hover { background: #24302f; }
+.btn-main { height: 60px; padding: 0 28px; background: var(--mint); color: #022620; font-size: 18px; box-shadow: 0 4px 0 #067f71, 0 18px 40px rgba(4, 197, 174, .25); }
+.btn-main:hover { transform: translateY(-2px); background: #10d4bc; }
+.btn-main:active { transform: translateY(2px); box-shadow: 0 1px 0 #067f71; }
+.btn-main svg { width: 22px; height: 22px; }
+.btn[aria-disabled="true"] { cursor: default; }
+
+/* ---------- hero ---------- */
+.hero { padding-block: 72px 40px; overflow: hidden; }
+.hero-grid { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 56px; align-items: center; }
+.hero h1 { font: 700 clamp(44px, 6vw, 76px)/1.02 var(--display); color: var(--foam); margin: 0 0 20px; letter-spacing: -.01em; text-wrap: balance; }
+.hero p.lead { font-size: 20px; color: var(--text); max-width: 34ch; margin: 0 0 32px; }
+.dl { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; }
+.dl-note { font-size: 14px; color: var(--muted); }
+.dl-note b { color: var(--text); font-weight: 600; }
+
+/* the app window, with Zuno hanging over its top edge */
+.shot { position: relative; padding-top: 70px; }
+.mascot { position: absolute; top: 0; left: 50%; width: 150px; transform: translateX(-50%); z-index: 2; pointer-events: none; }
+.mascot svg { display: block; width: 150px; height: 125px; overflow: visible; }
+.window { position: relative; border-radius: 16px; overflow: hidden; border: 1px solid var(--line); box-shadow: 0 40px 80px rgba(0, 0, 0, .55), 0 0 0 6px rgba(207, 251, 245, .03); background: var(--lagoon); }
+.window img { width: 100%; height: auto; aspect-ratio: 1600 / 950; }
+.glow { position: absolute; inset: 40% -10% -20% -10%; background: radial-gradient(closest-side, rgba(4, 197, 174, .22), transparent); z-index: -1; filter: blur(10px); }
+.zm-eyes { transform-box: fill-box; transform-origin: center; animation: blink 5.5s infinite; }
+.zm-sprout { transform-box: fill-box; transform-origin: 30% 100%; animation: sway 2.4s ease-in-out infinite; }
+@keyframes blink { 0%, 92%, 100% { transform: scaleY(1); } 95% { transform: scaleY(.1); } }
+@keyframes sway { 0%, 100% { transform: rotate(0); } 50% { transform: rotate(-9deg); } }
+
+/* ---------- feature rows ---------- */
+.features { padding-block: 64px; }
+.row { display: grid; grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); gap: 64px; align-items: center; padding-block: 48px; }
+.row.flip { grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); }
+.row.flip .media { order: 2; }
+.media { border-radius: 16px; overflow: hidden; border: 1px solid var(--line); box-shadow: 0 30px 60px rgba(0, 0, 0, .45); }
+.media img, .window img { width: 100%; height: auto; }
+.media.narrow { max-width: 400px; justify-self: center; border-radius: 22px; }
+.row h2 { font: 600 clamp(30px, 3.4vw, 42px)/1.1 var(--display); color: var(--foam); margin: 0 0 14px; text-wrap: balance; }
+.row p { margin: 0 0 16px; max-width: 46ch; color: var(--text); }
+.row ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+.row li { position: relative; padding-left: 26px; color: var(--muted); }
+.row li::before { content: ""; position: absolute; left: 4px; top: .62em; width: 9px; height: 9px; border-radius: 50%; background: var(--mint); }
+
+/* ---------- extras ---------- */
+.extras { background: var(--lagoon); border-block: 1px solid var(--line); }
+.extras .wrap { padding-block: 64px; }
+.extras h2 { font: 600 32px/1.15 var(--display); color: var(--foam); margin: 0 0 28px; }
+.extra-list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px 40px; margin: 0; padding: 0; list-style: none; }
+.extra-list li { min-width: 0; }
+.extra-list b { display: block; color: var(--foam); font-size: 17px; margin-bottom: 2px; }
+.extra-list span { color: var(--muted); font-size: 15px; }
+.emo { font-size: 22px; display: block; margin-bottom: 6px; }
+
+/* ---------- closing download ---------- */
+.closing { text-align: center; padding-block: 96px 80px; }
+.closing .mascot-still { width: 120px; height: 100px; margin: 0 auto 12px; }
+.closing h2 { font: 700 clamp(36px, 5vw, 56px)/1.05 var(--display); color: var(--foam); margin: 0 0 12px; }
+.closing p { color: var(--muted); margin: 0 auto 28px; max-width: 46ch; }
+.closing .dl { align-items: center; }
+.help { margin: 28px auto 0; max-width: 560px; text-align: left; font-size: 15px; color: var(--muted); background: var(--lagoon); border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; }
+.help b { color: var(--text); }
+
+footer { border-top: 1px solid var(--line); color: var(--muted); font-size: 14px; }
+footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; padding-block: 24px; }
+
+/* ---------- small screens ---------- */
+@media (max-width: 900px) {
+  .hero { padding-block: 40px 24px; }
+  .hero-grid, .row, .row.flip { grid-template-columns: minmax(0, 1fr); gap: 32px; }
+  .row.flip .media { order: 0; }
+  .extra-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .top nav { display: none; }
+  .top .btn-small { margin-left: auto; }
+}
+@media (max-width: 520px) {
+  .extra-list { grid-template-columns: minmax(0, 1fr); }
+  .btn-main { width: 100%; }
+  .dl { align-items: stretch; }
+  .mascot, .mascot svg { width: 110px; } .mascot svg { height: 92px; }
+  .shot { padding-top: 52px; }
+}
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } html { scroll-behavior: auto; } }
+
+/* ---------- Zuno Bloom ---------- */
+.bloom { padding: 88px 0; background: radial-gradient(70% 90% at 0% 0%, rgba(15, 95, 87, .55), transparent 60%), radial-gradient(70% 90% at 100% 100%, rgba(107, 42, 143, .55), transparent 60%), var(--lagoon); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.bloom-grid { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 56px; align-items: center; }
+.bloom-art { width: min(360px, 80%); margin: 0 auto; filter: drop-shadow(0 18px 50px rgba(4, 197, 174, .4)); animation: bfloat 6s ease-in-out infinite; }
+@keyframes bfloat { 50% { transform: translateY(-10px) rotate(-3deg); } }
+.bloom .kicker { font: 700 13px var(--body); letter-spacing: .16em; text-transform: uppercase; color: #8ff3e4; }
+.bloom h2 { font: 700 clamp(36px, 4.6vw, 56px)/1.05 var(--display); margin: 6px 0 14px; background: linear-gradient(90deg, #fff, #ffd0ec 55%, #b8fff3); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.bloom .price { font: 600 18px var(--body); color: var(--text); margin: 0 0 22px; } .bloom .price b { font: 700 30px var(--display); color: #fff; }
+.bloom-perks { list-style: none; padding: 0; margin: 0 0 26px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 22px; }
+.bloom-perks li { display: flex; gap: 10px; font-size: 16px; } .bloom-perks li span { flex: none; }
+.bloom-tiers { display: flex; gap: 14px; flex-wrap: wrap; }
+.bloom-tiers div { display: flex; align-items: center; gap: 10px; padding: 8px 14px 8px 8px; border-radius: 14px; background: rgba(255,255,255,.06); font-size: 14px; color: var(--muted); }
+.bloom-tiers img { width: 40px; height: 40px; } .bloom-tiers b { display: block; color: var(--foam); font-size: 15px; }
+@media (max-width: 860px) { .bloom-grid { grid-template-columns: 1fr; gap: 28px; text-align: center; } .bloom-perks { grid-template-columns: 1fr; text-align: left; max-width: 460px; margin-left: auto; margin-right: auto; } .bloom-tiers { justify-content: center; } }
+@media (prefers-reduced-motion: reduce) { .bloom-art { animation: none; } }
+.dl-alt { display: block; width: 100%; margin-top: 10px; font-size: 15px; font-weight: 600; }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#"><img src="img/logo.png" alt="">Zuno</a>
+    <nav aria-label="Sections"><a href="#servers">Servers</a><a href="#voice">Voice</a><a href="#profiles">Profiles</a><a href="#bloom">Bloom</a></nav>
+    <a class="btn btn-small" href="#download">Download</a>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div>
+        <h1>Hang out with your people.</h1>
+        <p class="lead">Zuno is a free app for chatting, calling and hanging out with your friends. Make a server, hop in a voice channel, and make a profile that actually feels like you.</p>
+        <div class="dl">
+          <a class="btn btn-main" data-download href="#download">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M3 5.5 10 4.6v6.9H3zm0 13 7 .9v-6.8H3zm8 1.1 10 1.4v-8.5H11zM11 4.5V11.5h10V3z"/></svg>
+            <span data-download-label>Download for Windows</span>
+          </a>
+          <span class="dl-note" data-download-note>Free, for Windows 10 and 11</span>
+        </div>
+      </div>
+      <div class="shot">
+        <div class="mascot" data-mascot="happy"></div>
+        <div class="window"><img src="img/chat.webp" width="1600" height="950" alt="Zuno showing a server called Night Owls, with friends planning a game night in the general channel"></div>
+        <div class="glow" aria-hidden="true"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="features wrap" aria-label="What Zuno does">
+    <article class="row" id="servers">
+      <div class="media"><img src="img/channels.webp" width="1100" height="1038" loading="lazy" alt="Close-up of a Zuno server with text and voice channels, emoji and reactions"></div>
+      <div>
+        <h2>A server for every group</h2>
+        <p>Make a server for your friends, your class or your game squad, then send them an invite. Split the talk into text channels and keep everyone in one place.</p>
+        <ul>
+          <li>Text and voice channels you name yourself</li>
+          <li>React to anything with emoji, or send big emoji-only messages</li>
+          <li>See who's online, who's typing, and who just joined</li>
+        </ul>
+      </div>
+    </article>
+
+    <article class="row flip" id="voice">
+      <div class="media"><img src="img/voice.webp" width="1600" height="950" loading="lazy" alt="Four friends in the Game Night voice channel"></div>
+      <div>
+        <h2>Voice that's always open</h2>
+        <p>Click a voice channel and you're in. Nobody has to call anyone. Friends can drop in and out all night.</p>
+        <ul>
+          <li>Voice and video calls with any friend, right from your DMs</li>
+          <li>Share your screen or a single window</li>
+          <li>Mute and deafen in one click, and a green ring shows who's talking</li>
+        </ul>
+      </div>
+    </article>
+
+    <article class="row" id="profiles">
+      <div class="media narrow"><img src="img/profile.webp" width="534" height="702" loading="lazy" alt="Mika's profile card with a banner, pronouns, status and an about me"></div>
+      <div>
+        <h2>A profile that sounds like you</h2>
+        <p>Your profile is more than a picture. Give it a banner, a moving background, and a song that plays when someone opens it.</p>
+        <ul>
+          <li>Upload an MP3 as your profile sound</li>
+          <li>Use an MP4 or GIF as your profile background</li>
+          <li>Pronouns, a custom status and an About Me</li>
+        </ul>
+      </div>
+    </article>
+  </section>
+
+  <section class="extras" aria-labelledby="extras-title">
+    <div class="wrap">
+      <h2 id="extras-title">The little things</h2>
+      <ul class="extra-list">
+        <li><span class="emo" aria-hidden="true">🎨</span><b>Your colors</b><span>Pick an accent color, compact messages and your chat text size.</span></li>
+        <li><span class="emo" aria-hidden="true">✏️</span><b>Edit and delete</b><span>Fix a typo after you send it. Press the up arrow to edit your last message.</span></li>
+        <li><span class="emo" aria-hidden="true">🔔</span><b>Notifications your way</b><span>Desktop pop-ups, a soft message sound, and Do Not Disturb when you need quiet.</span></li>
+        <li><span class="emo" aria-hidden="true">🙈</span><b>Typing privacy</b><span>Choose whether friends see when you're typing.</span></li>
+        <li><span class="emo" aria-hidden="true">🌱</span><b>Updates itself</b><span>New versions download on their own. Restart when it suits you.</span></li>
+        <li><span class="emo" aria-hidden="true">🤖</span><b>A bot to practice on</b><span>Add "testing" as a friend. It always says yes and always answers "test".</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="bloom" id="bloom" aria-labelledby="bloom-title">
+    <div class="wrap bloom-grid">
+      <img class="bloom-art" src="img/bloom.png" alt="The Zuno Bloom badge: a glowing teal cherry blossom">
+      <div>
+        <div class="kicker">New: Zuno Bloom</div>
+        <h2 id="bloom-title">Let your Zuno bloom.</h2>
+        <p class="price"><b>$5</b> a month. Cancel any time.</p>
+        <ul class="bloom-perks">
+          <li><span>📁</span>Files up to 10 MB, 10 at a time</li>
+          <li><span>🎞️</span>Animated GIF avatars</li>
+          <li><span>🎨</span>Two-color profile themes</li>
+          <li><span>🌈</span>Your own name color in chat</li>
+          <li><span>🖥️</span>Screen share in 1080p at 60 FPS</li>
+          <li><span>💬</span>4,000-character messages</li>
+          <li><span>🖼️</span>Bigger banners, backgrounds and sounds</li>
+          <li><span>🌸</span>Sakura, Orchid and Aurora app colors</li>
+        </ul>
+        <div class="bloom-tiers">
+          <div><img src="img/bloom-new.png" alt=""><span><b>Zuno Bloom</b>When you join</span></div>
+          <div><img src="img/bloom-month.png" alt=""><span><b>Full Bloom</b>After a month</span></div>
+          <div><img src="img/bloom-early.png" alt=""><span><b>Early Bloom</b>Join in the first 6 months</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="closing wrap" id="download">
+    <div class="mascot-still" data-mascot="happy"></div>
+    <h2>Come hang out.</h2>
+    <p>Download Zuno, make an account with your email, and add your friends by username.</p>
+    <div class="dl">
+      <a class="btn btn-main" data-download href="#download">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M3 5.5 10 4.6v6.9H3zm0 13 7 .9v-6.8H3zm8 1.1 10 1.4v-8.5H11zM11 4.5V11.5h10V3z"/></svg>
+        <span data-download-label>Download for Windows</span>
+      </a>
+      <span class="dl-note" data-download-note>Free, for Windows 10 and 11</span>
+    </div>
+    <div class="help"><b>If Windows says it protected your PC:</b> Zuno is new, so Windows doesn't recognize it yet. Click <b>More info</b>, then <b>Run anyway</b>, and the installer will start.</div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap"><span>© 2026 Zuno · <a href="terms.html">Terms of Service</a></span><span data-version>Made for hanging out</span></div>
+</footer>
+
+<script>
+// Where the installer lives. The website's publish step fills in the real GitHub repository.
+const REPO = 'pawsdarter-spec/zuno';
+const ready = !REPO.startsWith('OWNER/');
+
+// Zuno the mascot, the same drawing as in the app.
+function mascot() {
+  return `<svg viewBox="0 0 120 100" aria-hidden="true">
+    <defs><linearGradient id="zb" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e2fdf9"/><stop offset="1" stop-color="#9eefe5"/></linearGradient></defs>
+    <g stroke="#7fe3d6" stroke-width="5" stroke-linecap="round" opacity=".8"><path d="M22 34 l-6 -9"/><path d="M12 48 l-10 -3"/><path d="M98 34 l6 -9"/><path d="M108 48 l10 -3"/></g>
+    <g class="zm-sprout"><path d="M57 35 C48 20 52 7 61 2 C66 14 67 26 62 35Z" fill="#c6f8f1"/><path d="M62 36 C66 23 74 15 85 15 C83 27 75 35 64 38Z" fill="#b2f3ea"/></g>
+    <path d="M10 100 C10 60 32 33 60 33 C88 33 110 60 110 100Z" fill="url(#zb)"/>
+    <g class="zm-eyes"><ellipse cx="45" cy="70" rx="8" ry="11" fill="#0d6f66"/><ellipse cx="75" cy="70" rx="8" ry="11" fill="#0d6f66"/><ellipse cx="42.5" cy="65" rx="3" ry="4" fill="#c8faf3"/><ellipse cx="72.5" cy="65" rx="3" ry="4" fill="#c8faf3"/></g>
+    <ellipse cx="20" cy="97" rx="13" ry="8" fill="#d2fbf5"/><ellipse cx="100" cy="97" rx="13" ry="8" fill="#d2fbf5"/></svg>`;
+}
+document.querySelectorAll('[data-mascot]').forEach(el => { el.innerHTML = mascot(); });
+
+// Download buttons always point at the newest release.
+// (0.43) The repository is private, so heyzuno.uk hands out the installer (GitHub showed everyone else a 404).
+const installer = 'https://heyzuno.uk/download/windows';
+document.querySelectorAll('[data-download]').forEach(a => {
+  if (ready) { a.href = installer; a.removeAttribute('aria-disabled'); }
+  else { a.setAttribute('aria-disabled', 'true'); a.addEventListener('click', e => e.preventDefault()); }
+});
+document.querySelectorAll('[data-download-note]').forEach(n => {
+  if (!ready) n.innerHTML = '<b>Downloads open soon.</b> Zuno is getting ready for its first release.';
+});
+
+// On phones and tablets, the Windows installer is no use: open Zuno in the browser instead,
+// where it can be added to the home screen like an app.
+const WEB_APP = 'https://heyzuno.uk';
+// Only real phones and tablets (a Windows laptop with a touchscreen still gets the installer).
+const onPhone = !/windows nt/i.test(navigator.userAgent) && (/android|iphone|ipad|ipod/i.test(navigator.userAgent) || (/mobile/i.test(navigator.userAgent) && !/windows/i.test(navigator.userAgent)) || (navigator.maxTouchPoints > 1 && /macintosh/i.test(navigator.userAgent)));
+document.querySelectorAll('.dl').forEach(dl => {
+  const alt = document.createElement('a');
+  alt.className = 'dl-alt';
+  alt.href = WEB_APP;
+  alt.textContent = onPhone ? 'Or download for Windows' : 'On your phone? Open Zuno in the browser';
+  if (onPhone) alt.href = installer;
+  dl.appendChild(alt);
+});
+if (onPhone) {
+  document.querySelectorAll('[data-download]').forEach(a => { a.href = WEB_APP; a.removeAttribute('aria-disabled'); a.onclick = null; a.querySelector('svg')?.remove(); });
+  document.querySelectorAll('[data-download-label]').forEach(l => { l.textContent = 'Open Zuno'; });
+}
+
+// Show the newest version number and download size.
+if (onPhone) {
+  document.querySelectorAll('[data-download-note]').forEach(n => { n.innerHTML = /iphone|ipad|ipod|macintosh/i.test(navigator.userAgent) ? 'Free. Tap <b>Share → Add to Home Screen</b> to keep it like an app.' : 'Free. Tap <b>Install</b> or <b>⋮ → Add to Home screen</b> to keep it like an app.'; });
+} else if (ready) {
+  fetch('https://heyzuno.uk/download/info').then(r => (r.ok ? r.json() : null)).then(rel => {
+    if (!rel?.ready) {
+      document.querySelectorAll('[data-download-note]').forEach(n => { n.innerHTML = '<b>The download is being set up.</b> Use Zuno in your browser at heyzuno.uk for now.'; });
+      document.querySelectorAll('[data-download]').forEach(a => { a.href = WEB_APP; a.querySelector('svg')?.remove(); });
+      document.querySelectorAll('[data-download-label]').forEach(l => { l.textContent = 'Open Zuno in your browser'; });
+      return;
+    }
+    const size = rel.size ? `, ${Math.round(rel.size / 1e6)} MB` : '';
+    const version = rel.version;
+    document.querySelectorAll('[data-download-note]').forEach(n => { n.innerHTML = `Version ${version}, free, for Windows 10 and 11${size}`; });
+    document.querySelector('[data-version]').textContent = `Zuno ${version}`;
+  }).catch(() => {});
+}
+</script>
+</body>
+</html>

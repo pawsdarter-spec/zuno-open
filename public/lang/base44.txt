@@ -1,0 +1,254 @@
+# English|it|nl|pl|tr|ja
+User Settings|Impostazioni utente|Gebruikersinstellingen|Ustawienia użytkownika|Kullanıcı Ayarları|ユーザー設定
+App Settings|Impostazioni app|App-instellingen|Ustawienia aplikacji|Uygulama Ayarları|アプリ設定
+My Account|Il mio account|Mijn account|Moje konto|Hesabım|マイアカウント
+My Profile|Il mio profilo|Mijn profiel|Mój profil|Profilim|マイプロフィール
+Profiles|Profili|Profielen|Profile|Profiller|プロフィール
+Community|Community|Community|Społeczność|Topluluk|コミュニティ
+Closet|Armadio|Kast|Szafa|Dolap|クローゼット
+Profile Playback|Riproduzione profilo|Profiel afspelen|Odtwarzanie profilu|Profil Oynatma|プロフィール再生
+Connections|Connessioni|Koppelingen|Połączenia|Bağlantılar|連携
+Privacy & Safety|Privacy e sicurezza|Privacy en veiligheid|Prywatność i bezpieczeństwo|Gizlilik ve Güvenlik|プライバシーと安全
+Activity Privacy|Privacy attività|Activiteitsprivacy|Prywatność aktywności|Etkinlik Gizliliği|アクティビティのプライバシー
+Account Standing|Stato dell'account|Accountstatus|Stan konta|Hesap Durumu|アカウントの状態
+Appearance|Aspetto|Weergave|Wygląd|Görünüm|外観
+Notifications|Notifiche|Meldingen|Powiadomienia|Bildirimler|通知
+Voice & Video|Voce e video|Spraak en video|Głos i wideo|Ses ve Görüntü|音声とビデオ
+Chat|Chat|Chat|Czat|Sohbet|チャット
+About Zuno|Info su Zuno|Over Zuno|O Zuno|Zuno Hakkında|Zunoについて
+Build|Crea|Bouwen|Twórz|Oluştur|ビルド
+Developer|Sviluppatore|Ontwikkelaar|Deweloper|Geliştirici|開発者
+Help|Aiuto|Help|Pomoc|Yardım|ヘルプ
+Suggestions|Suggerimenti|Suggesties|Sugestie|Öneriler|提案
+Report a Bug|Segnala un bug|Een bug melden|Zgłoś błąd|Hata Bildir|バグを報告
+Bug Reports|Segnalazioni di bug|Bugmeldingen|Zgłoszenia błędów|Hata Raporları|バグ報告
+Moderation|Moderazione|Moderatie|Moderacja|Moderasyon|モデレーション
+Log Out|Esci|Uitloggen|Wyloguj|Çıkış Yap|ログアウト
+Search settings|Cerca nelle impostazioni|Instellingen zoeken|Szukaj w ustawieniach|Ayarlarda ara|設定を検索
+Edit User Profile|Modifica profilo utente|Gebruikersprofiel bewerken|Edytuj profil użytkownika|Kullanıcı Profilini Düzenle|ユーザープロフィールを編集
+Edit Profile|Modifica profilo|Profiel bewerken|Edytuj profil|Profili Düzenle|プロフィールを編集
+Display Name|Nome visualizzato|Weergavenaam|Wyświetlana nazwa|Görünen Ad|表示名
+Username|Nome utente|Gebruikersnaam|Nazwa użytkownika|Kullanıcı Adı|ユーザー名
+Email|Email|E-mail|E-mail|E-posta|メール
+Language|Lingua|Taal|Język|Dil|言語
+Reveal|Mostra|Tonen|Pokaż|Göster|表示
+Hide|Nascondi|Verbergen|Ukryj|Gizle|隠す
+Edit|Modifica|Bewerken|Edytuj|Düzenle|編集
+Save|Salva|Opslaan|Zapisz|Kaydet|保存
+Save Changes|Salva modifiche|Wijzigingen opslaan|Zapisz zmiany|Değişiklikleri Kaydet|変更を保存
+Cancel|Annulla|Annuleren|Anuluj|İptal|キャンセル
+Close|Chiudi|Sluiten|Zamknij|Kapat|閉じる
+Delete|Elimina|Verwijderen|Usuń|Sil|削除
+Remove|Rimuovi|Verwijderen|Usuń|Kaldır|削除
+Change|Cambia|Wijzigen|Zmień|Değiştir|変更
+Upload|Carica|Uploaden|Prześlij|Yükle|アップロード
+Send|Invia|Versturen|Wyślij|Gönder|送信
+Reply|Rispondi|Beantwoorden|Odpowiedz|Yanıtla|返信
+Back|Indietro|Terug|Wstecz|Geri|戻る
+Search|Cerca|Zoeken|Szukaj|Ara|検索
+Member Since|Membro dal|Lid sinds|Członek od|Üyelik Tarihi|メンバー登録日
+Member since|Membro dal|Lid sinds|Członek od|Üyelik tarihi|メンバー登録日
+Badges|Badge|Badges|Odznaki|Rozetler|バッジ
+Not yet|Non ancora|Nog niet|Jeszcze nie|Henüz değil|まだ
+Active|Attivo|Actief|Aktywne|Aktif|有効
+Friends|Amici|Vrienden|Znajomi|Arkadaşlar|フレンド
+Servers|Server|Servers|Serwery|Sunucular|サーバー
+Home|Home|Home|Strona główna|Ana Sayfa|ホーム
+You|Tu|Jij|Ty|Sen|あなた
+Online|Online|Online|Dostępny|Çevrimiçi|オンライン
+Offline|Offline|Offline|Niedostępny|Çevrimdışı|オフライン
+Idle|Inattivo|Afwezig|Zaraz wracam|Boşta|退席中
+Do Not Disturb|Non disturbare|Niet storen|Nie przeszkadzać|Rahatsız Etmeyin|取り込み中
+Invisible|Invisibile|Onzichtbaar|Niewidoczny|Görünmez|オフライン表示
+All|Tutti|Alle|Wszyscy|Tümü|すべて
+Pending|In attesa|In behandeling|Oczekujące|Bekleyen|保留中
+Blocked|Bloccati|Geblokkeerd|Zablokowani|Engellenenler|ブロック中
+Add Friend|Aggiungi amico|Vriend toevoegen|Dodaj znajomego|Arkadaş Ekle|フレンドに追加
+Direct Messages|Messaggi diretti|Privéberichten|Wiadomości prywatne|Direkt Mesajlar|ダイレクトメッセージ
+Message Requests|Richieste di messaggi|Berichtverzoeken|Prośby o wiadomość|Mesaj İstekleri|メッセージリクエスト
+Find or start a conversation|Trova o avvia una conversazione|Zoek of start een gesprek|Znajdź lub rozpocznij rozmowę|Bir sohbet bul ya da başlat|会話を探すか、始めよう
+Message|Messaggio|Bericht|Wiadomość|Mesaj|メッセージ
+More|Altro|Meer|Więcej|Daha Fazla|その他
+Events|Eventi|Evenementen|Wydarzenia|Etkinlikler|イベント
+Create a category|Crea una categoria|Een categorie maken|Utwórz kategorię|Bir kategori oluştur|カテゴリーを作成
+Create Channel|Crea canale|Kanaal maken|Utwórz kanał|Kanal Oluştur|チャンネルを作成
+Create Category|Crea categoria|Categorie maken|Utwórz kategorię|Kategori Oluştur|カテゴリーを作成
+Invite People|Invita persone|Mensen uitnodigen|Zaproś osoby|Kişileri Davet Et|招待する
+Server Settings|Impostazioni server|Serverinstellingen|Ustawienia serwera|Sunucu Ayarları|サーバー設定
+Mark As Read|Segna come letto|Markeren als gelezen|Oznacz jako przeczytane|Okundu Olarak İşaretle|既読にする
+Mute Server|Silenzia server|Server dempen|Wycisz serwer|Sunucuyu Sessize Al|サーバーをミュート
+Unmute Server|Riattiva server|Server niet meer dempen|Wyłącz wyciszenie serwera|Sunucunun Sesini Aç|サーバーのミュートを解除
+Leave Server|Lascia il server|Server verlaten|Opuść serwer|Sunucudan Ayrıl|サーバーから退出
+Edit Channel|Modifica canale|Kanaal bewerken|Edytuj kanał|Kanalı Düzenle|チャンネルを編集
+Mute|Silenzia|Dempen|Wycisz|Sessize Al|ミュート
+Deafen|Disattiva audio|Doof|Wyłącz dźwięk|Sağırlaştır|スピーカーミュート
+Jump to present|Vai al presente|Naar het heden|Przejdź do teraz|Şimdiye atla|最新へ移動
+Welcome back!|Bentornato!|Welkom terug!|Witaj ponownie!|Tekrar hoş geldin!|おかえりなさい！
+We're so excited to see you again!|Che bello rivederti!|Leuk je weer te zien!|Cieszymy się, że znów cię widzimy!|Seni tekrar gördüğümüze çok sevindik!|また会えてうれしいです！
+Email or Username|Email o nome utente|E-mail of gebruikersnaam|E-mail lub nazwa użytkownika|E-posta veya Kullanıcı Adı|メールまたはユーザー名
+Password|Password|Wachtwoord|Hasło|Şifre|パスワード
+Log In|Accedi|Inloggen|Zaloguj się|Giriş Yap|ログイン
+Register|Registrati|Registreren|Zarejestruj się|Kayıt Ol|登録
+Need an account?|Non hai un account?|Nog geen account?|Nie masz konta?|Hesabın yok mu?|アカウントが必要ですか？
+Forgot your password?|Password dimenticata?|Wachtwoord vergeten?|Nie pamiętasz hasła?|Şifreni mi unuttun?|パスワードをお忘れですか？
+Two-factor login|Accesso a due fattori|Inloggen in twee stappen|Logowanie dwuetapowe|İki adımlı giriş|二段階ログイン
+Turn On|Attiva|Aanzetten|Włącz|Aç|オンにする
+Turn Off|Disattiva|Uitzetten|Wyłącz|Kapat|オフにする
+Off|Off|Uit|Wył.|Kapalı|オフ
+On|On|Aan|Wł.|Açık|オン
+Passkeys|Passkey|Toegangssleutels|Klucze dostępu|Geçiş anahtarları|パスキー
+Add a Passkey|Aggiungi una passkey|Toegangssleutel toevoegen|Dodaj klucz dostępu|Geçiş Anahtarı Ekle|パスキーを追加
+Change Email|Cambia email|E-mail wijzigen|Zmień e-mail|E-postayı Değiştir|メールを変更
+Current password|Password attuale|Huidig wachtwoord|Obecne hasło|Mevcut şifre|現在のパスワード
+New password|Nuova password|Nieuw wachtwoord|Nowe hasło|Yeni şifre|新しいパスワード
+Type it again|Ripetila|Typ het opnieuw|Wpisz ponownie|Tekrar yaz|もう一度入力
+Change Password|Cambia password|Wachtwoord wijzigen|Zmień hasło|Şifreyi Değiştir|パスワードを変更
+Recovery codes|Codici di recupero|Herstelcodes|Kody odzyskiwania|Kurtarma kodları|リカバリーコード
+Devices|Dispositivi|Apparaten|Urządzenia|Cihazlar|デバイス
+This device|Questo dispositivo|Dit apparaat|To urządzenie|Bu cihaz|このデバイス
+Log Out All Other Devices|Esci da tutti gli altri dispositivi|Uitloggen op alle andere apparaten|Wyloguj ze wszystkich innych urządzeń|Diğer Tüm Cihazlardan Çıkış Yap|他のすべてのデバイスからログアウト
+Basics|Base|Basis|Podstawy|Temel Bilgiler|基本
+Birthday|Compleanno|Verjaardag|Urodziny|Doğum Günü|誕生日
+Sign-in & Security|Accesso e sicurezza|Inloggen en beveiliging|Logowanie i bezpieczeństwo|Giriş ve Güvenlik|ログインとセキュリティ
+Month|Mese|Maand|Miesiąc|Ay|月
+Day|Giorno|Dag|Dzień|Gün|日
+Identity|Identità|Identiteit|Tożsamość|Kimlik|アイデンティティ
+Looks|Aspetto|Uiterlijk|Wygląd|Görünüş|見た目
+Flair|Stile|Flair|Ozdoby|Süs|フレア
+About|Info|Over|O mnie|Hakkında|概要
+Sound|Suono|Geluid|Dźwięk|Ses|サウンド
+Name Style|Stile del nome|Naamstijl|Styl nazwy|Ad Stili|名前のスタイル
+Widgets|Widget|Widgets|Widżety|Widget'lar|ウィジェット
+Pronouns|Pronomi|Voornaamwoorden|Zaimki|Zamirler|代名詞
+Avatar|Avatar|Avatar|Awatar|Avatar|アバター
+Banner|Banner|Banner|Baner|Afiş|バナー
+Background|Sfondo|Achtergrond|Tło|Arka Plan|背景
+Change Avatar|Cambia avatar|Avatar wijzigen|Zmień awatar|Avatarı Değiştir|アバターを変更
+Remove Avatar|Rimuovi avatar|Avatar verwijderen|Usuń awatar|Avatarı Kaldır|アバターを削除
+Upload Banner|Carica banner|Banner uploaden|Prześlij baner|Afiş Yükle|バナーをアップロード
+Upload MP4 or GIF|Carica MP4 o GIF|MP4 of GIF uploaden|Prześlij MP4 lub GIF|MP4 veya GIF Yükle|MP4またはGIFをアップロード
+None|Nessuno|Geen|Brak|Yok|なし
+Preview|Anteprima|Voorbeeld|Podgląd|Önizleme|プレビュー
+Custom Status|Stato personalizzato|Aangepaste status|Własny status|Özel Durum|カスタムステータス
+About Me|Su di me|Over mij|O mnie|Hakkımda|自己紹介
+Profile theme|Tema del profilo|Profielthema|Motyw profilu|Profil teması|プロフィールテーマ
+Name color|Colore del nome|Naamkleur|Kolor nazwy|Ad rengi|名前の色
+Avatar decoration|Decorazione avatar|Avatardecoratie|Dekoracja awatara|Avatar süslemesi|アバターデコレーション
+Profile effect|Effetto profilo|Profieleffect|Efekt profilu|Profil efekti|プロフィールエフェクト
+Name banner|Banner del nome|Naambanner|Baner nazwy|Ad afişi|名前バナー
+Server Tag|Tag del server|Servertag|Tag serwera|Sunucu Etiketi|サーバータグ
+Font|Carattere|Lettertype|Czcionka|Yazı Tipi|フォント
+Effect|Effetto|Effect|Efekt|Efekt|エフェクト
+Colors|Colori|Kleuren|Kolory|Renkler|カラー
+Save Name Style|Salva stile del nome|Naamstijl opslaan|Zapisz styl nazwy|Ad Stilini Kaydet|名前のスタイルを保存
+Typing style|Stile di scrittura|Typstijl|Styl pisania|Yazma stili|入力スタイル
+Theme|Tema|Thema|Motyw|Tema|テーマ
+Dark|Scuro|Donker|Ciemny|Koyu|ダーク
+Light|Chiaro|Licht|Jasny|Açık|ライト
+App background|Sfondo dell'app|App-achtergrond|Tło aplikacji|Uygulama arka planı|アプリの背景
+Accent color|Colore principale|Accentkleur|Kolor akcentu|Vurgu rengi|アクセントカラー
+Messages|Messaggi|Berichten|Wiadomości|Mesajlar|メッセージ
+Zoom|Zoom|Zoom|Powiększenie|Yakınlaştırma|ズーム
+Desktop notifications|Notifiche desktop|Bureaubladmeldingen|Powiadomienia na pulpicie|Masaüstü bildirimleri|デスクトップ通知
+Message sound|Suono dei messaggi|Berichtgeluid|Dźwięk wiadomości|Mesaj sesi|メッセージ音
+Ringtone|Suoneria|Beltoon|Dzwonek|Zil sesi|着信音
+Quiet hours|Ore di silenzio|Stille uren|Godziny ciszy|Sessiz saatler|おやすみ時間
+Microphone|Microfono|Microfoon|Mikrofon|Mikrofon|マイク
+Push to Talk|Premi per parlare|Push-to-talk|Naciśnij, aby mówić|Bas Konuş|プッシュトゥトーク
+Voice Activity|Attività vocale|Spraakactiviteit|Aktywność głosowa|Ses Etkinliği|音声検出
+Noise suppression|Soppressione del rumore|Ruisonderdrukking|Tłumienie szumów|Gürültü bastırma|ノイズ抑制
+Echo cancellation|Cancellazione dell'eco|Echo-onderdrukking|Usuwanie echa|Yankı giderme|エコーキャンセル
+Soundboard|Soundboard|Soundboard|Soundboard|Ses Paneli|サウンドボード
+Everyone|Tutti|Iedereen|Wszyscy|Herkes|全員
+Friends only|Solo amici|Alleen vrienden|Tylko znajomi|Yalnızca arkadaşlar|フレンドのみ
+Read receipts|Conferme di lettura|Leesbevestigingen|Potwierdzenia przeczytania|Okundu bilgisi|既読表示
+Download my data|Scarica i miei dati|Mijn gegevens downloaden|Pobierz moje dane|Verilerimi indir|データをダウンロード
+Overview|Panoramica|Overzicht|Przegląd|Genel Bakış|概要
+Banner & Look|Banner e aspetto|Banner en uiterlijk|Baner i wygląd|Afiş ve Görünüm|バナーと見た目
+Discovery|Scopri|Ontdekken|Odkrywanie|Keşfet|ディスカバリー
+Safety|Sicurezza|Veiligheid|Bezpieczeństwo|Güvenlik|安全
+Emoji|Emoji|Emoji|Emoji|Emoji|絵文字
+Stickers|Sticker|Stickers|Naklejki|Çıkartmalar|スタンプ
+Backups|Backup|Back-ups|Kopie zapasowe|Yedekler|バックアップ
+Roles|Ruoli|Rollen|Role|Roller|ロール
+Role Pickers|Selettori di ruolo|Rolkiezers|Wybór ról|Rol Seçiciler|ロール選択
+Onboarding|Benvenuto|Onboarding|Wdrażanie|Karşılama|オンボーディング
+Channels & Categories|Canali e categorie|Kanalen en categorieën|Kanały i kategorie|Kanallar ve Kategoriler|チャンネルとカテゴリー
+Members|Membri|Leden|Członkowie|Üyeler|メンバー
+Invites|Inviti|Uitnodigingen|Zaproszenia|Davetler|招待
+Bans|Ban|Verbanningen|Bany|Yasaklar|BAN
+AutoMod|AutoMod|AutoMod|AutoMod|AutoMod|AutoMod
+Audit Log|Registro attività|Auditlogboek|Dziennik zdarzeń|Denetim Kaydı|監査ログ
+Server Insights|Statistiche server|Serverinzichten|Statystyki serwera|Sunucu İstatistikleri|サーバーインサイト
+Bots & Webhooks|Bot e webhook|Bots en webhooks|Boty i webhooki|Botlar ve Webhook'lar|ボットとWebhook
+Partner Program|Programma partner|Partnerprogramma|Program partnerski|Ortaklık Programı|パートナープログラム
+Delete Server|Elimina server|Server verwijderen|Usuń serwer|Sunucuyu Sil|サーバーを削除
+Essentials|Essenziali|Basis|Najważniejsze|Temeller|基本
+People|Persone|Mensen|Ludzie|Kişiler|メンバー
+Channels|Canali|Kanalen|Kanały|Kanallar|チャンネル
+Expressions|Espressioni|Expressies|Ekspresje|İfadeler|表現
+Grow|Cresci|Groeien|Rozwój|Büyüt|成長
+Apps & Data|App e dati|Apps en gegevens|Aplikacje i dane|Uygulamalar ve Veriler|アプリとデータ
+Pick what you want to change, or search with|Scegli cosa cambiare, o cerca con|Kies wat je wilt wijzigen, of zoek met|Wybierz, co chcesz zmienić, albo szukaj przez|Değiştirmek istediğini seç ya da şununla ara:|変更したい項目を選ぶか、次で検索
+Name, icon, description and welcome messages.|Nome, icona, descrizione e messaggi di benvenuto.|Naam, pictogram, beschrijving en welkomstberichten.|Nazwa, ikona, opis i wiadomości powitalne.|Ad, simge, açıklama ve karşılama mesajları.|名前、アイコン、説明、ウェルカムメッセージ。
+Banner, colors and your invite link.|Banner, colori e link d'invito.|Banner, kleuren en je uitnodigingslink.|Baner, kolory i link z zaproszeniem.|Afiş, renkler ve davet bağlantın.|バナー、カラー、招待リンク。
+A short tag members can wear by their name.|Un breve tag che i membri mostrano accanto al nome.|Een korte tag die leden bij hun naam dragen.|Krótki tag, który członkowie noszą przy nazwie.|Üyelerin adlarının yanında taşıyabileceği kısa bir etiket.|メンバーが名前の横に付けられる短いタグ。
+Everyone here: roles, nicknames, kicks.|Tutti qui: ruoli, soprannomi, espulsioni.|Iedereen hier: rollen, bijnamen, verwijderen.|Wszyscy tutaj: role, pseudonimy, wyrzucenia.|Buradaki herkes: roller, takma adlar, atmalar.|全員：ロール、ニックネーム、キック。
+Permissions and colors for groups of people.|Permessi e colori per gruppi di persone.|Rechten en kleuren voor groepen mensen.|Uprawnienia i kolory dla grup osób.|Kişi grupları için izinler ve renkler.|グループごとの権限とカラー。
+Let people pick their own roles.|Lascia che le persone scelgano i propri ruoli.|Laat mensen hun eigen rollen kiezen.|Pozwól ludziom wybierać role.|Kişilerin kendi rollerini seçmesine izin ver.|メンバーが自分でロールを選べます。
+What new members see when they join.|Cosa vedono i nuovi membri quando entrano.|Wat nieuwe leden zien als ze lid worden.|Co widzą nowi członkowie po dołączeniu.|Yeni üyelerin katıldıklarında gördükleri.|新メンバーが参加時に見るもの。
+Invite links, expiry and uses.|Link d'invito, scadenza e utilizzi.|Uitnodigingslinks, verloop en gebruik.|Linki z zaproszeniem, ważność i użycia.|Davet bağlantıları, süreleri ve kullanımları.|招待リンク、期限、使用回数。
+People who are banned.|Persone bannate.|Mensen die verbannen zijn.|Osoby zbanowane.|Yasaklanan kişiler.|BANされた人。
+Channels, categories, order and permissions.|Canali, categorie, ordine e permessi.|Kanalen, categorieën, volgorde en rechten.|Kanały, kategorie, kolejność i uprawnienia.|Kanallar, kategoriler, sıralama ve izinler.|チャンネル、カテゴリー、並び順、権限。
+Custom emoji for your server.|Emoji personalizzate per il server.|Eigen emoji voor je server.|Własne emoji dla serwera.|Sunucun için özel emojiler.|サーバー用のカスタム絵文字。
+Custom stickers.|Sticker personalizzati.|Eigen stickers.|Własne naklejki.|Özel çıkartmalar.|カスタムスタンプ。
+Sounds people can play in voice.|Suoni da riprodurre in vocale.|Geluiden die mensen in spraak kunnen afspelen.|Dźwięki do odtwarzania na kanałach głosowych.|Seslide çalınabilen sesler.|ボイスで鳴らせるサウンド。
+Account age rules and pausing invites.|Regole sull'età dell'account e pausa inviti.|Regels voor accountleeftijd en uitnodigingen pauzeren.|Zasady wieku konta i wstrzymanie zaproszeń.|Hesap yaşı kuralları ve davetleri duraklatma.|アカウント年齢のルールと招待の一時停止。
+Block words, links and spam on its own.|Blocca parole, link e spam da solo.|Blokkeert woorden, links en spam vanzelf.|Samo blokuje słowa, linki i spam.|Kelimeleri, bağlantıları ve spamı kendiliğinden engeller.|言葉、リンク、スパムを自動でブロック。
+Who changed what, and when.|Chi ha cambiato cosa, e quando.|Wie wat heeft gewijzigd, en wanneer.|Kto co zmienił i kiedy.|Kim neyi ne zaman değiştirdi.|誰が何をいつ変更したか。
+Show your server in Discover.|Mostra il server in Scopri.|Laat je server zien in Ontdekken.|Pokaż serwer w Odkrywaniu.|Sunucunu Keşfet'te göster.|ディスカバーにサーバーを表示。
+How your server is growing.|Come sta crescendo il tuo server.|Hoe je server groeit.|Jak rośnie twój serwer.|Sunucunun nasıl büyüdüğü.|サーバーの成長。
+Requirements and your Partner status.|Requisiti e stato partner.|Vereisten en je partnerstatus.|Wymagania i status partnera.|Gereksinimler ve Ortaklık durumun.|条件とパートナーの状況。
+Bots and webhooks.|Bot e webhook.|Bots en webhooks.|Boty i webhooki.|Botlar ve webhook'lar.|ボットとWebhook。
+Save or restore a copy of your server.|Salva o ripristina una copia del server.|Een kopie van je server opslaan of herstellen.|Zapisz lub przywróć kopię serwera.|Sunucunun bir kopyasını kaydet veya geri yükle.|サーバーのコピーを保存・復元。
+Listening to Spotify|Sta ascoltando Spotify|Luistert naar Spotify|Słucha Spotify|Spotify dinliyor|Spotifyを再生中
+Playing a game|Sta giocando|Speelt een game|Gra w grę|Oyun oynuyor|ゲームをプレイ中
+Playing|Sta giocando a|Speelt|Gra w|Oynuyor|プレイ中
+Listening to|Sta ascoltando|Luistert naar|Słucha|Dinliyor|再生中
+Watching|Sta guardando|Kijkt naar|Ogląda|İzliyor|視聴中
+View full profile|Vedi profilo completo|Volledig profiel bekijken|Zobacz pełny profil|Tam profili görüntüle|プロフィール全体を表示
+Unread Mentions|Menzioni non lette|Ongelezen vermeldingen|Nieprzeczytane wzmianki|Okunmamış Bahsetmeler|未読のメンション
+Notifications settings|Impostazioni notifiche|Meldingsinstellingen|Ustawienia powiadomień|Bildirim ayarları|通知設定
+Today|Oggi|Vandaag|Dzisiaj|Bugün|今日
+Yesterday|Ieri|Gisteren|Wczoraj|Dün|昨日
+Saved Messages|Messaggi salvati|Opgeslagen berichten|Zapisane wiadomości|Kaydedilen Mesajlar|保存したメッセージ
+Pinned Messages|Messaggi fissati|Vastgezette berichten|Przypięte wiadomości|Sabitlenmiş Mesajlar|ピン留めメッセージ
+Threads|Thread|Threads|Wątki|Konular|スレッド
+Member List|Elenco membri|Ledenlijst|Lista członków|Üye Listesi|メンバーリスト
+Add Reaction|Aggiungi reazione|Reactie toevoegen|Dodaj reakcję|Tepki Ekle|リアクションを追加
+Set status|Imposta stato|Status instellen|Ustaw status|Durum ayarla|ステータスを設定
+Switch Accounts|Cambia account|Van account wisselen|Przełącz konto|Hesap Değiştir|アカウントを切り替え
+Discover servers|Scopri server|Servers ontdekken|Odkrywaj serwery|Sunucuları keşfet|サーバーを探す
+New group chat|Nuova chat di gruppo|Nieuwe groepschat|Nowy czat grupowy|Yeni grup sohbeti|新しいグループチャット
+Continue as|Continua come|Doorgaan als|Kontynuuj jako|Şu olarak devam et:|次のユーザーで続行
+Use a recovery code|Usa un codice di recupero|Een herstelcode gebruiken|Użyj kodu odzyskiwania|Bir kurtarma kodu kullan|リカバリーコードを使う
+Log in with a passkey|Accedi con una passkey|Inloggen met een toegangssleutel|Zaloguj się kluczem dostępu|Geçiş anahtarıyla giriş yap|パスキーでログイン
+You're in good standing|Il tuo account è in regola|Je account is in orde|Twoje konto jest w porządku|Hesabın iyi durumda|アカウントは良好な状態です
+Birthday and the little things.|Compleanno e piccole cose.|Verjaardag en de kleine dingen.|Urodziny i drobiazgi.|Doğum günü ve küçük şeyler.|誕生日などのちょっとしたこと。
+How you log in, and keeping your account safe.|Come accedi e come proteggere l'account.|Hoe je inlogt en je account veilig houdt.|Jak się logujesz i jak chronić konto.|Nasıl giriş yaptığın ve hesabını güvende tutmak.|ログイン方法とアカウントの保護。
+Where you're logged in right now.|Dove hai effettuato l'accesso ora.|Waar je nu bent ingelogd.|Gdzie jesteś teraz zalogowany.|Şu an nerede giriş yapılı olduğun.|現在ログインしている場所。
+Everything else about your account.|Tutto il resto sul tuo account.|Al het andere over je account.|Wszystko inne o twoim koncie.|Hesabınla ilgili diğer her şey.|アカウントに関するその他すべて。
+Your account’s record with Zuno.|Lo storico del tuo account con Zuno.|De geschiedenis van je account bij Zuno.|Historia twojego konta w Zuno.|Hesabının Zuno'daki kaydı.|Zunoでのアカウントの記録。
+How your name shows up.|Come appare il tuo nome.|Hoe je naam eruitziet.|Jak wyświetla się twoja nazwa.|Adının nasıl göründüğü.|名前の表示のされ方。
+Your picture, banner and colors.|La tua foto, il banner e i colori.|Je foto, banner en kleuren.|Twoje zdjęcie, baner i kolory.|Resmin, afişin ve renklerin.|写真、バナー、カラー。
+What people read when they open your profile.|Cosa leggono le persone quando aprono il tuo profilo.|Wat mensen lezen als ze je profiel openen.|Co ludzie czytają po otwarciu twojego profilu.|Profilini açanların okuduğu şeyler.|プロフィールを開いた人が読む内容。
+Open the Closet|Apri l'armadio|Open de kast|Otwórz szafę|Dolabı Aç|クローゼットを開く
+Friends since|Amici dal|Vrienden sinds|Znajomi od|Arkadaşlık başlangıcı|フレンドになった日
+Mark all read|Segna tutto come letto|Alles als gelezen markeren|Oznacz wszystko jako przeczytane|Tümünü okundu işaretle|すべて既読にする
+Clear all|Cancella tutto|Alles wissen|Wyczyść wszystko|Tümünü temizle|すべてクリア
+Mentions|Menzioni|Vermeldingen|Wzmianki|Bahsetmeler|メンション
+Unread|Non letti|Ongelezen|Nieprzeczytane|Okunmamış|未読
+Requests|Richieste|Verzoeken|Prośby|İstekler|リクエスト
+Keybinds|Scorciatoie|Sneltoetsen|Skróty klawiszowe|Kısayol Tuşları|キー割り当て
+App font|Carattere dell'app|App-lettertype|Czcionka aplikacji|Uygulama yazı tipi|アプリのフォント
+Time zone|Fuso orario|Tijdzone|Strefa czasowa|Saat dilimi|タイムゾーン

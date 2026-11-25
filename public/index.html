@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <script src="/move.js"></script>
+  <script src="/lang45.js"></script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+  <meta name="theme-color" content="#121918">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Zuno">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <title>Zuno – chat, call and hang out with friends</title>
+  <meta name="description" content="Zuno is a free place to chat, call and hang out with friends and communities: servers, voice and video calls, DMs, stickers and more.">
+  <meta name="robots" content="index, follow">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Zuno">
+  <meta property="og:title" content="Zuno – chat, call and hang out with friends">
+  <meta property="og:description" content="Servers, voice and video calls, DMs, stickers and more. Free.">
+  <meta property="og:image" content="/icon-512.png">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" href="/logo.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Fredoka:wght@500;600&display=swap">
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/zuno14.css">
+  <link rel="stylesheet" href="/zuno15.css">
+  <link rel="stylesheet" href="/zuno16.css">
+  <link rel="stylesheet" href="/zuno19.css">
+  <link rel="stylesheet" href="/zuno20.css">
+  <link rel="stylesheet" href="/zuno21.css">
+  <link rel="stylesheet" href="/zuno22.css">
+  <link rel="stylesheet" href="/zuno23.css">
+  <link rel="stylesheet" href="/zuno25.css">
+  <link rel="stylesheet" href="/zuno26.css">
+  <link rel="stylesheet" href="/zuno27.css">
+  <link rel="stylesheet" href="/zuno28.css">
+  <link rel="stylesheet" href="/zuno29.css">
+  <link rel="stylesheet" href="/zuno30.css">
+  <link rel="stylesheet" href="/zuno31.css">
+  <link rel="stylesheet" href="/zuno32.css">
+  <link rel="stylesheet" href="/zuno33.css">
+  <link rel="stylesheet" href="/zuno35.css">
+  <link rel="stylesheet" href="/zuno36.css">
+  <link rel="stylesheet" href="/zuno37.css">
+  <link rel="stylesheet" href="/zuno38.css">
+  <link rel="stylesheet" href="/zuno39.css">
+  <link rel="stylesheet" href="/zuno40.css">
+  <link rel="stylesheet" href="/zuno41.css">
+  <link rel="stylesheet" href="/zuno42.css">
+  <link rel="stylesheet" href="/zuno43.css">
+  <link rel="stylesheet" href="/zuno44.css">
+  <link rel="stylesheet" href="/zuno45.css">
+  <link rel="stylesheet" href="/zuno46.css">
+  <link rel="stylesheet" href="/zuno47.css">
+  <link rel="stylesheet" href="/zuno48.css">
+  <link rel="stylesheet" href="/zuno49.css">
+  <link rel="stylesheet" href="/zuno50.css">
+  <link rel="stylesheet" media="print" id="namefonts45" href="https://fonts.googleapis.com/css2?family=Bungee&family=Caveat:wght@600&family=Comfortaa:wght@600&family=Creepster&family=Lobster&family=Monoton&family=Orbitron:wght@600&family=Pacifico&family=Permanent+Marker&family=Press+Start+2P&family=Righteous&display=swap">
+</head>
+<body>
+  <header class="titlebar hidden" id="titlebar"></header>
+  <div class="splash" id="splash"><div class="splash-inner" id="splash-art"></div>
+    <div class="sk45" aria-hidden="true">
+      <div class="sk45-rail"><i></i><i></i><i></i><i></i><i></i></div>
+      <div class="sk45-side"><b></b><b></b><b></b><span></span><b class="r"></b><b class="r"></b><b class="r"></b><b class="r"></b><b class="r"></b></div>
+      <div class="sk45-main"><b class="top"></b><div class="sk45-msgs"><p><i></i><b></b><b class="s"></b></p><p><i></i><b class="s"></b></p><p><i></i><b></b><b></b><b class="s"></b></p><p><i></i><b class="s"></b></p></div><b class="box"></b></div>
+    </div></div>
+  <!-- Sign in / sign up -->
+  <div id="auth" class="auth hidden">
+    <form id="auth-form" class="auth-card" autocomplete="on">
+      <div class="auth-mascot" id="auth-mascot"></div>
+      <h1 id="auth-title">Welcome back!</h1>
+      <p id="auth-sub" class="muted" style="margin-bottom:20px">We're so excited to see you again!</p>
+      <label class="field register-only">Email <span class="req">*</span>
+        <input name="email" type="email" maxlength="254" autocomplete="email" autocapitalize="off" spellcheck="false">
+      </label>
+      <label class="field register-only">Display name
+        <input name="displayName" maxlength="32" autocomplete="nickname">
+      </label>
+      <label class="field"><span id="login-label">Email or Username</span> <span class="req">*</span>
+        <input name="username" required maxlength="254" autocomplete="username" autocapitalize="off" spellcheck="false">
+      </label>
+      <label class="field">Password <span class="req">*</span>
+        <input name="password" type="password" required minlength="6" autocomplete="current-password">
+      </label>
+      <div id="turnstile-wrap" class="register-only" style="display:none;text-align:left;margin:12px 0">
+        <div id="turnstile-widget"></div>
+        <p class="muted small" id="turnstile-help"></p>
+      </div>
+      <div id="auth-error" class="form-error"></div>
+      <p class="muted small terms-note" id="terms-note">By signing up, you agree to Zuno's <a href="/terms" target="_blank">Terms of Service</a> and <a href="/privacy" target="_blank">Privacy Policy</a>.</p>
+      <button class="btn btn-primary btn-block" id="auth-submit">Log In</button>
+      <p class="muted small"><span id="auth-switch-text">Need an account?</span>
+        <a href="/signup" id="auth-switch">Register</a></p>
+      <a href="#" class="small hidden" id="auth-server" style="display:block;text-align:left;margin-top:8px">Server settings</a>
+    </form>
+  </div>
+
+  <!-- Main app -->
+  <div id="app" class="app hidden">
+    <nav class="rail">
+      <button class="rail-btn active" data-tip="Direct Messages" id="home-btn"><img src="/logo.png" alt="Home"></button>
+      <div class="rail-sep"></div>
+      <div id="server-rail" class="server-rail"></div>
+      <button class="rail-btn add" data-tip="Add a Server" id="add-server-btn">+</button>
+    </nav>
+
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-top" id="sidebar-top"></div>
+      <div class="sidebar-scroll" id="sidebar-scroll"></div>
+      <div id="voice-bar"></div>
+      <div class="user-panel" id="user-panel"></div>
+    </aside>
+
+    <main class="main" id="main"></main>
+  </div>
+
+  <div id="layer"></div>
+  <div id="call-audio" hidden></div>
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="/app.js"></script>
+  <script src="/emoji.js"></script>
+  <script src="/servers.js"></script>
+  <script src="/calls.js"></script>
+  <script src="/extras.js"></script>
+  <script src="/bloom.js"></script>
+  <script src="/polish.js"></script>
+  <script src="/moderation.js"></script>
+  <script src="/serverconfig.js"></script>
+  <script src="/pings.js"></script>
+  <script src="/roles.js"></script>
+  <script src="/discover.js"></script>
+  <script src="/devportal.js"></script>
+  <script src="/requests.js"></script>
+  <script src="/flair.js"></script>
+  <script src="/serverplus.js"></script>
+  <script src="/chatplus.js"></script>
+  <script src="/account.js"></script>
+  <script src="/groups.js"></script>
+  <script src="/people.js"></script>
+  <script src="/media.js"></script>
+  <script src="/hangout.js"></script>
+  <script src="/look.js"></script>
+  <script src="/chat16.js"></script>
+  <script src="/community16.js"></script>
+  <script src="/secure16.js"></script>
+  <script src="/handy.js"></script>
+  <script src="/zuno18.js"></script>
+  <script src="/zuno19.js"></script>
+  <script src="/zuno20.js"></script>
+  <script src="/zuno21.js"></script>
+  <script src="/zuno22.js"></script>
+  <script src="/zuno23.js"></script>
+  <script src="/zuno25.js"></script>
+  <script src="/zuno26.js"></script>
+  <script src="/zuno27.js"></script>
+  <script src="/zuno28.js"></script>
+  <script src="/zuno29.js"></script>
+  <script src="/zuno30.js"></script>
+  <script src="/zuno31.js"></script>
+  <script src="/zuno32.js"></script>
+  <script src="/zuno33.js"></script>
+  <script src="/zuno35.js"></script>
+  <script src="/zuno36.js"></script>
+  <script src="/zuno37.js"></script>
+  <script src="/zuno38.js"></script>
+  <script src="/zuno39.js"></script>
+  <script src="/zuno40.js"></script>
+  <script src="/zuno41.js"></script>
+  <script src="/zuno42.js"></script>
+  <script src="/zuno43.js"></script>
+  <script src="/zuno44.js"></script>
+  <script src="/zuno45.js"></script>
+  <script src="/zuno46.js"></script>
+  <script src="/zuno47.js"></script>
+  <script src="/zuno48.js"></script>
+  <script src="/zuno49.js"></script>
+  <script src="/zuno50.js"></script>
+  <script src="/boot.js"></script>
+</body>
+</html>

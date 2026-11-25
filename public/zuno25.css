@@ -1,0 +1,17 @@
+/* Zuno 0.25: line icons in place of emoji in menus, buttons, tabs and headings. */
+.ui-ic-wrap { display: inline-flex; align-items: center; justify-content: center; vertical-align: -0.16em; margin-right: .42em; line-height: 0; }
+.ui-ic-wrap.alone { margin-right: 0; }
+.ui-ic { width: 1.12em; height: 1.12em; flex: none; }
+.mi-ico .ui-ic-wrap { margin: 0; }
+.mi-ico .ui-ic { width: 18px; height: 18px; }
+.menu button .ui-ic { width: 17px; height: 17px; opacity: .9; }
+.icon-btn .ui-ic-wrap.alone .ui-ic { width: 20px; height: 20px; }
+.settings-nav [data-s] .ui-ic { width: 17px; height: 17px; opacity: .85; }
+.settings-nav [data-s].active .ui-ic { opacity: 1; }
+.dialog > h3 .ui-ic, .modal > h3 .ui-ic { color: var(--brand); width: 1em; height: 1em; }
+.btn .ui-ic { width: 1.05em; height: 1.05em; }
+.mm-tile .mm-ico .ui-ic { width: 18px; height: 18px; }
+.tpl-e .ui-ic { width: 22px; height: 22px; color: var(--brand); }
+.composer-poll .ui-ic, .sec-add .ui-ic { width: 18px; height: 18px; }
+[class$="-ico"] > .ui-ic-wrap.alone, [class*="-ico "] > .ui-ic-wrap.alone { margin: 0; }
+.bp-ico .ui-ic, .bgc-ico .ui-ic { width: 22px; height: 22px; color: var(--brand); }

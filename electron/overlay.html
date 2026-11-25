@@ -1,0 +1,22 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src https: http: data:; style-src 'unsafe-inline'; script-src 'self' 'unsafe-inline'">
+<style>
+  html, body { margin: 0; background: transparent; font-family: "Segoe UI", system-ui, sans-serif; overflow: hidden; user-select: none; }
+  .list { display: flex; flex-direction: column; gap: 6px; padding: 4px; }
+  .p { display: flex; align-items: center; gap: 8px; padding: 4px 10px 4px 4px; border-radius: 999px; background: rgba(12, 18, 17, .72); color: #e8f0ee; font-size: 13px; font-weight: 600; width: fit-content; max-width: 240px; opacity: .78; transition: opacity .15s, box-shadow .15s; }
+  .p.speaking { opacity: 1; box-shadow: 0 0 0 2px #23d18b; }
+  .av { width: 28px; height: 28px; border-radius: 50%; background: #2b3a38; display: grid; place-items: center; overflow: hidden; flex: none; font-weight: 700; }
+  .av img { width: 100%; height: 100%; object-fit: cover; }
+  .n { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .m { font-size: 11px; opacity: .7; }
+  .hint { margin: 2px 4px; font-size: 10px; color: rgba(232, 240, 238, .55); }
+</style></head>
+<body><div class="list" id="list"></div><div class="hint">Shift+` to hide</div>
+<script>
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  window.zunoOverlay.onState(st => {
+    document.getElementById('list').innerHTML = (st.people || []).slice(0, 10).map(p =>
+      `<div class="p${p.speaking ? ' speaking' : ''}"><span class="av">${p.avatar ? `<img src="${esc(p.avatar)}" alt="">` : esc((p.name || '?')[0].toUpperCase())}</span><span class="n">${esc(p.name)}</span>${p.muted ? '<span class="m">muted</span>' : ''}</div>`).join('');
+  });
+</script></body></html>

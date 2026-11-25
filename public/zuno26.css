@@ -1,0 +1,83 @@
+/* Zuno 0.26 */
+/* "New group" sits right next to the + instead of floating in the middle. */
+.dm-label #group-new { margin-left: auto; margin-right: 6px; }
+.dm-label #group-new svg { width: 16px; height: 16px; }
+/* The Bloom level sits right after the server's name; the arrow stays on the far right. */
+.server-head { justify-content: flex-start; }
+.server-head .chev { margin-left: auto; padding-left: 6px; }
+.sh-bloom { display: inline-flex; align-items: center; gap: 2px; flex: none; }
+.sh-bloom svg { width: 14px; height: 14px; }
+/* "Seen" sits right under your message, not across on the far side of the chat. */
+.msg .seen-tag { grid-column: 2 / -1; text-align: left; padding-left: 2px; }
+/* ...on the same side as the message (right only when your messages sit on the right). */
+.msg .seen-tag.right { text-align: right; padding-right: 4px; }
+/* Fullscreen video: nothing behind it animates, and the play button's blur is off while playing. */
+html.zp-fs *, html.zp-fs *::before, html.zp-fs *::after { animation-play-state: paused !important; }
+html.zp-fs .zp *, html.zp-fs .zp *::before, html.zp-fs .zp *::after { animation-play-state: running !important; }
+.zp:not(.paused) .zp-big { visibility: hidden; backdrop-filter: none; }
+.zp.is-full .zp-bar { will-change: opacity; }
+mark.hl { background: color-mix(in srgb, var(--yellow, #f0b232) 45%, transparent); color: inherit; border-radius: 3px; padding: 0 1px; }
+/* @mentions in the message box: a highlight drawn behind the text you type. */
+.cmp-hl { position: absolute; z-index: 0; overflow: hidden; white-space: pre-wrap; overflow-wrap: break-word; word-break: break-word; color: transparent; pointer-events: none; margin: 0; border: 0; box-sizing: border-box; }
+.cmp-hl .cmp-m { color: transparent; background: color-mix(in srgb, var(--brand) 28%, transparent); border-radius: 4px; box-shadow: 0 0 0 1px color-mix(in srgb, var(--brand) 40%, transparent); }
+.cmp-hl + textarea, .cmp-hl ~ textarea { position: relative; z-index: 1; }
+/* Blocked messages fold up. */
+.msg.blocked-hidden { display: none; }
+.blocked-run { display: flex; align-items: center; gap: 8px; margin: 4px 16px 4px 64px; padding: 6px 10px; border-radius: 8px; color: var(--muted); font-size: 13px; background: color-mix(in srgb, var(--rail) 60%, transparent); }
+.blocked-run svg { width: 15px; height: 15px; }
+.blocked-run b { margin-left: auto; color: var(--link, var(--brand)); font-weight: 600; }
+.blocked-run:hover b { text-decoration: underline; }
+/* Profile: message box and block button. */
+.pc-msg { display: flex; align-items: center; gap: 6px; margin: 12px 16px 16px; padding: 4px 4px 4px 12px; border-radius: 10px; background: var(--input, var(--rail)); }
+.pc-msg input { flex: 1; min-width: 0; background: none; border: 0; outline: none; color: var(--text); font: inherit; font-size: 14px; padding: 8px 0; }
+.pc-msg .icon-btn svg { width: 18px; height: 18px; }
+.pc-block svg { width: 18px; height: 18px; }
+/* Stream quality picker. */
+.stream-q { max-width: 460px; }
+.sq-label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .02em; color: var(--muted); margin: 14px 0 6px; }
+.sq-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.sq-opt { position: relative; padding: 9px 14px; border-radius: 10px; background: var(--rail); color: var(--text); font-weight: 600; font-size: 14px; border: 1px solid transparent; }
+.sq-opt:hover { background: var(--hover); }
+.sq-opt.on { border-color: var(--brand); background: color-mix(in srgb, var(--brand) 18%, var(--rail)); color: var(--header); }
+.sq-opt.locked { opacity: .55; }
+.sq-bloom { margin-left: 6px; font-style: normal; font-size: 10px; font-weight: 800; padding: 1px 5px; border-radius: 6px; background: linear-gradient(135deg, #ff8fcf, #a37bff); color: #fff; vertical-align: 1px; }
+.sq-note { margin: 12px 0 0; }
+.call-btn[data-c="quality"] { font-size: 11px; font-weight: 800; letter-spacing: .02em; }
+.clip-btn svg { width: 22px; height: 22px; }
+/* Clips. */
+.clips-dlg { max-width: 720px; width: min(720px, calc(100vw - 32px)); }
+.clip-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; max-height: 60vh; overflow: auto; }
+.clip-card { background: var(--rail); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; }
+.clip-card video { width: 100%; aspect-ratio: 16 / 9; background: #000; display: block; }
+.clip-meta { padding: 8px 10px 2px; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.clip-meta b { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.clip-acts { display: flex; gap: 6px; padding: 6px 10px 10px; flex-wrap: wrap; }
+/* Voice channel chat buttons. */
+.vc-chat-btn { width: auto !important; padding: 0 10px; gap: 6px; display: inline-flex; align-items: center; font-weight: 600; font-size: 13px; border-radius: 8px; }
+.vc-chat-btn svg { width: 18px; height: 18px; }
+.title .vc-ico svg { width: 20px; height: 20px; vertical-align: -4px; }
+.pc-block.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; color: #fa777c; flex: 0 0 auto; }
+.chat-intro .intro-hash svg { width: 36px; height: 36px; }
+
+/* ---- speed ----
+   (0.28) Messages used to skip layout while off screen (content-visibility). Their guessed height
+   didn't match their real one, so every redraw, and every hover under the pointer, moved the chat
+   around: it jumped while you scrolled and while you tried to pick a message. The chat only ever
+   draws the newest ~150 messages, so it's quick without it. */
+
+/* While the chat is scrolling, messages passing under the pointer don't light up or show their
+   buttons (that was redoing every row each frame). Hover comes back the moment scrolling stops. */
+#messages.scrolling > * { pointer-events: none; }
+/* The collar's tag swings a little. */
+.deco .dk-swing { transform-origin: 50% 88%; animation: dk-swing 2.4s ease-in-out infinite; }
+@keyframes dk-swing { 0%, 100% { transform: rotate(-7deg); } 50% { transform: rotate(7deg); } }
+.reduce-motion .deco .dk-swing { animation: none; }
+
+/* Custom status: a speech bubble next to the name on profiles. */
+.pc-name-row { display: flex; align-items: center; gap: 10px; min-width: 0; flex-wrap: wrap; }
+.pc-name-row .pc-name { min-width: 0; }
+.pcard .pc-bubble { position: relative; margin: 0; display: inline-flex; align-items: center; gap: 5px; max-width: 100%; padding: 5px 11px; border-radius: 14px; background: color-mix(in srgb, var(--floating, #2b3433) 88%, var(--brand) 12%); box-shadow: 0 0 0 1px var(--border), 0 2px 6px rgba(0,0,0,.18); font-size: 13px; line-height: 1.3; color: var(--text); animation: pc-bubble-in .25s var(--spring, ease-out) both; }
+.pcard .pc-bubble::before { content: ""; position: absolute; left: -5px; top: 50%; width: 10px; height: 10px; margin-top: -5px; background: inherit; transform: rotate(45deg); border-radius: 2px; box-shadow: -1px 1px 0 0 var(--border); }
+.pcard .pc-bubble .pc-cs-text { position: relative; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 210px; }
+.pcard .pc-bubble .pc-cs-emoji { position: relative; font-size: 15px; }
+@keyframes pc-bubble-in { from { opacity: 0; transform: translateX(-4px) scale(.96); } }

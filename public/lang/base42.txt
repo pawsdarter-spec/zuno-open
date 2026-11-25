@@ -1,0 +1,251 @@
+# English|es|pt|fr|de
+User Settings|Ajustes de usuario|Configurações de usuário|Paramètres utilisateur|Benutzereinstellungen
+App Settings|Ajustes de la aplicación|Configurações do app|Paramètres de l'appli|App-Einstellungen
+My Account|Mi cuenta|Minha conta|Mon compte|Mein Konto
+My Profile|Mi perfil|Meu perfil|Mon profil|Mein Profil
+Profiles|Perfiles|Perfis|Profils|Profile
+Community|Comunidad|Comunidade|Communauté|Community
+Closet|Armario|Closet|Placard|Schrank
+Profile Playback|Reproducción del perfil|Reprodução do perfil|Lecture du profil|Profilwiedergabe
+Connections|Conexiones|Conexões|Connexions|Verbindungen
+Privacy & Safety|Privacidad y seguridad|Privacidade e segurança|Confidentialité et sécurité|Privatsphäre & Sicherheit
+Activity Privacy|Privacidad de actividad|Privacidade da atividade|Confidentialité de l'activité|Aktivitäts-Privatsphäre
+Account Standing|Estado de la cuenta|Situação da conta|Statut du compte|Kontostatus
+Appearance|Apariencia|Aparência|Apparence|Darstellung
+Notifications|Notificaciones|Notificações|Notifications|Benachrichtigungen
+Voice & Video|Voz y video|Voz e vídeo|Voix et vidéo|Sprache & Video
+Chat|Chat|Chat|Discussion|Chat
+About Zuno|Acerca de Zuno|Sobre o Zuno|À propos de Zuno|Über Zuno
+Build|Crear|Criar|Créer|Entwickeln
+Developer|Desarrollador|Desenvolvedor|Développeur|Entwickler
+Help|Ayuda|Ajuda|Aide|Hilfe
+Suggestions|Sugerencias|Sugestões|Suggestions|Vorschläge
+Report a Bug|Reportar un error|Relatar um bug|Signaler un bug|Fehler melden
+Bug Reports|Reportes de errores|Relatórios de bugs|Rapports de bugs|Fehlerberichte
+Moderation|Moderación|Moderação|Modération|Moderation
+Log Out|Cerrar sesión|Sair|Se déconnecter|Abmelden
+Search settings|Buscar ajustes|Pesquisar configurações|Rechercher un paramètre|Einstellungen suchen
+Edit User Profile|Editar perfil|Editar perfil|Modifier le profil|Profil bearbeiten
+Edit Profile|Editar perfil|Editar perfil|Modifier le profil|Profil bearbeiten
+Display Name|Nombre visible|Nome de exibição|Nom affiché|Anzeigename
+Username|Nombre de usuario|Nome de usuário|Nom d'utilisateur|Benutzername
+Email|Correo|E-mail|E-mail|E-Mail
+Language|Idioma|Idioma|Langue|Sprache
+Reveal|Mostrar|Mostrar|Afficher|Anzeigen
+Hide|Ocultar|Ocultar|Masquer|Verbergen
+Edit|Editar|Editar|Modifier|Bearbeiten
+Save|Guardar|Salvar|Enregistrer|Speichern
+Save Changes|Guardar cambios|Salvar alterações|Enregistrer|Änderungen speichern
+Cancel|Cancelar|Cancelar|Annuler|Abbrechen
+Close|Cerrar|Fechar|Fermer|Schließen
+Delete|Eliminar|Excluir|Supprimer|Löschen
+Remove|Quitar|Remover|Retirer|Entfernen
+Change|Cambiar|Alterar|Changer|Ändern
+Upload|Subir|Enviar|Importer|Hochladen
+Send|Enviar|Enviar|Envoyer|Senden
+Reply|Responder|Responder|Répondre|Antworten
+Back|Atrás|Voltar|Retour|Zurück
+Search|Buscar|Pesquisar|Rechercher|Suchen
+Member Since|Miembro desde|Membro desde|Membre depuis|Mitglied seit
+Member since|Miembro desde|Membro desde|Membre depuis|Mitglied seit
+Badges|Insignias|Insígnias|Badges|Abzeichen
+Not yet|Aún no|Ainda não|Pas encore|Noch nicht
+Active|Activo|Ativo|Actif|Aktiv
+Friends|Amigos|Amigos|Amis|Freunde
+Servers|Servidores|Servidores|Serveurs|Server
+Home|Inicio|Início|Accueil|Start
+You|Tú|Você|Toi|Du
+Online|En línea|Online|En ligne|Online
+Offline|Desconectado|Offline|Hors ligne|Offline
+Idle|Ausente|Ausente|Absent|Abwesend
+Do Not Disturb|No molestar|Não perturbe|Ne pas déranger|Nicht stören
+Invisible|Invisible|Invisível|Invisible|Unsichtbar
+All|Todos|Todos|Tous|Alle
+Pending|Pendientes|Pendentes|En attente|Ausstehend
+Blocked|Bloqueados|Bloqueados|Bloqués|Blockiert
+Add Friend|Añadir amigo|Adicionar amigo|Ajouter un ami|Freund hinzufügen
+Direct Messages|Mensajes directos|Mensagens diretas|Messages privés|Direktnachrichten
+Message Requests|Solicitudes de mensajes|Pedidos de mensagem|Demandes de message|Nachrichtenanfragen
+Find or start a conversation|Busca o inicia una conversación|Encontre ou comece uma conversa|Trouver ou démarrer une conversation|Unterhaltung finden oder starten
+Message|Mensaje|Mensagem|Message|Nachricht
+More|Más|Mais|Plus|Mehr
+Events|Eventos|Eventos|Événements|Events
+Create a category|Crear una categoría|Criar uma categoria|Créer une catégorie|Kategorie erstellen
+Create Channel|Crear canal|Criar canal|Créer un salon|Kanal erstellen
+Create Category|Crear categoría|Criar categoria|Créer une catégorie|Kategorie erstellen
+Invite People|Invitar gente|Convidar pessoas|Inviter des gens|Leute einladen
+Server Settings|Ajustes del servidor|Configurações do servidor|Paramètres du serveur|Servereinstellungen
+Mark As Read|Marcar como leído|Marcar como lido|Marquer comme lu|Als gelesen markieren
+Mute Server|Silenciar servidor|Silenciar servidor|Mettre le serveur en sourdine|Server stummschalten
+Unmute Server|Activar sonido del servidor|Reativar servidor|Réactiver le serveur|Server-Stummschaltung aufheben
+Leave Server|Salir del servidor|Sair do servidor|Quitter le serveur|Server verlassen
+Edit Channel|Editar canal|Editar canal|Modifier le salon|Kanal bearbeiten
+Mute|Silenciar|Silenciar|Muet|Stumm
+Deafen|Ensordecer|Ensurdecer|Sourdine|Taub
+Jump to present|Ir al presente|Ir para o presente|Revenir au présent|Zur Gegenwart
+Welcome back!|¡Bienvenido de nuevo!|Bem-vindo de volta!|Bon retour !|Willkommen zurück!
+We're so excited to see you again!|¡Qué alegría verte otra vez!|Que bom te ver de novo!|Ravi de te revoir !|Schön, dich wiederzusehen!
+Email or Username|Correo o nombre de usuario|E-mail ou nome de usuário|E-mail ou nom d'utilisateur|E-Mail oder Benutzername
+Password|Contraseña|Senha|Mot de passe|Passwort
+Log In|Iniciar sesión|Entrar|Se connecter|Anmelden
+Register|Registrarse|Cadastrar|S'inscrire|Registrieren
+Need an account?|¿Necesitas una cuenta?|Precisa de uma conta?|Besoin d'un compte ?|Noch kein Konto?
+Forgot your password?|¿Olvidaste tu contraseña?|Esqueceu a senha?|Mot de passe oublié ?|Passwort vergessen?
+Two-factor login|Inicio de sesión en dos pasos|Login em duas etapas|Connexion à deux facteurs|Zwei-Faktor-Anmeldung
+Turn On|Activar|Ativar|Activer|Einschalten
+Turn Off|Desactivar|Desativar|Désactiver|Ausschalten
+Off|Desactivado|Desligado|Désactivé|Aus
+On|Activado|Ligado|Activé|An
+Passkeys|Llaves de acceso|Chaves de acesso|Clés d'accès|Passkeys
+Add a Passkey|Añadir una llave de acceso|Adicionar chave de acesso|Ajouter une clé d'accès|Passkey hinzufügen
+Change Email|Cambiar correo|Alterar e-mail|Changer d'e-mail|E-Mail ändern
+Current password|Contraseña actual|Senha atual|Mot de passe actuel|Aktuelles Passwort
+New password|Nueva contraseña|Nova senha|Nouveau mot de passe|Neues Passwort
+Type it again|Escríbela otra vez|Digite novamente|Retape-le|Nochmal eingeben
+Change Password|Cambiar contraseña|Alterar senha|Changer le mot de passe|Passwort ändern
+Recovery codes|Códigos de recuperación|Códigos de recuperação|Codes de récupération|Wiederherstellungscodes
+Devices|Dispositivos|Dispositivos|Appareils|Geräte
+This device|Este dispositivo|Este dispositivo|Cet appareil|Dieses Gerät
+Log Out All Other Devices|Cerrar sesión en los demás dispositivos|Sair de todos os outros dispositivos|Déconnecter les autres appareils|Alle anderen Geräte abmelden
+Basics|Lo básico|Básico|L'essentiel|Grundlegendes
+Birthday|Cumpleaños|Aniversário|Anniversaire|Geburtstag
+Sign-in & Security|Inicio de sesión y seguridad|Login e segurança|Connexion et sécurité|Anmeldung & Sicherheit
+Month|Mes|Mês|Mois|Monat
+Day|Día|Dia|Jour|Tag
+Identity|Identidad|Identidade|Identité|Identität
+Looks|Aspecto|Visual|Apparence|Aussehen
+Flair|Estilo|Estilo|Style|Flair
+About|Sobre mí|Sobre|À propos|Über mich
+Sound|Sonido|Som|Son|Sound
+Name Style|Estilo del nombre|Estilo do nome|Style du nom|Namensstil
+Widgets|Widgets|Widgets|Widgets|Widgets
+Pronouns|Pronombres|Pronomes|Pronoms|Pronomen
+Avatar|Avatar|Avatar|Avatar|Avatar
+Banner|Banner|Banner|Bannière|Banner
+Background|Fondo|Fundo|Arrière-plan|Hintergrund
+Change Avatar|Cambiar avatar|Alterar avatar|Changer d'avatar|Avatar ändern
+Remove Avatar|Quitar avatar|Remover avatar|Retirer l'avatar|Avatar entfernen
+Upload Banner|Subir banner|Enviar banner|Importer une bannière|Banner hochladen
+Upload MP4 or GIF|Subir MP4 o GIF|Enviar MP4 ou GIF|Importer un MP4 ou GIF|MP4 oder GIF hochladen
+None|Ninguno|Nenhum|Aucun|Keins
+Preview|Vista previa|Prévia|Aperçu|Vorschau
+Custom Status|Estado personalizado|Status personalizado|Statut personnalisé|Eigener Status
+About Me|Sobre mí|Sobre mim|À propos de moi|Über mich
+Profile theme|Tema del perfil|Tema do perfil|Thème du profil|Profilthema
+Name color|Color del nombre|Cor do nome|Couleur du nom|Namensfarbe
+Avatar decoration|Decoración del avatar|Decoração do avatar|Décoration d'avatar|Avatar-Deko
+Profile effect|Efecto del perfil|Efeito do perfil|Effet de profil|Profileffekt
+Name banner|Banner del nombre|Banner do nome|Bannière du nom|Namensbanner
+Server Tag|Etiqueta del servidor|Tag do servidor|Tag du serveur|Server-Tag
+Font|Fuente|Fonte|Police|Schrift
+Effect|Efecto|Efeito|Effet|Effekt
+Colors|Colores|Cores|Couleurs|Farben
+Save Name Style|Guardar estilo del nombre|Salvar estilo do nome|Enregistrer le style|Namensstil speichern
+Typing style|Estilo al escribir|Estilo de digitação|Style de saisie|Tipp-Stil
+Theme|Tema|Tema|Thème|Design
+Dark|Oscuro|Escuro|Sombre|Dunkel
+Light|Claro|Claro|Clair|Hell
+App background|Fondo de la aplicación|Fundo do app|Fond de l'appli|App-Hintergrund
+Accent color|Color de acento|Cor de destaque|Couleur d'accent|Akzentfarbe
+Messages|Mensajes|Mensagens|Messages|Nachrichten
+Zoom|Zoom|Zoom|Zoom|Zoom
+Desktop notifications|Notificaciones de escritorio|Notificações na área de trabalho|Notifications du bureau|Desktop-Benachrichtigungen
+Message sound|Sonido de mensajes|Som de mensagem|Son des messages|Nachrichtenton
+Ringtone|Tono de llamada|Toque|Sonnerie|Klingelton
+Quiet hours|Horas de silencio|Horário silencioso|Heures calmes|Ruhezeiten
+Microphone|Micrófono|Microfone|Micro|Mikrofon
+Push to Talk|Pulsar para hablar|Aperte para falar|Appuyer pour parler|Push-to-Talk
+Voice Activity|Actividad de voz|Atividade de voz|Activité vocale|Sprachaktivierung
+Noise suppression|Supresión de ruido|Supressão de ruído|Suppression du bruit|Rauschunterdrückung
+Echo cancellation|Cancelación de eco|Cancelamento de eco|Annulation d'écho|Echounterdrückung
+Soundboard|Panel de sonidos|Painel de sons|Soundboard|Soundboard
+Everyone|Todos|Todos|Tout le monde|Alle
+Friends only|Solo amigos|Só amigos|Amis uniquement|Nur Freunde
+Read receipts|Confirmaciones de lectura|Confirmações de leitura|Accusés de lecture|Lesebestätigungen
+Download my data|Descargar mis datos|Baixar meus dados|Télécharger mes données|Meine Daten herunterladen
+Overview|Resumen|Visão geral|Vue d'ensemble|Übersicht
+Banner & Look|Banner y aspecto|Banner e visual|Bannière et apparence|Banner & Aussehen
+Discovery|Descubrir|Descoberta|Découverte|Entdecken
+Safety|Seguridad|Segurança|Sécurité|Sicherheit
+Emoji|Emoji|Emoji|Émojis|Emoji
+Stickers|Stickers|Figurinhas|Autocollants|Sticker
+Backups|Copias de seguridad|Backups|Sauvegardes|Backups
+Roles|Roles|Cargos|Rôles|Rollen
+Role Pickers|Selectores de roles|Seletores de cargos|Choix de rôles|Rollenauswahl
+Onboarding|Bienvenida|Boas-vindas|Accueil des membres|Onboarding
+Channels & Categories|Canales y categorías|Canais e categorias|Salons et catégories|Kanäle & Kategorien
+Members|Miembros|Membros|Membres|Mitglieder
+Invites|Invitaciones|Convites|Invitations|Einladungen
+Bans|Expulsiones|Banimentos|Bannissements|Banns
+AutoMod|AutoMod|AutoMod|AutoMod|AutoMod
+Audit Log|Registro de auditoría|Registro de auditoria|Journal d'audit|Audit-Log
+Server Insights|Estadísticas del servidor|Estatísticas do servidor|Statistiques du serveur|Server-Statistiken
+Bots & Webhooks|Bots y webhooks|Bots e webhooks|Bots et webhooks|Bots & Webhooks
+Partner Program|Programa de socios|Programa de parceiros|Programme partenaire|Partnerprogramm
+Delete Server|Eliminar servidor|Excluir servidor|Supprimer le serveur|Server löschen
+Essentials|Lo esencial|Essencial|L'essentiel|Grundlagen
+People|Personas|Pessoas|Personnes|Personen
+Channels|Canales|Canais|Salons|Kanäle
+Expressions|Expresiones|Expressões|Expressions|Ausdrücke
+Grow|Crecer|Crescer|Croissance|Wachstum
+Apps & Data|Apps y datos|Apps e dados|Applis et données|Apps & Daten
+Pick what you want to change, or search with|Elige qué quieres cambiar, o busca con|Escolha o que quer mudar, ou pesquise com|Choisis ce que tu veux changer, ou cherche avec|Wähle, was du ändern willst, oder suche mit
+Name, icon, description and welcome messages.|Nombre, icono, descripción y mensajes de bienvenida.|Nome, ícone, descrição e mensagens de boas-vindas.|Nom, icône, description et messages de bienvenue.|Name, Symbol, Beschreibung und Willkommensnachrichten.
+Banner, colors and your invite link.|Banner, colores y tu enlace de invitación.|Banner, cores e seu link de convite.|Bannière, couleurs et lien d'invitation.|Banner, Farben und dein Einladungslink.
+A short tag members can wear by their name.|Una etiqueta corta que los miembros pueden llevar junto a su nombre.|Uma tag curta que os membros podem usar ao lado do nome.|Un petit tag que les membres portent à côté de leur nom.|Ein kurzer Tag, den Mitglieder neben ihrem Namen tragen.
+Everyone here: roles, nicknames, kicks.|Todos los de aquí: roles, apodos, expulsiones.|Todos aqui: cargos, apelidos, expulsões.|Tout le monde ici : rôles, pseudos, expulsions.|Alle hier: Rollen, Spitznamen, Kicks.
+Permissions and colors for groups of people.|Permisos y colores para grupos de personas.|Permissões e cores para grupos de pessoas.|Permissions et couleurs pour des groupes.|Rechte und Farben für Gruppen.
+Let people pick their own roles.|Deja que la gente elija sus roles.|Deixe as pessoas escolherem seus cargos.|Laisse les gens choisir leurs rôles.|Lass Leute ihre Rollen wählen.
+What new members see when they join.|Lo que ven los nuevos miembros al unirse.|O que os novos membros veem ao entrar.|Ce que voient les nouveaux membres.|Was neue Mitglieder beim Beitritt sehen.
+Invite links, expiry and uses.|Enlaces de invitación, caducidad y usos.|Links de convite, validade e usos.|Liens d'invitation, expiration et utilisations.|Einladungslinks, Ablauf und Nutzungen.
+People who are banned.|Personas expulsadas.|Pessoas banidas.|Personnes bannies.|Gebannte Personen.
+Channels, categories, order and permissions.|Canales, categorías, orden y permisos.|Canais, categorias, ordem e permissões.|Salons, catégories, ordre et permissions.|Kanäle, Kategorien, Reihenfolge und Rechte.
+Custom emoji for your server.|Emoji propios para tu servidor.|Emojis próprios do seu servidor.|Émojis personnalisés pour ton serveur.|Eigene Emoji für deinen Server.
+Custom stickers.|Stickers propios.|Figurinhas próprias.|Autocollants personnalisés.|Eigene Sticker.
+Sounds people can play in voice.|Sonidos que se pueden poner en voz.|Sons para tocar na voz.|Des sons à jouer en vocal.|Sounds, die man im Sprachkanal abspielen kann.
+Account age rules and pausing invites.|Reglas de antigüedad de cuenta y pausar invitaciones.|Regras de idade da conta e pausa de convites.|Âge minimum des comptes et pause des invitations.|Regeln zum Kontoalter und Einladungen pausieren.
+Block words, links and spam on its own.|Bloquea palabras, enlaces y spam solo.|Bloqueia palavras, links e spam sozinho.|Bloque mots, liens et spam tout seul.|Blockiert Wörter, Links und Spam automatisch.
+Who changed what, and when.|Quién cambió qué, y cuándo.|Quem mudou o quê, e quando.|Qui a changé quoi, et quand.|Wer was wann geändert hat.
+Show your server in Discover.|Muestra tu servidor en Descubrir.|Mostre seu servidor no Descobrir.|Affiche ton serveur dans Découvrir.|Zeig deinen Server in Entdecken.
+How your server is growing.|Cómo crece tu servidor.|Como seu servidor está crescendo.|Comment ton serveur grandit.|Wie dein Server wächst.
+Requirements and your Partner status.|Requisitos y tu estado de socio.|Requisitos e seu status de parceiro.|Conditions et ton statut partenaire.|Voraussetzungen und dein Partnerstatus.
+Bots and webhooks.|Bots y webhooks.|Bots e webhooks.|Bots et webhooks.|Bots und Webhooks.
+Save or restore a copy of your server.|Guarda o restaura una copia de tu servidor.|Salve ou restaure uma cópia do seu servidor.|Sauvegarde ou restaure une copie du serveur.|Speichere oder stelle eine Kopie deines Servers wieder her.
+Listening to Spotify|Escuchando Spotify|Ouvindo Spotify|Écoute Spotify|Hört Spotify
+Playing a game|Jugando|Jogando|Joue à un jeu|Spielt ein Spiel
+Playing|Jugando a|Jogando|Joue à|Spielt
+Listening to|Escuchando|Ouvindo|Écoute|Hört
+Watching|Viendo|Assistindo|Regarde|Schaut
+View full profile|Ver perfil completo|Ver perfil completo|Voir le profil complet|Ganzes Profil ansehen
+Unread Mentions|Menciones sin leer|Menções não lidas|Mentions non lues|Ungelesene Erwähnungen
+Notifications settings|Ajustes de notificaciones|Configurações de notificação|Paramètres de notification|Benachrichtigungseinstellungen
+Today|Hoy|Hoje|Aujourd'hui|Heute
+Yesterday|Ayer|Ontem|Hier|Gestern
+Saved Messages|Mensajes guardados|Mensagens salvas|Messages enregistrés|Gespeicherte Nachrichten
+Pinned Messages|Mensajes fijados|Mensagens fixadas|Messages épinglés|Angepinnte Nachrichten
+Threads|Hilos|Tópicos|Fils|Threads
+Member List|Lista de miembros|Lista de membros|Liste des membres|Mitgliederliste
+Add Reaction|Añadir reacción|Adicionar reação|Ajouter une réaction|Reaktion hinzufügen
+Set status|Cambiar estado|Definir status|Définir le statut|Status setzen
+Switch Accounts|Cambiar de cuenta|Trocar de conta|Changer de compte|Konto wechseln
+Discover servers|Descubrir servidores|Descobrir servidores|Découvrir des serveurs|Server entdecken
+New group chat|Nuevo chat grupal|Novo chat em grupo|Nouveau groupe|Neuer Gruppenchat
+Continue as|Continuar como|Continuar como|Continuer en tant que|Weiter als
+Use a recovery code|Usar un código de recuperación|Usar um código de recuperação|Utiliser un code de récupération|Wiederherstellungscode verwenden
+Log in with a passkey|Iniciar sesión con llave de acceso|Entrar com chave de acesso|Se connecter avec une clé d'accès|Mit Passkey anmelden
+You're in good standing|Tu cuenta está en regla|Sua conta está em dia|Ton compte est en règle|Dein Konto ist in Ordnung
+Birthday and the little things.|Cumpleaños y otros detalles.|Aniversário e outros detalhes.|Anniversaire et petits détails.|Geburtstag und Kleinigkeiten.
+How you log in, and keeping your account safe.|Cómo inicias sesión y cómo proteger tu cuenta.|Como você entra e como proteger sua conta.|Ta connexion et la sécurité de ton compte.|Wie du dich anmeldest und dein Konto schützt.
+Where you're logged in right now.|Dónde tienes la sesión iniciada ahora.|Onde você está conectado agora.|Où tu es connecté en ce moment.|Wo du gerade angemeldet bist.
+Everything else about your account.|Todo lo demás sobre tu cuenta.|Todo o resto sobre sua conta.|Tout le reste sur ton compte.|Alles andere zu deinem Konto.
+Your account’s record with Zuno.|El historial de tu cuenta en Zuno.|O histórico da sua conta no Zuno.|L'historique de ton compte sur Zuno.|Die Vorgeschichte deines Kontos bei Zuno.
+How your name shows up.|Cómo se ve tu nombre.|Como seu nome aparece.|Comment ton nom s'affiche.|Wie dein Name angezeigt wird.
+Your picture, banner and colors.|Tu foto, banner y colores.|Sua foto, banner e cores.|Ta photo, ta bannière et tes couleurs.|Dein Bild, Banner und Farben.
+What people read when they open your profile.|Lo que la gente lee al abrir tu perfil.|O que as pessoas leem ao abrir seu perfil.|Ce que les gens lisent sur ton profil.|Was Leute in deinem Profil lesen.
+Open the Closet|Abrir el armario|Abrir o closet|Ouvrir le placard|Schrank öffnen
+Friends since|Amigos desde|Amigos desde|Amis depuis|Befreundet seit
+Mark all read|Marcar todo como leído|Marcar tudo como lido|Tout marquer comme lu|Alle als gelesen markieren
+Clear all|Borrar todo|Limpar tudo|Tout effacer|Alle löschen
+Mentions|Menciones|Menções|Mentions|Erwähnungen
+Unread|Sin leer|Não lidas|Non lus|Ungelesen
+Requests|Solicitudes|Pedidos|Demandes|Anfragen

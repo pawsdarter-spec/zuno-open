@@ -1,0 +1,3 @@
+/* Zuno 0.50: smoother. */
+.load-more.lm-auto:not(.lm-vis)::before { animation-play-state: paused; }
+html.bg50 *, html.bg50 *::before, html.bg50 *::after { animation-play-state: paused !important; }

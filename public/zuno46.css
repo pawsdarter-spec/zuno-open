@@ -1,0 +1,61 @@
+/* Zuno 0.45.2 */
+
+/* ---- "<name> used /roll" above a bot's answer ----
+   The line sits in normal flow above the bot's name (it used to be placed absolutely and its 26px of
+   room was overridden by the bubble style, so it overlapped the name). Only avatars inside the line
+   are made static; the message's own avatar moves down by the line's height. */
+html .msg.cmd44-reply.cmd44-reply { padding-top: 6px; }
+html .msg.cmd44-reply > .cmd44.cmd44 { position: static; margin: 0 0 3px; height: 20px; }
+html .msg .cmd44 > .avatar.avatar { position: static; top: auto; left: auto; flex: none; }
+html .msg.cmd44-reply > [data-profile] > .avatar { top: 29px; }
+html[data-msgstyle="bubbles"] .msg.cmd44-reply > [data-profile] > .avatar { top: 45px; }
+html .msg.cmd44-solo > .cmd44.solo { position: static; }
+
+/* ---- server icons: the unread dot, mention count and Official/Partnered badges stick out of the
+   icon, so the scrolling rail needs a little room above and below or it cuts them off ---- */
+.rail > .server-rail { padding-block: 5px; margin-block: -5px; }
+
+/* ---- Zuno Bots: how each bot is set up ---- */
+.zb-sum46 { display: flex; align-items: flex-start; gap: 6px; padding: 7px 9px; border-radius: 9px; background: color-mix(in srgb, var(--green) 12%, transparent); color: var(--header); font-size: 12.5px; line-height: 1.4; }
+.zb-sum46 > svg { width: 14px; height: 14px; flex: none; margin-top: 1px; color: var(--green); }
+.zb-sum46.todo { background: color-mix(in srgb, #f0b232 13%, transparent); }
+.zb-sum46.todo > svg { color: #f0b232; }
+.zb-setup .zb-sec46 { margin: 18px 0 6px; padding-top: 12px; border-top: 1px solid var(--border); color: var(--muted); font: 700 11.5px/1 var(--font); text-transform: uppercase; letter-spacing: .05em; }
+.zb-setup .zb-sec46:first-of-type { border-top: 0; padding-top: 0; margin-top: 12px; }
+.zb-setup .zb-row46 { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; }
+.zb-setup .zb-row46 .field { margin-bottom: 8px; }
+.zb-chips46 { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; max-height: 120px; overflow-y: auto; }
+.zb-chip46 { position: relative; cursor: pointer; }
+.zb-chip46 input { position: absolute; opacity: 0; pointer-events: none; }
+.zb-chip46 span { display: inline-block; padding: 3px 10px; border-radius: 999px; background: var(--input); box-shadow: inset 0 0 0 1px var(--border); font-size: 12.5px; color: var(--muted); }
+.zb-chip46 input:checked + span { background: color-mix(in srgb, var(--brand) 22%, transparent); box-shadow: inset 0 0 0 1px var(--brand); color: var(--header); }
+.zb-chip46 input:focus-visible + span { outline: 2px solid var(--brand); outline-offset: 2px; }
+.zb-cmds46 { margin: 14px 0 0; display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+.zb-cmds46 code { font-size: 11.5px; padding: 1px 6px; border-radius: 5px; background: var(--input); }
+
+/* ---- Settings › Developer: marketplace review state ---- */
+.br46-state { display: inline-flex; align-items: center; gap: 6px; padding: 5px 11px; border-radius: 999px; background: var(--input); font-size: 13px; margin-bottom: 8px; }
+.br46-state > svg { width: 15px; height: 15px; }
+.br46-state.approved { background: color-mix(in srgb, var(--green) 16%, transparent); color: var(--green); }
+.br46-state.pending { background: color-mix(in srgb, var(--brand) 16%, transparent); color: var(--brand); }
+.br46-state.declined { background: color-mix(in srgb, #f0b232 16%, transparent); color: #f0b232; }
+.br46-note { margin: 0 0 8px; padding: 8px 12px; border-radius: 10px; background: var(--input); border-left: 3px solid #f0b232; font-size: 13.5px; }
+
+/* ---- Moderation › Bot Reviews ---- */
+.br46-card { display: flex; flex-direction: column; gap: 8px; padding: 14px; margin-bottom: 12px; border-radius: 14px; background: var(--input); box-shadow: inset 0 0 0 1px var(--border); }
+.br46-top { display: flex; gap: 12px; align-items: center; }
+.br46-top .avatar { position: relative; flex: none; }
+.br46-who { min-width: 0; }
+.br46-who b { color: var(--header); font-size: 15px; }
+.br46-tag { font-weight: 600; color: var(--header); font-size: 13.5px; }
+.br46-desc { margin: 0; font-size: 13.5px; white-space: pre-wrap; }
+.br46-msg { display: flex; flex-direction: column; gap: 2px; padding: 8px 10px; border-radius: 10px; background: var(--sidebar); font-size: 13px; }
+.br46-cmds { display: flex; flex-wrap: wrap; gap: 4px; }
+.br46-cmds code { font-size: 12px; padding: 1px 6px; border-radius: 5px; background: var(--sidebar); }
+.br46-row { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+.br46-row .avatar { position: relative; }
+.zb-over46 { z-index: 130 !important; }
+.dl46-list { display: flex; flex-direction: column; gap: 6px; margin: 8px 0 10px; }
+.dl46-row { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 10px; background: var(--input); }
+.dl46-row > span svg { width: 16px; height: 16px; color: var(--brand); }
+.dl46-row > div { flex: 1; min-width: 0; }

@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Zuno Status</title>
+  <link rel="icon" href="/icon-192.png">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Fredoka:wght@600&display=swap">
+  <style>
+    :root { --bg: #121918; --card: #1a2322; --line: rgba(200,255,245,.08); --text: #dce8e5; --head: #f2fbf9; --muted: #8ea6a1; --brand: #04c5ae; --ok: #23a55a; --warn: #f0b232; --bad: #f23f43; --none: #2b3635; }
+    @media (prefers-color-scheme: light) { :root { --bg: #f2f6f5; --card: #ffffff; --line: rgba(0,40,30,.1); --text: #1d2b29; --head: #0b1a18; --muted: #5b6f6b; --none: #e1e8e6; } }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.5 Figtree, system-ui, sans-serif; }
+    main { max-width: 760px; margin: 0 auto; padding: 32px 16px 64px; }
+    header { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
+    header img { width: 40px; height: 40px; }
+    header h1 { font: 600 26px Fredoka, Figtree, sans-serif; margin: 0; color: var(--head); }
+    header a { margin-left: auto; color: var(--brand); text-decoration: none; font-weight: 600; }
+    .banner { display: flex; align-items: center; gap: 12px; padding: 18px 20px; border-radius: 14px; background: var(--card); box-shadow: inset 0 0 0 1px var(--line); margin-bottom: 20px; }
+    .banner .dot { width: 14px; height: 14px; border-radius: 50%; flex: none; }
+    .banner b { color: var(--head); font-size: 18px; }
+    .banner small { color: var(--muted); display: block; }
+    .card { background: var(--card); border-radius: 14px; box-shadow: inset 0 0 0 1px var(--line); padding: 4px 20px; margin-bottom: 20px; }
+    .row { display: flex; align-items: center; gap: 12px; padding: 14px 0; border-bottom: 1px solid var(--line); }
+    .row:last-child { border-bottom: 0; }
+    .row .name { flex: 1; color: var(--head); font-weight: 600; }
+    .row .detail { color: var(--muted); font-size: 13px; }
+    .pill { font-size: 12px; font-weight: 700; padding: 2px 10px; border-radius: 10px; }
+    .ok { --c: var(--ok); } .degraded, .minor { --c: var(--warn); } .major { --c: var(--bad); } .off { --c: var(--muted); }
+    .pill { color: var(--c); background: color-mix(in srgb, var(--c) 15%, transparent); }
+    .dot { background: var(--c); }
+    h2 { font-size: 15px; color: var(--head); margin: 28px 0 10px; }
+    .uptime { padding: 18px 20px; }
+    .bars { display: flex; gap: 2px; height: 34px; align-items: stretch; }
+    .bars i { flex: 1; border-radius: 4px; background: var(--c, var(--none)); min-width: 2px; cursor: default; }
+    .bars i.nodata { background: var(--none); }
+    .axis { display: flex; justify-content: space-between; color: var(--muted); font-size: 12px; margin-top: 8px; }
+    .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }
+    .stat { background: var(--card); border-radius: 14px; box-shadow: inset 0 0 0 1px var(--line); padding: 14px 16px; }
+    .stat b { display: block; font: 600 24px Fredoka, Figtree, sans-serif; color: var(--head); }
+    .stat span { color: var(--muted); font-size: 13px; }
+    .incident { padding: 14px 0; border-bottom: 1px solid var(--line); }
+    .incident:last-child { border-bottom: 0; }
+    .incident b { color: var(--head); }
+    .upd { color: var(--muted); font-size: 13px; margin-top: 4px; }
+    .tip { position: fixed; pointer-events: none; background: #0c1312; color: #f2fbf9; font-size: 12.5px; font-weight: 600; padding: 6px 9px; border-radius: 6px; opacity: 0; transition: opacity .1s; white-space: nowrap; z-index: 9; }
+    .tip.on { opacity: 1; }
+    .muted { color: var(--muted); }
+    footer { color: var(--muted); font-size: 13px; text-align: center; margin-top: 32px; }
+    @media (max-width: 560px) { .stats { grid-template-columns: 1fr 1fr; } .row { flex-wrap: wrap; } }
+  </style>
+</head>
+<body>
+<main>
+  <header><img src="/logo.png" alt=""><h1>Zuno Status</h1><a href="/">Open Zuno →</a></header>
+  <div id="root"><div class="banner"><span class="muted">Checking Zuno…</span></div></div>
+  <footer>Zuno checks itself every minute. This page refreshes on its own.</footer>
+</main>
+<div class="tip" id="tip"></div>
+<script src="/status.js"></script>
+</body>
+</html>

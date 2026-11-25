@@ -1,0 +1,167 @@
+/* Zuno 0.36 (silent): Settings › My Profile and My Account redesign */
+
+/* The profile form is a column that's height-limited: its cards were being squeezed shorter than
+   their contents, so they spilled over each other (and looked see-through). Cards never shrink. */
+#profile-form > * { flex-shrink: 0; }
+
+/* ---- My Profile cards ---- */
+.pf36 #profile-form { gap: 16px; }
+.pf36 .pf-card { padding: 18px 20px 8px; border-radius: 18px; background: linear-gradient(180deg, color-mix(in srgb, var(--sidebar) 92%, var(--brand) 8%), var(--sidebar) 70px); box-shadow: inset 0 0 0 1px var(--border), 0 6px 22px rgba(0, 0, 0, .14); }
+.pf36 .pf-card-head { display: grid; grid-template-columns: 38px 1fr; grid-template-rows: auto auto; column-gap: 12px; align-items: center; margin-bottom: 16px; }
+.pf36 .pf-card-head .m36-ic { grid-row: 1 / span 2; width: 38px; height: 38px; border-radius: 12px; display: grid; place-items: center; color: #fff; background: var(--brand); box-shadow: 0 4px 12px color-mix(in srgb, var(--brand) 35%, transparent); }
+.pf36 .m36-ic svg { width: 20px; height: 20px; }
+.pf36 .pf-card-head .m36-ic-namestyle { background: linear-gradient(135deg, #22c1a8, #3aa0ff); }
+.pf36 .pf-card-head .m36-ic-widgets { background: linear-gradient(135deg, #64748b, #0ea5e9); }
+.pf36 .pf-card-head .m36-ic-looks { background: linear-gradient(135deg, #ff7aa8, #ffb35c); }
+.pf36 .pf-card-head .m36-ic-flair { background: linear-gradient(135deg, #8b5cf6, #ec4899); }
+.pf36 .pf-card-head .m36-ic-about { background: linear-gradient(135deg, #3aa0ff, #4fd1c5); }
+.pf36 .pf-card-head .m36-ic-sound { background: linear-gradient(135deg, #f59e0b, #ef4444); }
+.pf36 .pf-card-head h3 { font-size: 16px; font-weight: 800; letter-spacing: 0; text-transform: none; color: var(--header); }
+.pf36 .pf-card-head span:not(.m36-ic) { font-size: 13px; opacity: 1; color: var(--muted); }
+.pf36 .pf-card .field { font-size: 12px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
+.pf36 .pf-card .field input:not([type=checkbox]):not([type=radio]):not([type=color]), .pf36 .pf-card .field textarea { margin-top: 7px; text-transform: none; letter-spacing: 0; font-weight: 500; border-radius: 12px; }
+.pf36 .pf-card .field textarea { min-height: 96px; }
+.pf36 .pf-card .hint { text-transform: none; letter-spacing: 0; font-weight: 400; }
+.pf36 .m36-pair { display: grid; grid-template-columns: 1.4fr 1fr; gap: 12px; }
+.pf36 .m36-pair .field { margin-bottom: 14px; }
+
+/* rows with a thumbnail: avatar, banner, background, sound */
+.pf36 .m36-field { padding: 12px; margin-bottom: 10px !important; border-radius: 14px; background: rgba(0, 0, 0, .16); box-shadow: inset 0 0 0 1px var(--border); text-transform: none !important; letter-spacing: 0 !important; }
+.m36-row { display: flex; align-items: center; gap: 14px; }
+.m36-thumb { flex: none; width: 58px; height: 58px; border-radius: 14px; overflow: hidden; display: grid; place-items: center; background: var(--hover); box-shadow: inset 0 0 0 1px var(--border); }
+.m36-thumb img, .m36-thumb video { width: 100%; height: 100%; object-fit: cover; display: block; }
+.m36-thumb.m36-avatar { border-radius: 50%; }
+.m36-thumb.m36-banner { width: 92px; height: 52px; border-radius: 10px; }
+.m36-thumb.m36-bg { width: 44px; height: 64px; border-radius: 10px; }
+.m36-ini { width: 100%; height: 100%; display: grid; place-items: center; font-size: 22px; font-weight: 800; color: #fff; }
+.m36-swatch { width: 100%; height: 100%; }
+.m36-none { font-size: 10px; font-weight: 700; color: var(--muted); }
+.m36-note { color: var(--muted); } .m36-note.on { color: #f59e0b; } .m36-note svg { width: 24px; height: 24px; }
+.m36-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.m36-text b { font-size: 14.5px; font-weight: 700; color: var(--header); }
+.m36-text .hint { font-size: 12.5px; color: var(--muted); line-height: 1.35; margin: 0 !important; }
+.m36-status { font-size: 12px; }
+.m36-acts { flex: none; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: flex-end; max-width: 52%; }
+.m36-acts .btn { white-space: nowrap; }
+.m36-acts .btn-link:disabled { display: none; }
+.m36-color { display: inline-flex; align-items: center; gap: 6px; padding: 3px 8px 3px 10px; border-radius: 999px; background: var(--hover); cursor: pointer; }
+.m36-color input[type=color] { width: 26px; height: 26px; padding: 0; border: 0; border-radius: 50%; overflow: hidden; background: none; cursor: pointer; }
+.m36-color #banner-hex { font-size: 12px; font-variant-numeric: tabular-nums; }
+.m36-field > .hint { display: block; margin: 8px 0 0 72px; font-size: 12px; }
+.m36-field > .sound-mode { margin: 10px 0 0 72px; }
+.m36-seg { display: inline-flex !important; gap: 0 !important; padding: 3px; border-radius: 10px; background: var(--hover); }
+.m36-seg label { display: inline-flex; align-items: center; height: 28px; padding: 0 12px; border-radius: 8px; font-size: 13px; font-weight: 600; color: var(--muted); cursor: pointer; text-transform: none; letter-spacing: 0; }
+.m36-seg input { position: absolute; opacity: 0; pointer-events: none; }
+.m36-seg label:has(input:checked) { background: var(--brand); color: #fff; }
+
+/* flair rows and the profile-colors block */
+.pf36 .fr-row { border-radius: 14px; }
+.pf36 .bloom-field { padding: 12px; border-radius: 14px; background: rgba(0, 0, 0, .16); box-shadow: inset 0 0 0 1px var(--border); text-transform: none; letter-spacing: 0; }
+.pf36 .bloom-field .bf-row { display: flex; align-items: center; gap: 10px; padding: 6px 0; }
+.pf36 .bloom-field .bf-opt { flex: 1; font-size: 14px; font-weight: 600; color: var(--header); }
+.pf36 .bloom-field input[type=color] { width: 30px; height: 30px; border-radius: 50%; padding: 0; border: 0; overflow: hidden; }
+.pf36 .m36-count { float: right; }
+
+@media (max-width: 700px) {
+  .pf36 .pf-card { padding: 14px 14px 6px; }
+  .pf36 .m36-pair { grid-template-columns: 1fr; gap: 0; }
+  .m36-row { flex-wrap: wrap; }
+  .m36-acts { max-width: none; width: 100%; justify-content: flex-start; padding-left: 72px; }
+  .m36-field > .hint, .m36-field > .sound-mode { margin-left: 0; }
+}
+
+/* Name Style and Widgets as cards in the left column */
+.pf36 .profile-editor > .m36-col { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.pf36 .profile-editor > .m36-col > * { flex-shrink: 0; }
+.pf36 .m36-extra { margin: 0 !important; scroll-margin-top: 16px; }
+.pf36 .m36-field > .hint { margin: 8px 0 0 72px !important; }
+
+/* ---- My Account ---- */
+.settings-nav .a36-gone { display: none !important; }
+.a36 .account-card { border-radius: 20px; overflow: hidden; box-shadow: 0 10px 30px rgba(0, 0, 0, .25); }
+.a36-facts { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 18px; }
+.a36-fact { all: unset; box-sizing: border-box; display: flex; align-items: center; gap: 10px; flex: 1 1 140px; min-width: 0; padding: 10px 12px; border-radius: 14px; background: var(--sidebar); box-shadow: inset 0 0 0 1px var(--border); }
+button.a36-fact { cursor: pointer; transition: transform .15s var(--spring), box-shadow .15s; }
+button.a36-fact:hover { transform: translateY(-1px); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--brand) 55%, var(--border)); }
+.a36-fi { width: 34px; height: 34px; flex: none; display: grid; place-items: center; border-radius: 10px; background: var(--hover); font-size: 17px; }
+.a36-fact span:last-child { display: flex; flex-direction: column; min-width: 0; }
+.a36-fact b { font-size: 15px; color: var(--header); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.a36-fact small { font-size: 11.5px; color: var(--muted); font-weight: 600; }
+.a36-standing-pill { all: unset; cursor: pointer; flex-basis: 100%; box-sizing: border-box; padding: 9px 14px; border-radius: 12px; font-size: 13.5px; font-weight: 700; }
+.a36-standing-pill.good { color: #3fcf8e; background: rgba(63, 207, 142, .1); box-shadow: inset 0 0 0 1px rgba(63, 207, 142, .3); }
+.a36-standing-pill.warn { color: #f5b14c; background: rgba(245, 177, 76, .1); box-shadow: inset 0 0 0 1px rgba(245, 177, 76, .35); }
+.a36 #settings-body { display: flex; flex-direction: column; }
+.a36 #settings-body > h2 { order: -3; } .a36 #settings-body > .account-card { order: -2; } .a36 #settings-body > .a36-facts { order: -1; }
+.a36 .a36-pass { display: contents; }
+.a36-head { margin-top: 18px; padding: 18px 20px 6px; border-radius: 18px 18px 0 0; background: var(--sidebar); box-shadow: inset 1px 1px 0 var(--border), inset -1px 0 0 var(--border); scroll-margin-top: 16px; }
+.a36-head[hidden] { display: none; }
+.a36-head .pf-card-head { display: grid; grid-template-columns: 38px 1fr; column-gap: 12px; align-items: center; margin: 0; }
+.a36-head .m36-ic { grid-row: 1 / span 2; width: 38px; height: 38px; border-radius: 12px; display: grid; place-items: center; color: #fff; background: var(--brand); }
+.a36-head .m36-ic svg { width: 20px; height: 20px; }
+.a36-head h3 { margin: 0; font-size: 16px !important; font-weight: 800; color: var(--header); text-transform: none !important; letter-spacing: 0 !important; }
+.a36-head .pf-card-head span:not(.m36-ic) { font-size: 13px; color: var(--muted); }
+.a36-head .a36-ic-basics { background: linear-gradient(135deg, #ff7aa8, #ffb35c); }
+.a36-head .a36-ic-security { background: linear-gradient(135deg, #22c1a8, #3aa0ff); }
+.a36-head .a36-ic-devices { background: linear-gradient(135deg, #64748b, #0ea5e9); }
+.a36-head .a36-ic-standing { background: linear-gradient(135deg, #3fcf8e, #16a34a); }
+.a36-head .a36-ic-more { background: linear-gradient(135deg, #8b5cf6, #ec4899); }
+.a36 .a36-g { margin: 0 !important; padding: 14px 20px !important; background: var(--sidebar); box-shadow: inset 1px 0 0 var(--border), inset -1px 0 0 var(--border); border-top: 1px solid var(--border); }
+.a36 .a36-g.a36-first { border-top: 0; padding-top: 10px !important; }
+.a36 .a36-g.a36-last { border-radius: 0 0 18px 18px; box-shadow: inset 1px 0 0 var(--border), inset -1px 0 0 var(--border), inset 0 -1px 0 var(--border); padding-bottom: 18px !important; }
+.a36 .a36-g h4 { margin-top: 0; }
+.a36 .a36-standing .standing-card { margin-top: 0; }
+@media (max-width: 700px) { .a36-head { padding: 14px 14px 6px; } .a36 .a36-g { padding: 12px 14px !important; } .a36-fact { flex-basis: calc(50% - 4px); } }
+
+/* ---- profile card stays within the screen ---- */
+/* Badge tooltips are invisible until hovered, but they still stuck out past the card's edge,
+   so on phones the card could be dragged sideways. Hidden ones are now out of the layout. */
+.pbadge-tip { display: none; }
+.pbadge:hover .pbadge-tip, .pbadge:focus-visible .pbadge-tip { display: block; animation: tip36 .18s ease-out; }
+@keyframes tip36 { from { opacity: 0; transform: translateY(4px); } }
+@media (max-width: 700px) { #layer .pcard { overflow-x: clip; } #layer .pcard .pbadge-tip { max-width: calc(100vw - 32px); } }
+
+/* "Zuno has a new home" note for apps installed from the old address */
+.move36 { position: fixed; left: 50%; bottom: 18px; translate: -50% 0; z-index: 140; display: flex; align-items: center; gap: 10px; width: max-content; max-width: calc(100vw - 24px); padding: 10px 10px 10px 16px; border-radius: 14px; background: var(--floating); box-shadow: 0 12px 34px rgba(0, 0, 0, .45), inset 0 0 0 1px var(--border); font-size: 13.5px; animation: pop .25s ease-out; }
+.move36 span { flex: 1; min-width: 0; }
+@media (max-width: 600px) { .move36 { flex-wrap: wrap; bottom: calc(76px + env(safe-area-inset-bottom)); } }
+
+/* Forum header: a solid background so posts don't show through it while scrolling, and on phones
+   it scrolls away with the page (it's too tall to stay pinned on a small screen). */
+.fm-head { background: var(--main); }
+@media (max-width: 760px) { .fm-head { position: static; } }
+
+/* Server tags and the Official chip sit inside the name, so they were picking up the name's font
+   and effect. They always use Zuno's own look. */
+:is([data-nf], [data-nx]) :is(.srv-tag, .official) { font-family: var(--font) !important; font-style: normal; text-shadow: none !important; animation: none !important; -webkit-background-clip: border-box !important; background-clip: border-box !important; text-transform: none; }
+:is([data-nf], [data-nx]) .srv-tag { font-size: 10.5px; font-weight: 800; letter-spacing: .04em; line-height: 1; background: var(--tc, var(--brand)) !important; color: #fff !important; -webkit-text-fill-color: #fff; }
+:is([data-nf], [data-nx]) .official { font-size: 10px; font-weight: 700; letter-spacing: 0; line-height: 15px; background: var(--brand) !important; color: var(--ink) !important; -webkit-text-fill-color: var(--ink); }
+
+/* Narrow windows: the pinned profile preview is shorter, and the close button stays above it. */
+@media (max-width: 900px) {
+  .profile-editor .preview #profile-preview { max-height: min(38vh, 300px); }
+  .profile-editor .preview.pf-prev-min { padding-bottom: 4px; }
+  .profile-editor .pf-prev-toggle { margin: 0 auto 6px 0; }
+}
+.settings-close { z-index: 7; }
+
+/* "Raid the Closet" on phones: the art and button wrap instead of squeezing the words. */
+@media (max-width: 600px) {
+  .pf-fresh { flex-wrap: wrap; }
+  .pf-fresh > div:nth-child(2) { flex: 1 1 160px; }
+  .pf-fresh > .btn, .pf-fresh > button { width: 100%; }
+}
+
+/* The message box hint stays on one line (long channel names and "Slowmode" were wrapping onto
+   three lines on phones); it ends with "…" when it doesn't fit. */
+#composer-input::placeholder, #tp-input::placeholder { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Three pictures: the big one fills the height of the two small ones instead of growing to its own
+   height (a tall screenshot made it giant). */
+.gallery.g3 .gal-item:first-child img { position: absolute; inset: 0; }
+.gallery.g3 .gal-item:first-child { min-height: 0; }
+
+/* "Careful — you have unsaved changes!" stays pinned to the bottom of the window while you edit your
+   profile (after the redesign it sat at the very end of the long page where nobody saw it). */
+#save-bar-slot { position: sticky; bottom: 14px; z-index: 8; }
+#save-bar-slot .save-bar { margin-top: 14px; box-shadow: 0 10px 30px rgba(0, 0, 0, .5), inset 0 0 0 1px var(--border); }
+@media (max-width: 760px) { #save-bar-slot { bottom: calc(10px + env(safe-area-inset-bottom)); } }

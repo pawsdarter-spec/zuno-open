@@ -1,0 +1,91 @@
+/* Zuno 0.35 */
+
+/* Video profile backgrounds sat on top of the bottom of the card (the message box and the join
+   date), because those parts had no layer of their own. Every part of the card now sits above
+   the background; only the background itself, its shade and the effect are left as they were. */
+/* Only parts that sit in the normal flow get a layer; pinned ones (the sound button, the close
+   button) keep their own position. */
+.pcard > .pc-msg, .pcard > .pf-foot { position: relative; z-index: 1; }
+.pcard > video.pc-bg { pointer-events: none; }
+.pcard > video.pc-bg::-webkit-media-controls, .pcard > video.pc-bg::-webkit-media-controls-enclosure,
+.pcard > video.pc-bg::-webkit-media-controls-overlay-play-button, .pcard > video.pc-bg::-webkit-media-controls-start-playback-button { display: none !important; -webkit-appearance: none; }
+
+/* Nothing off screen: windows, settings rows and buttons always fit */
+/* (Windows keep their own sizes: a max-width here used to override them and stretch every window
+   across the screen. Windows already fit inside the overlay's padding.) */
+.setting-row > .btn, .setting-row > button.btn, .setting-row > a.btn { flex: none; white-space: nowrap; max-width: 100%; }
+.setting-row > div:first-child { min-width: 0; flex: 1 1 auto; }
+@media (max-width: 560px) {
+  /* A row with a button wraps, putting the button under its text instead of squeezing it */
+  .setting-row:has(> .btn) { flex-wrap: wrap; row-gap: 10px; }
+  .setting-row:has(> .btn) > div:first-child { flex-basis: 100%; }
+  .row-btns, .actions, .dialog .actions { flex-wrap: wrap; }
+  .btn { max-width: 100%; }
+}
+.menu, .emoji-picker, .tag-card, .rx-card { max-width: calc(100vw - 16px); box-sizing: border-box; }
+html, body { overflow-x: hidden; }
+
+/* ---- call games: Tic-Tac-Toe, Hangman, Reaction Race, tonight's scoreboard ---- */
+.ttt-wrap, .hm-wrap, .rx-wrap { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.ttt-board { display: grid; grid-template-columns: repeat(3, 64px); grid-template-rows: repeat(3, 64px); gap: 6px; }
+.ttt-cell { border-radius: 12px; background: var(--hover); font-size: 30px; font-weight: 800; color: var(--header); display: grid; place-items: center; transition: transform .15s var(--spring), background .15s; }
+.ttt-cell:not(:disabled):hover { background: color-mix(in srgb, var(--brand) 25%, var(--hover)); transform: scale(1.04); }
+.ttt-cell.p1 { color: #ff6b8b; } .ttt-cell.p2 { color: #4fd1ff; }
+.ttt-cell.win { background: color-mix(in srgb, #ffd166 35%, var(--hover)); animation: ttt-win .6s ease-in-out 2; }
+@keyframes ttt-win { 50% { transform: scale(1.1); } }
+.hm-top { display: flex; align-items: center; gap: 14px; }
+.hm-art { width: 74px; height: 82px; color: var(--header); }
+.hm-lives { font-size: 14px; letter-spacing: 1px; }
+.hm-word { display: flex; flex-wrap: wrap; justify-content: center; gap: 5px; max-width: 100%; }
+.hm-word b { width: 22px; height: 30px; border-bottom: 3px solid var(--muted); display: grid; place-items: center; font-size: 18px; color: var(--header); }
+.hm-word b:not(.blank) { border-color: var(--brand); animation: pop .2s ease-out; }
+.hm-word i.sp { width: 12px; }
+.hm-keys button { min-width: 26px; }
+.rx-pad { width: 100%; max-width: 300px; height: 150px; border-radius: 18px; font-size: 22px; font-weight: 800; color: #fff; transition: background .12s, transform .1s; touch-action: manipulation; user-select: none; }
+.rx-pad.wait { background: #b23a48; cursor: pointer; }
+.rx-pad.go { background: #2fbf71; cursor: pointer; animation: rx-go .4s ease-out; }
+.rx-pad.early { background: #6b2a33; }
+.rx-pad.done, .rx-pad.result { background: var(--hover); color: var(--header); font-size: 18px; }
+.rx-pad:active:not(:disabled) { transform: scale(.98); }
+@keyframes rx-go { from { transform: scale(.96); } }
+.gp-tonight { width: 100%; margin-top: 10px; padding: 8px 10px; border-radius: 10px; background: rgba(0, 0, 0, .22); font-size: 13px; }
+.gp-tonight summary { cursor: pointer; font-weight: 700; color: var(--header); list-style: none; }
+.gp-tonight summary::-webkit-details-marker { display: none; }
+.gp-tn-row { display: flex; align-items: center; gap: 7px; margin-top: 6px; }
+.gp-tn-row b { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gp-tn-row span { color: var(--brand); font-weight: 700; }
+
+/* ---- events ---- */
+.ev-soon { color: var(--brand); font-size: 12px; font-weight: 600; }
+.ev-rep, .ev-soon, .ev-faces { align-self: flex-start; width: max-content; max-width: 100%; }
+.ev-rep { font-size: 11.5px; font-weight: 700; color: #c7a6ff; background: rgba(155, 109, 255, .14); padding: 1px 7px; border-radius: 999px; }
+.ev-faces { all: unset; display: inline-flex; align-items: center; margin-top: 6px; cursor: pointer; font-size: 12.5px; color: var(--muted); border-radius: 999px; padding: 2px 8px 2px 2px; }
+.ev-faces:hover { background: var(--hover); color: var(--header); }
+.ev-faces .avatar { margin-right: -6px; box-shadow: 0 0 0 2px var(--floating); border-radius: 50%; }
+.ev-faces span { margin-left: 12px; }
+.ev-pl { max-height: 50vh; overflow-y: auto; display: flex; flex-direction: column; gap: 2px; }
+.ev-repeat { margin-top: 4px; }
+
+/* Fullscreen backup for phones that refuse real fullscreen */
+.zp-fakefull { position: fixed; inset: 0; z-index: 10000; background: #000; display: grid; place-items: center; }
+.zp-fakefull > .zp { width: 100vw !important; height: 100dvh !important; max-width: none !important; border-radius: 0 !important; aspect-ratio: auto !important; }
+.zp-fakefull > .zp video { object-fit: contain; width: 100%; height: 100%; }
+
+/* ---- forums: staff-only tags, votes ---- */
+.fm-tag.mod { box-shadow: inset 0 0 0 1px rgba(250, 200, 80, .45); background: rgba(250, 200, 80, .12); }
+.fm-shield { all: unset; cursor: pointer; margin-right: 4px; opacity: .3; filter: grayscale(1); font-size: 12px; }
+.fm-shield.on { opacity: 1; filter: none; }
+.fm-modchk { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; white-space: nowrap; cursor: pointer; }
+.chip-check.mod span { box-shadow: inset 0 0 0 1px rgba(250, 200, 80, .45); }
+.fm-votes { font-weight: 800; color: #3fcf8e; margin-right: 8px; }
+.fm-votes.neg { color: #f27a7a; }
+.fm-votebar { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
+.fm-votebar .muted { margin-right: auto; }
+.fm-vote { display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 12px; border-radius: 999px; background: var(--hover); color: var(--header); font-size: 14px; }
+.fm-vote.up.on { background: rgba(63, 207, 142, .2); box-shadow: inset 0 0 0 1px #3fcf8e; }
+.fm-vote.down.on { background: rgba(242, 122, 122, .18); box-shadow: inset 0 0 0 1px #f27a7a; }
+.fm-taghelp { margin: 4px 0 8px; font-size: 12.5px; font-weight: 400; text-transform: none; letter-spacing: 0; color: var(--muted); line-height: 1.4; }
+.fm-dialog .fm-addtag { display: flex !important; align-items: center; gap: 6px; }
+.fm-dialog .fm-addtag .fm-tagemoji { flex: none; width: 56px; text-align: center; }
+.fm-dialog .fm-addtag .fm-tagname { flex: 1; min-width: 0; }
+.fm-dialog .fm-addtag .fm-modchk { flex: none; text-transform: none; letter-spacing: 0; }

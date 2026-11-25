@@ -1,0 +1,56 @@
+/* Zuno 0.34 */
+
+/* Veteran Bug Hunter: obsidian purple glow, a slowly turning galaxy, twinkling stars */
+.bh-vet { overflow: visible; filter: drop-shadow(0 0 3px rgba(139, 77, 255, .75)) drop-shadow(0 0 7px rgba(123, 92, 255, .35)); animation: bv-glow 3.2s ease-in-out infinite; }
+.bh-vet .bv-swirl { transform-origin: 12px 12px; transform-box: view-box; animation: bv-spin 14s linear infinite; }
+.bh-vet .bv-star { transform-box: fill-box; transform-origin: center; animation: bv-twinkle 2.2s ease-in-out infinite; }
+.bh-vet .bv-star.b { animation-delay: -1.1s; }
+@keyframes bv-spin { to { transform: rotate(360deg); } }
+@keyframes bv-twinkle { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .25; transform: scale(.55); } }
+@keyframes bv-glow { 0%, 100% { filter: drop-shadow(0 0 3px rgba(139, 77, 255, .75)) drop-shadow(0 0 7px rgba(123, 92, 255, .35)); } 50% { filter: drop-shadow(0 0 4px rgba(190, 140, 255, .95)) drop-shadow(0 0 11px rgba(255, 122, 217, .4)); } }
+@media not all /* (0.38) animations follow Zuno's own Reduce Motion switch only */ { .bh-vet, .bh-vet .bv-swirl, .bh-vet .bv-star { animation: none; } }
+.pcard.pf29 .pf-chips .pbadge:has(.bh-vet) { background: radial-gradient(circle at 50% 40%, rgba(123, 92, 255, .35), rgba(20, 8, 40, .55)); box-shadow: inset 0 0 0 1px rgba(190, 140, 255, .35), 0 0 10px rgba(139, 77, 255, .3); }
+.bh-progress.vet-next .bh-bar i, .bh-progress.vet .bh-bar i { background: linear-gradient(90deg, #5b2bd6, #b06cff, #ff7ad9); }
+.bh-progress.vet { box-shadow: inset 0 0 0 1px rgba(139, 77, 255, .4); background: linear-gradient(135deg, rgba(42, 17, 88, .45), rgba(11, 4, 24, .2)); }
+
+/* Profile buttons never slide over the avatar (a long "Send Friend Request" pushed the like button
+   onto the status dot on phones): the avatar's space is kept free, and the main button's text
+   shortens instead when it's tight. */
+.pcard.pf29 .pc-head { padding-left: 156px; }
+.pf-bar { min-width: 0; flex: 0 1 auto; }
+.pf-bar > .btn { flex: 0 1 auto; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.pf-bar > .pf-like, .pf-bar > .pf-dots { flex: none; }
+@media (max-width: 760px) {
+  .pcard.pf29 .pc-head { padding-left: 124px; padding-right: 12px; }
+  .pf-bar { gap: 6px; }
+  .pf-bar > .btn { padding: 0 12px; }
+}
+
+/* Image viewer */
+.overlay.lb33-ov { background: rgba(4, 7, 7, .88); backdrop-filter: blur(6px); padding: 0; }
+.lb33 { position: fixed; inset: 0; display: flex; flex-direction: column; background: none !important; box-shadow: none !important; max-width: none !important; width: 100vw !important; height: 100dvh; padding: 0 !important; border-radius: 0 !important; outline: none; animation: none; }
+.lb33-stage { flex: 1; min-height: 0; position: relative; display: grid; place-items: center; overflow: hidden; margin: 16px 16px 0; touch-action: none; cursor: zoom-out; }
+.lb33-img { position: absolute; left: 50%; top: 50%; margin: 0; max-width: none !important; max-height: none !important; translate: -50% -50%; transform-origin: center; border-radius: 6px; box-shadow: 0 20px 60px rgba(0, 0, 0, .6); cursor: zoom-in; user-select: none; -webkit-user-drag: none; image-rendering: auto; }
+.lb33.zoomed .lb33-img { cursor: grab; border-radius: 0; }
+.lb33.zoomed .lb33-img:active { cursor: grabbing; }
+.lb33-bar { flex: none; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 12px 16px calc(14px + env(safe-area-inset-bottom)); }
+.lb33-name { margin-right: auto; color: #dfe7e6; font-size: 13px; max-width: 34vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lb33-btn { all: unset; box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-width: 36px; height: 36px; padding: 0 10px; border-radius: 10px; background: rgba(255, 255, 255, .08); color: #fff; font-size: 16px; font-weight: 700; cursor: pointer; transition: background .15s; }
+.lb33-btn:hover { background: rgba(255, 255, 255, .16); }
+.lb33-btn svg { width: 16px; height: 16px; }
+.lb33-save { font-size: 13px; }
+.lb33-pct { min-width: 52px; text-align: center; color: #c7d3d1; font-size: 12.5px; font-variant-numeric: tabular-nums; }
+@media (max-width: 700px) { .lb33-name { display: none; } .lb33-bar { gap: 5px; } .lb33-save span { display: none; } }
+
+/* Server pictures in the rail aren't draggable on their own; the tile is */
+#server-rail img { -webkit-user-drag: none; user-select: none; pointer-events: none; }
+#server-rail .rail-btn { -webkit-user-drag: element; }
+
+/* askText: Zuno's own text box (prompt() doesn't exist in the desktop app) */
+.ask33 { position: fixed; inset: 0; z-index: 200; display: grid; place-items: center; padding: 16px; background: rgba(0, 0, 0, .55); animation: ask33-in .15s ease; }
+.ask33-card { width: min(420px, 100%); padding: 20px; border-radius: 16px; background: var(--floating); box-shadow: 0 20px 60px rgba(0, 0, 0, .5); }
+.ask33-card h3 { margin: 0 0 6px; font-size: 17px; color: var(--header); }
+.ask33-card p { margin: 0 0 12px; font-size: 13.5px; line-height: 1.4; }
+.ask33-card .input { width: 100%; box-sizing: border-box; margin-top: 4px; resize: vertical; }
+.ask33-acts { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
+@keyframes ask33-in { from { opacity: 0; } }

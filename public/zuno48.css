@@ -1,0 +1,124 @@
+/* Zuno 0.48: cleaner, smoother phone app; faster pictures; desktop rail touches. */
+
+/* ---------- pictures: placeholder and fade-in (everywhere) ---------- */
+.msg-media.ld48 { background: color-mix(in srgb, var(--text) 6%, transparent); border-radius: 10px; overflow: hidden; }
+.msg-media.ph48 { background-image: var(--ph48); background-size: cover; background-position: center; }
+.msg-media.ld48 .att-img { opacity: 0; transition: opacity .25s ease; height: auto; }
+.msg-media.ld48.in48 .att-img { opacity: 1; }
+.msg-video video[poster] { background: #000; object-fit: contain; }
+
+/* ---------- server rail: the pill on the left, rounded squares (desktop and phone) ---------- */
+.rail-item::before { display: block !important; content: "" !important; position: absolute; left: 0; top: 50%; width: 4px; height: 0; background: var(--header); border-radius: 0 4px 4px 0; transform: translateY(-50%); transition: height .22s var(--ease-out), opacity .2s; opacity: 0; }
+.rail-item.unread::before { height: 8px; opacity: 1; }
+.rail-item:hover::before { height: 20px; opacity: 1; }
+.rail-item.active::before { height: 40px; opacity: 1; }
+.rail-item.active .rail-btn { border-radius: 16px !important; box-shadow: none !important; }
+.rail-item .rail-btn.sv { transition: border-radius .2s var(--ease-out), background .15s, transform .15s var(--spring); }
+.rail-item:hover .rail-btn.sv { border-radius: 16px; }
+.rail-item.unread .rail-btn::after { display: none; }
+
+/* Chat list previews and times are for phones (computers show statuses there instead). */
+.dm-time48, .dm-prev48 { display: none; }
+
+/* ---------- phones ---------- */
+@media (max-width: 760px) {
+  /* Smoother taps: no grey flash, no 300 ms wait, a gentle press. */
+  html { -webkit-tap-highlight-color: transparent; }
+  button, a, .dm-item, .ch-item, .nav-item, .rail-btn, .msg { touch-action: manipulation; }
+  .dm-item:active, .nav-item:active, .ch-item:active, .m-sheet button:active { transform: scale(.98); }
+  .dm-item, .nav-item, .ch-item, .m-sheet button { transition: transform .12s ease, background .12s; }
+  #messages, #dm-list, .sidebar, .m-sheet { overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+
+  /* Top bar: back arrow with unread count, bigger name with ›, call / video / search. */
+  .topbar.tb48 { height: 56px; padding-left: 4px; gap: 2px; }
+  .topbar.tb48 [data-act=nav] { position: relative; width: 44px; height: 44px; }
+  .back48 { position: relative; }
+  .back48 > svg { display: none; }
+  .back48-ic { display: grid; place-items: center; }
+  .back48-ic svg { width: 24px; height: 24px; color: var(--header); }
+  .back48-n { position: absolute; left: 22px; bottom: 2px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--red); color: #fff; font: 800 11px/18px var(--font); text-align: center; box-shadow: 0 0 0 3px var(--main); }
+  .topbar.tb48 .title { font-size: 18px; font-weight: 800; gap: 10px; align-items: center; }
+  .topbar.tb48 .title .avatar { width: 34px !important; height: 34px !important; font-size: 14px !important; }
+  .topbar.tb48 .title::after { content: "›"; font-size: 22px; font-weight: 600; color: var(--muted); margin-left: -4px; line-height: 1; }
+  .topbar.tb48 .icon-btn:not(.tb-ovf) { width: 44px; height: 44px; background: none; color: var(--header); }
+  .topbar.tb48 .icon-btn:not(.tb-ovf) svg { width: 22px; height: 22px; }
+  .topbar.tb48 .tb-tools { width: auto; overflow: visible; display: flex; }
+  .topbar.tb48:not(.m-searching) .tb-search { background: none; box-shadow: none; width: 44px; height: 44px; justify-content: center; padding: 0; color: var(--header); order: 9; }
+  .topbar.tb48:not(.m-searching) .tb-search svg { width: 22px; height: 22px; }
+  .topbar.tb48 #tb-more { order: 10; }
+
+  /* Messages (Classic, the phone default): roomier, bigger text, tight lines from the same person. */
+  html:not([data-msgstyle="bubbles"]) #messages .msg { padding-left: 66px; padding-right: 12px; padding-top: 1px; padding-bottom: 1px; }
+  html:not([data-msgstyle="bubbles"]) #messages .msg.head { margin-top: 18px; }
+  html:not([data-msgstyle="bubbles"]) #messages .msg .avatar { left: 12px; }
+  html:not([data-msgstyle="bubbles"]) #messages .msg > [data-profile] .avatar { width: 42px !important; height: 42px !important; }
+  html:not([data-msgstyle="bubbles"]) #messages .msg .author { font-size: 16.5px; font-weight: 700; }
+  html:not([data-msgstyle="bubbles"]) #messages .msg .time { font-size: 13px; margin-left: 8px; }
+  html:not([data-msgstyle="bubbles"]) #messages .msg .content { font-size: 16.5px; line-height: 1.42; }
+  #messages .msg { position: relative; }
+  .heart48 { position: absolute; z-index: 5; font-size: 42px; pointer-events: none; transform: translate(-50%, -50%) scale(.4); animation: heart48 .7s var(--spring) forwards; }
+  @keyframes heart48 { 40% { transform: translate(-50%, -60%) scale(1.15); opacity: 1; } 100% { transform: translate(-50%, -110%) scale(.9); opacity: 0; } }
+
+  /* Message box: a tall rounded pill. */
+  .composer .composer-box { min-height: 52px; border-radius: 26px; padding: 4px 6px; background: color-mix(in srgb, var(--input) 85%, var(--main)); box-shadow: inset 0 0 0 1px var(--border); align-items: center; }
+  .composer .composer-plus { width: 40px; height: 40px; border-radius: 50%; background: color-mix(in srgb, var(--text) 12%, transparent); flex: none; }
+  .composer textarea { font-size: 16.5px !important; }
+
+  /* The menu you get by holding a message: reaction tiles, a hint, actions in rounded groups. */
+  .m-sheet.msg-menu { padding: 10px 12px calc(14px + env(safe-area-inset-bottom)) !important; border-radius: 22px 22px 0 0 !important; animation: sheet48 .28s var(--ease-out); }
+  @keyframes sheet48 { from { transform: translateY(40px); opacity: .4; } }
+  .m-sheet.msg-menu .quick-react { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; padding: 6px 0 2px; }
+  .m-sheet.msg-menu .quick-react > button { height: 54px; border-radius: 14px; background: color-mix(in srgb, var(--text) 8%, transparent); font-size: 26px; display: grid; place-items: center; }
+  .m-sheet.msg-menu .quick-react > button svg { width: 26px; height: 26px; }
+  .m-sheet.msg-menu .quick-react > button:active { transform: scale(.9); }
+  .dt48 { text-align: center; color: var(--muted); font-size: 14px; padding: 10px 0 12px; }
+  .sh48 { background: color-mix(in srgb, var(--text) 6%, transparent); border-radius: 16px; overflow: hidden; margin-bottom: 12px; }
+  .sh48 > button { width: 100%; min-height: 54px; padding: 0 16px !important; font-size: 16.5px; gap: 16px; border-radius: 0 !important; position: relative; }
+  .sh48 > button + button::before { content: ""; position: absolute; top: 0; left: 54px; right: 0; height: 1px; background: var(--border); }
+  .sh48 > button .mi-ico, .sh48 > button .mi-ico svg { width: 22px; height: 22px; }
+  .sh48.danger48 > button { color: var(--red); }
+
+  /* Chat list: bigger rows, last message and time. */
+  #dm-list .dm-item { position: relative; min-height: 62px; padding: 8px 10px; gap: 12px; border-radius: 14px; }
+  #dm-list .dm-item .avatar { width: 46px !important; height: 46px !important; font-size: 18px !important; }
+  #dm-list .dm-item .name { font-size: 16.5px; font-weight: 700; padding-right: 44px; }
+  .dm-time48, .dm-prev48 { display: block; }
+  .dm-prev48, #dm-list .dm-item .sub { font-size: 14.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
+  .dm-prev48.unread { color: var(--header); font-weight: 600; }
+  .dm-time48 { position: absolute; top: 12px; right: 12px; font-size: 12.5px; color: var(--muted); }
+  #dm-list .dm-item .badge { margin-top: 18px; }
+  .section-label.dm-label { font-size: 13px; padding-top: 14px; }
+  .sidebar .nav-item { min-height: 46px; font-size: 16px; border-radius: 12px; }
+
+  /* Server rail: rounded squares with room to breathe. */
+  .rail { gap: 10px; }
+  .rail-btn { width: 50px; height: 50px; border-radius: 16px; }
+  .rail-btn img { width: 50px; height: 50px; }
+
+  /* You, at the bottom: a floating card. */
+  .user-panel { margin: 8px 10px calc(8px + env(safe-area-inset-bottom)); border-radius: 18px; box-shadow: 0 8px 24px rgba(0, 0, 0, .3), inset 0 0 0 1px var(--border); }
+
+  /* Bottom tabs: line icons, no box around the one you're on. */
+  .tabbar38 button { background: none !important; }
+  .tabbar38 button > span:first-child svg { width: 24px; height: 24px; }
+  .tabbar38 button.on { color: var(--header); }
+  .tabbar38 button.on > span:first-child { color: var(--brand); }
+  .tabbar38 button:active { transform: scale(.94); }
+}
+
+/* ---------- desktop: Active Now (Friends page) ---------- */
+.active48 { display: none; }
+@media (min-width: 1100px) {
+  #main .body-row > .friends { flex: 1; min-width: 0; }
+  .active48 { display: block; width: 340px; flex: none; padding: 16px; border-left: 1px solid var(--border); overflow-y: auto; }
+  .active48 h3 { margin: 4px 0 14px; font-size: 20px; font-weight: 800; color: var(--header); }
+  .an48-card { display: block; width: 100%; text-align: left; padding: 12px; margin-bottom: 8px; border-radius: 12px; background: color-mix(in srgb, var(--text) 5%, transparent); box-shadow: inset 0 0 0 1px var(--border); transition: background .12s; }
+  .an48-card:hover { background: var(--hover); }
+  .an48-who { display: flex; gap: 10px; align-items: center; min-width: 0; }
+  .an48-who > span { display: flex; flex-direction: column; min-width: 0; }
+  .an48-who b { color: var(--header); }
+  .an48-who small { color: var(--muted); font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .an48-empty { text-align: center; padding: 18px 8px; }
+  .an48-empty b { display: block; color: var(--header); font-size: 16px; margin-bottom: 6px; }
+  .an48-empty span { color: var(--muted); font-size: 14px; line-height: 1.4; }
+}

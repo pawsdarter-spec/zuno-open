@@ -1,0 +1,88 @@
+/* Zuno 0.39 */
+
+/* ---------- sign-up page scrolls when the form is taller than the window ---------- */
+/* (The bot check made the form taller, and on smaller screens Continue was out of reach.) */
+.auth:not(.hidden) { display: flex !important; flex-direction: column; align-items: center; overflow-y: auto; overscroll-behavior: contain; padding-top: 0 !important; }
+.auth:not(.hidden) > .auth-card { margin-top: auto !important; margin-bottom: auto; flex: none; }
+.auth::before { content: ""; flex: none; height: 56px; } /* room for the mascot on top of the card */
+.auth::after { content: ""; flex: none; height: 16px; }
+
+/* ---------- notifications: rows keep their full height (they were squashing on top of each other on phones) ---------- */
+.inbox-pop .pop-list > * { flex-shrink: 0; }
+.inbox-pop .ib-item { align-items: flex-start; }
+.inbox-pop .ib-body > div { line-height: 1.35; }
+.inbox-pop .ib-snip { margin: 3px 0; max-height: 4.2em; overflow: hidden; }
+@media (max-width: 760px) {
+  .inbox-pop { width: calc(100vw - 16px); }
+  .ib38 .ib-acts .btn { padding: 4px 8px; font-size: 12.5px; }
+  .ib38 .ib-tabs { overflow-x: auto; scrollbar-width: none; }
+  .ib38 .ib-tabs button { flex: none; }
+}
+
+/* ---------- calls: the focused (big) tile leaves room for the people strip and the buttons ---------- */
+.call-tiles.has-focus .tile.focused { max-height: calc(100dvh - var(--tb, 0px) - 300px) !important; }
+.call-tiles.has-focus .tile.focused video { object-fit: contain; }
+.voice-stage:has(.call-tiles.has-focus) { overflow-y: auto; }
+
+/* ---------- profile decorations get room before the card's edge cuts them off ---------- */
+.pcard .pc-head > .avatar { margin-left: 14px; }
+
+/* ---------- jumping to a message: the glow stays a few seconds ---------- */
+.msg.flash { animation-duration: 4s !important; }
+
+/* ---------- voice channel chat button ---------- */
+.ch-item.voice .ch-vchat { display: none; margin-left: auto; width: 22px; height: 22px; place-items: center; border-radius: 6px; color: var(--muted); }
+.ch-item.voice .ch-vchat svg { width: 16px; height: 16px; }
+.ch-item.voice:hover .ch-vchat, .ch-item.voice.active .ch-vchat { display: inline-grid; }
+.ch-item.voice .ch-vchat:hover { color: var(--header); background: var(--hover); }
+.ch-item.voice .ch-vchat + .ch-gear { margin-left: 2px; }
+@media (hover: none) { .ch-item.voice .ch-vchat { display: inline-grid; } }
+
+/* ---------- soundboard ---------- */
+.sb-search { display: block; width: calc(100% - 24px); margin: 4px 12px 8px; padding: 8px 12px; border: 0; border-radius: 10px; background: var(--input); color: var(--header); font-size: 14px; }
+.sb-pop .sb-btn[hidden], .sb-pop .sb-sec[hidden], .sb-pop .sb-none[hidden], .sb-pop .sb-search[hidden] { display: none; }
+.sb-pop .sb-foot { display: flex; align-items: center; gap: 8px; }
+/* whoever played a sound glows blue for a moment (green is talking) */
+.tile.sb-playing { box-shadow: 0 0 0 3px #3b9dff, 0 0 24px 6px rgba(59, 157, 255, .5) !important; animation: none !important; }
+.voice-user.sb-playing .avatar { box-shadow: 0 0 0 2px #3b9dff, 0 0 10px 2px rgba(59, 157, 255, .6) !important; border-radius: 50%; }
+.voice-user.sb-playing span { color: #7cc0ff; }
+
+/* ---------- 0.40: Partnered servers (blue seal) ---------- */
+.partner-seal { width: 1em; height: 1em; display: block; color: #3b82f6; flex: none; }
+.partner-icon { display: inline-flex; vertical-align: -2px; font-size: 15px; cursor: pointer; }
+.partner-icon.in-sh { margin-right: 6px; font-size: 16px; }
+.partner-tag { display: inline-flex; align-items: center; gap: 3px; padding: 1px 7px 1px 3px; border-radius: 6px; background: rgba(59,130,246,.16); color: #60a5fa; font: 700 11px/16px var(--font); vertical-align: 2px; cursor: pointer; white-space: nowrap; }
+.partner-tag .partner-seal { width: 14px; height: 14px; }
+.rail-partner { position: absolute; right: -3px; bottom: -3px; width: 18px; height: 18px; border-radius: 50%; display: grid; place-items: center; background: var(--rail); font-style: normal; }
+.rail-partner .partner-seal { width: 16px; height: 16px; }
+.partner-mi .partner-seal { width: 16px; height: 16px; }
+.pr-modal { max-width: 420px; }
+.pr-hero { display: flex; gap: 12px; align-items: flex-start; margin-bottom: 14px; }
+.pr-hero > .partner-seal { width: 40px; height: 40px; }
+.pr-hero b { color: var(--header); font-size: 16px; }
+.pr-list { display: flex; flex-direction: column; gap: 8px; }
+.pr-row { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border-radius: 10px; background: var(--bg-2, rgba(255,255,255,.04)); }
+.pr-row b { color: var(--header); }
+.pr-dot { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; flex: none; font: 800 12px var(--font); background: rgba(255,255,255,.08); color: var(--muted); }
+.pr-row.ok .pr-dot { background: #3b82f6; color: #fff; }
+.pr-row.no .pr-dot { background: rgba(239,68,68,.18); color: #f87171; }
+.pr-foot { margin: 12px 0 0; }
+
+/* ---------- 0.40: all badges window ---------- */
+.ab39 { max-width: 420px; }
+.ab39 h3 .muted { font-weight: 600; margin-left: 4px; }
+.ab39-list { display: flex; flex-direction: column; gap: 6px; max-height: min(60vh, 460px); overflow-y: auto; margin: 4px -4px 0; padding: 0 4px; }
+.ab39-row { display: flex; gap: 12px; align-items: flex-start; width: 100%; padding: 10px 12px; border-radius: 10px; background: rgba(255,255,255,.04); text-align: left; color: var(--text); }
+.ab39-row:hover { background: var(--hover); }
+.ab39-ico { width: 32px; height: 32px; flex: none; display: grid; place-items: center; }
+.ab39-ico > svg, .ab39-ico > img { width: 30px; height: 30px; }
+.ab39-txt { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+.ab39-txt > b { color: var(--header); }
+.ab39-how { display: none; margin-top: 6px; padding: 8px 10px; border-radius: 8px; background: rgba(0,0,0,.25); font-size: 13px; }
+.ab39-row.open .ab39-how { display: block; }
+.ab39-chev { color: var(--muted); font-size: 18px; line-height: 1; transition: transform .15s; }
+.ab39-row.open .ab39-chev { transform: rotate(90deg); }
+
+/* ---------- 0.40: encrypted history from other devices ---------- */
+.e2eh39 { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 8px 16px; padding: 10px 12px; border-radius: 10px; background: rgba(250,204,21,.1); color: var(--text); font-size: 13px; box-shadow: inset 0 0 0 1px rgba(250,204,21,.25); }
+.e2eh39 span { flex: 1; min-width: 180px; }

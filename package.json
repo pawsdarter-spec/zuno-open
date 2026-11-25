@@ -1,0 +1,80 @@
+{
+  "name": "zuno",
+  "productName": "Zuno",
+  "version": "0.50.0",
+  "description": "Zuno: chat with your friends. Accounts, friends, direct messages and expressive profiles.",
+  "author": "Zuno",
+  "main": "electron/main.js",
+  "private": true,
+  "license": "AGPL-3.0-only",
+  "scripts": {
+    "start": "node server/index.js",
+    "app": "electron .",
+    "dist": "electron-builder",
+    "test": "node test/smoke.js && node test/cloud.js && node test/security.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "devDependencies": {
+    "electron": "^42.0.0",
+    "electron-builder": "^26.0.0"
+  },
+  "build": {
+    "appId": "app.zuno.desktop",
+    "productName": "Zuno",
+    "files": [
+      "electron/**",
+      "server/**",
+      "public/**",
+      "package.json"
+    ],
+    "directories": {
+      "buildResources": "build",
+      "output": "dist"
+    },
+    "win": {
+      "target": "nsis",
+      "icon": "build/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "shortcutName": "Zuno",
+      "artifactName": "Zuno-Setup.exe",
+      "perMachine": false,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "runAfterFinish": false
+    },
+    "mac": {
+      "target": "dmg",
+      "icon": "build/icon.png",
+      "category": "public.app-category.social-networking"
+    },
+    "linux": {
+      "target": "AppImage",
+      "icon": "build/icon.png"
+    },
+    "protocols": [
+      {
+        "name": "Zuno",
+        "schemes": [
+          "zuno"
+        ]
+      }
+    ],
+    "publish": [
+      {
+        "provider": "generic",
+        "url": "https://heyzuno.uk/download/"
+      }
+    ]
+  },
+  "zunoServer": "https://heyzuno.uk",
+  "dependencies": {
+    "electron-updater": "^6.3.9"
+  },
+  "zunoMinDesktop": "0.6.0",
+  "zunoBloomPrice": "price_1URLoJIJ0sqEymisrrQ73zQf"
+}

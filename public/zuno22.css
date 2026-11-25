@@ -1,0 +1,97 @@
+/* Zuno 0.22 */
+
+/* ---------- the video player ---------- */
+.msg-media.msg-video { width: min(480px, 100%); max-width: 100%; }
+.zp { position: relative; display: block; width: 100%; border-radius: 12px; overflow: hidden; background: #000; outline: none; user-select: none; -webkit-user-select: none; aspect-ratio: 16 / 9; color: #fff; }
+.zp:focus-visible { box-shadow: 0 0 0 2px var(--brand); }
+.zp video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; background: #000; max-width: none !important; max-height: none !important; border-radius: 0 !important; }
+/* Fullscreen: fill the screen whatever shape the video is (the inline aspect-ratio is for the chat). */
+.zp.is-full, .zp:fullscreen { width: 100vw !important; height: 100vh !important; max-width: none; border-radius: 0; aspect-ratio: auto !important; }
+.zp.is-full .zp-bar { padding: 28px 18px 10px; }
+.zp.is-full .zp-row svg { width: 24px; height: 24px; }
+.zp.is-full .zp-row button, .zp.is-full .zp-row a { width: 40px; height: 40px; }
+.zp.is-full .zp-time { font-size: 14px; }
+.zp-big { position: absolute; left: 50%; top: 50%; width: 64px; height: 64px; margin: -32px 0 0 -32px; border-radius: 50%; background: rgba(0,0,0,.55); backdrop-filter: blur(4px); display: grid; place-items: center; color: #fff; transition: transform .2s var(--spring), opacity .2s; z-index: 2; }
+.zp-big svg { width: 30px; height: 30px; margin-left: 3px; }
+.zp.ended .zp-big svg { margin-left: 0; }
+.zp-big:hover { transform: scale(1.08); background: color-mix(in srgb, var(--brand) 70%, #000); }
+.zp:not(.paused) .zp-big { opacity: 0; pointer-events: none; transform: scale(.8); }
+.zp-bar { position: absolute; left: 0; right: 0; bottom: 0; z-index: 3; padding: 18px 10px 6px; background: linear-gradient(transparent, rgba(0,0,0,.75)); transition: opacity .25s, transform .25s; }
+.zp:not(.paused):not(.awake):not(:has(:focus-visible)) .zp-bar { opacity: 0; transform: translateY(6px); pointer-events: none; }
+.zp:not(.paused):not(.awake) { cursor: none; }
+.zp-row { display: flex; align-items: center; gap: 4px; }
+.zp-row button, .zp-row a { width: 32px; height: 32px; border-radius: 8px; display: grid; place-items: center; color: #fff; flex: none; }
+.zp-row button:hover, .zp-row a:hover { background: rgba(255,255,255,.16); }
+.zp-row svg { width: 20px; height: 20px; }
+.zp-time { font-size: 12px; font-variant-numeric: tabular-nums; opacity: .9; padding: 0 4px; white-space: nowrap; }
+.zp-grow { flex: 1; }
+.zp-speed { width: auto !important; padding: 0 8px; font-size: 12px; font-weight: 700; }
+.zp-volbox { display: flex; align-items: center; }
+.zp-vol { width: 0; opacity: 0; transition: width .2s, opacity .2s; accent-color: var(--brand); }
+.zp-volbox:hover .zp-vol, .zp-vol:focus { width: 70px; opacity: 1; }
+.zp-track { position: relative; height: 16px; margin: 0 4px 2px; cursor: pointer; touch-action: none; }
+.zp-track::before, .zp-buf, .zp-played { content: ''; position: absolute; left: 0; top: 7px; height: 3px; border-radius: 3px; transition: height .12s, top .12s; }
+.zp-track::before { right: 0; background: rgba(255,255,255,.25); }
+.zp-buf { background: rgba(255,255,255,.4); width: 0; }
+.zp-played { background: var(--brand); width: 0; }
+.zp-thumb { position: absolute; top: 3px; width: 11px; height: 11px; margin-left: -5.5px; border-radius: 50%; background: #fff; box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 60%, transparent); transform: scale(0); transition: transform .12s; left: 0; }
+.zp-track:hover::before, .zp-track:hover .zp-buf, .zp-track:hover .zp-played, .zp.scrubbing .zp-track::before, .zp.scrubbing .zp-buf, .zp.scrubbing .zp-played { height: 5px; top: 6px; }
+.zp-track:hover .zp-thumb, .zp.scrubbing .zp-thumb { transform: scale(1); }
+.zp-tip { position: absolute; bottom: 18px; transform: translateX(-50%); padding: 2px 6px; border-radius: 6px; background: rgba(0,0,0,.8); font-size: 11px; font-variant-numeric: tabular-nums; opacity: 0; pointer-events: none; white-space: nowrap; }
+.zp-track:hover .zp-tip { opacity: 1; }
+.zp-spin { position: absolute; left: 50%; top: 50%; width: 42px; height: 42px; margin: -21px 0 0 -21px; border-radius: 50%; border: 3px solid rgba(255,255,255,.25); border-top-color: #fff; animation: zp-spin .8s linear infinite; display: none; z-index: 2; }
+.zp.loading:not(.paused) .zp-spin { display: block; }
+@keyframes zp-spin { to { transform: rotate(360deg); } }
+.zp-seekhint { position: absolute; top: 50%; transform: translateY(-50%); padding: 8px 14px; border-radius: 999px; background: rgba(0,0,0,.6); font-weight: 700; font-size: 14px; opacity: 0; transition: opacity .2s; pointer-events: none; z-index: 2; }
+.zp-seekhint.left { left: 12%; } .zp-seekhint.right { right: 12%; }
+.zp-seekhint.show { opacity: 1; }
+.zp-err { position: absolute; inset: auto 10px 50px; z-index: 4; padding: 8px 12px; border-radius: 10px; background: rgba(0,0,0,.75); font-size: 13px; text-align: center; }
+.zp-err a { color: var(--brand); }
+.zp.failed .zp-big { display: none; }
+@media (hover: none) {
+  .zp-vol { display: none; }
+  .zp-row button, .zp-row a { width: 36px; height: 36px; }
+}
+@media (max-width: 760px) { .msg-video { max-width: 100%; } .zp-time { font-size: 11px; } }
+
+/* ---------- phone: ⋯ next to + ---------- */
+.composer-more { display: none; flex: none; width: 30px; height: 44px; place-items: center; color: var(--muted); font-size: 20px; font-weight: 800; letter-spacing: -1px; }
+@media (max-width: 760px) { .composer-more { display: grid; } }
+
+/* ---------- chat themes & wallpapers ---------- */
+.chat.has-wall { position: relative; isolation: isolate; }
+.chat.has-wall::before { content: ''; position: absolute; inset: 0; z-index: -1; background: linear-gradient(rgba(0,0,0,var(--chat-wall-dim, 0)), rgba(0,0,0,var(--chat-wall-dim, 0))), var(--chat-wall); pointer-events: none; display: block !important; opacity: 1 !important; animation: none !important; filter: none !important; }
+.chat.has-wall .messages { background: transparent; }
+.ct-picker { width: 520px; }
+.ct-preview { position: relative; height: 120px; border-radius: 14px; overflow: hidden; background: var(--main); padding: 16px; display: flex; flex-direction: column; justify-content: center; gap: 8px; margin-bottom: 14px; box-shadow: inset 0 0 0 1px var(--border); }
+.ct-wall { position: absolute; inset: 0; }
+.ct-b { position: relative; max-width: 70%; padding: 7px 13px; border-radius: 6px 18px 18px 6px; background: var(--bubble-them); color: var(--text); font-size: 14px; }
+.ct-b.me { align-self: flex-end; border-radius: 18px 6px 6px 18px; background: var(--bubble-me); color: var(--header); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--brand) 40%, transparent); }
+.ct-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); gap: 8px; }
+.ct-sw, .ct-wp { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px 4px; border-radius: 12px; font-size: 12px; color: var(--muted); border: 2px solid transparent; }
+.ct-sw:hover, .ct-wp:hover { background: var(--hover); }
+.ct-sw.on, .ct-wp.on { border-color: var(--brand); color: var(--text); }
+.ct-sw i { width: 40px; height: 40px; border-radius: 50%; background: conic-gradient(var(--a) 0 33%, var(--m) 0 66%, var(--t) 0); box-shadow: inset 0 0 0 1px rgba(255,255,255,.12); }
+.ct-wp i { width: 56px; height: 40px; border-radius: 10px; box-shadow: inset 0 0 0 1px var(--border); display: grid; place-items: center; font-style: normal; }
+.ct-up { font-size: 20px; color: var(--muted); background: var(--rail); }
+.ct-dim { display: flex; align-items: center; gap: 10px; margin-top: 10px; font-size: 13px; color: var(--muted); }
+.ct-dim input { flex: 1; accent-color: var(--brand); }
+
+/* ---------- the ban screen ---------- */
+.ban-screen { position: fixed; inset: 0; z-index: 300; display: grid; place-items: center; padding: 20px; background: color-mix(in srgb, var(--main) 96%, #000); overflow-y: auto; }
+.ban-card { width: min(520px, 100%); text-align: center; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.ban-card .zm { width: 110px; height: 90px; }
+.ban-card h2 { margin: 6px 0 0; color: var(--header); }
+.ban-reason, .ban-appeal { width: 100%; text-align: left; padding: 12px 14px; border-radius: 12px; background: var(--panel, var(--sidebar)); box-shadow: inset 0 0 0 1px var(--border); }
+.ban-reason small, .ban-appeal small { display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+.ban-appeal-text { white-space: pre-wrap; margin: 4px 0 10px; color: var(--text); }
+.ban-appeal.s-denied { box-shadow: inset 0 0 0 1.5px var(--red); }
+.ban-form { width: 100%; text-align: left; }
+.ban-form textarea { min-height: 110px; }
+.appeal-card .bug-text { white-space: pre-wrap; }
+
+/* The phone settings bar (‹ Back · title · ✕) only belongs on phones. */
+@media (min-width: 761px) { .m-set-bar { display: none !important; } }
+/* Phones: send and the voice-message mic take turns in the same spot (mic when empty, send once
+   there's something to send), so the message box keeps its room next to + and ⋯. */
+@media (max-width: 760px) { .composer-box:not(.has-text):has(#composer-voice) > #composer-send { display: none; } }

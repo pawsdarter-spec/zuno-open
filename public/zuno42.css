@@ -1,0 +1,113 @@
+/* Zuno 0.42 */
+
+/* ---- activity: a line under names, and the Spotify / game card ---- */
+.act42 { display: inline-flex; align-items: center; gap: 5px; min-width: 0; max-width: 100%; }
+.act42 > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.act42 svg { width: 13px; height: 13px; flex: none; }
+.act42 .sp42, .ac42 .sp42 { color: #1ed760; }
+.mh38-act { font-size: 12.5px; color: var(--text); min-width: 0; }
+.ac42 { margin: 6px 0 12px; padding: 12px; border-radius: 12px; background: rgba(0, 0, 0, .22); box-shadow: inset 0 0 0 1px var(--border); }
+.ac42-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 10px; font-size: 12px; font-weight: 700; color: var(--header); }
+.ac42-head svg { width: 16px; height: 16px; flex: none; color: var(--muted); }
+.ac42-row { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.ac42-art { width: 64px; height: 64px; flex: none; border-radius: 8px; object-fit: cover; background: var(--input); box-shadow: 0 4px 12px rgba(0, 0, 0, .3); }
+.ac42-art.ph { display: grid; place-items: center; color: var(--muted); }
+.ac42-art.ph svg { width: 30px; height: 30px; }
+.ac42-art.ph.sp { background: #121212; }
+.ac42-info { display: flex; flex-direction: column; gap: 1px; flex: 1; min-width: 0; }
+.ac42-title { font-size: 14px; font-weight: 700; color: var(--header) !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-decoration: none; }
+a.ac42-title:hover { text-decoration: underline; }
+.ac42-sub { font-size: 12.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ac42-time { display: flex; align-items: center; gap: 8px; margin-top: 7px; font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.ac42-time .act-bar { flex: 1; height: 4px; margin: 0; border-radius: 4px; background: rgba(255, 255, 255, .16); overflow: hidden; }
+.ac42-time .act-bar i { display: block; height: 100%; border-radius: 4px; background: var(--header); }
+.ac42.sp .ac42-time .act-bar i { background: #1ed760; }
+.ac42-el { display: flex; align-items: center; gap: 5px; margin-top: 5px; font-size: 11.5px; color: var(--muted); }
+.ac42-el svg { width: 12px; height: 12px; }
+/* The pop-up profile keeps the activity card (it was hidden behind "View full profile"). */
+#layer .modal.pc-compact .pc-body > .pc-act42.pc-extra { display: block !important; }
+
+/* ---- My Account ---- */
+.ac42-card { padding: 0 !important; background: var(--sidebar); box-shadow: inset 0 0 0 1px var(--border), 0 10px 30px rgba(0, 0, 0, .25); }
+.ac42-banner { position: relative; height: 128px; overflow: hidden; background-size: cover; }
+.ac42-banner img, .ac42-banner video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.ac42-top { display: flex; align-items: flex-end; gap: 16px; padding: 0 20px 16px; margin-top: -46px; position: relative; }
+.ac42-av { flex: none; border-radius: 50%; box-shadow: 0 0 0 6px var(--sidebar); }
+.ac42-id { flex: 1; min-width: 0; padding: 54px 0 2px; }
+.ac42-name { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.ac42-name b { font-size: 22px; font-weight: 800; color: var(--header); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ac42-bloom { width: 22px; height: 22px; flex: none; }
+.ac42-handle { font-size: 13.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ac42-id .pc-badges { display: inline-flex; width: auto; max-width: 100%; margin: 6px 0 0; }
+.ac42-edit { display: inline-flex; align-items: center; gap: 7px; flex: none; margin-bottom: 4px; }
+.ac42-edit svg { width: 15px; height: 15px; }
+.ac42-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 20px 20px; }
+.ac42-cell { display: flex; align-items: center; gap: 12px; min-width: 0; padding: 12px 14px; border-radius: 14px; background: rgba(0, 0, 0, .18); box-shadow: inset 0 0 0 1px var(--border); }
+.ac42-cell > div { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.ac42-cell small { font-size: 11px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
+.ac42-cell > div > span { font-size: 14.5px; color: var(--header); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ac42-ic { width: 34px; height: 34px; flex: none; display: grid; place-items: center; border-radius: 10px; background: var(--hover); color: var(--brand); }
+.ac42-ic svg { width: 17px; height: 17px; }
+.ac42-cell .btn { flex: none; }
+.ac42-lang { margin-top: 3px; padding: 6px 10px; border-radius: 9px; font-size: 14px; width: 100%; }
+.a36-fi svg { width: 18px; height: 18px; color: var(--brand); }
+.a36-fi .a36-bloom { width: 22px; height: 22px; }
+.a36-standing-pill svg { width: 15px; height: 15px; vertical-align: -3px; }
+@media (max-width: 700px) {
+  .ac42-grid { grid-template-columns: 1fr; padding: 0 14px 14px; }
+  .ac42-top { flex-wrap: wrap; padding: 0 14px 14px; }
+  .ac42-edit { width: 100%; justify-content: center; }
+}
+
+/* ---- My Profile: more room ---- */
+body.pf36 .settings-main > #settings-body { max-width: 960px; }
+body.pf36 .profile-editor { grid-template-columns: minmax(0, 1fr) 320px; }
+.pf36 #ts38, .pf36 #wg-editor { margin-top: 16px; padding: 18px 20px; border-radius: 18px; background: var(--sidebar); box-shadow: inset 0 0 0 1px var(--border), 0 6px 22px rgba(0, 0, 0, .14); }
+.pf36 #ts38 .setting-head, .pf36 #wg-editor .setting-head { font-size: 16px; font-weight: 800; text-transform: none; letter-spacing: 0; color: var(--header); }
+
+/* ---- Server Settings: home page, groups with icons, a way back ---- */
+.server-settings-page #ss-navlist [data-ss] { display: flex; align-items: center; gap: 10px; }
+.ss42-ic { width: 18px; height: 18px; flex: none; display: grid; place-items: center; opacity: .8; }
+.ss42-ic svg { width: 17px; height: 17px; }
+.server-settings-page #ss-navlist [data-ss].active .ss42-ic { opacity: 1; color: var(--brand); }
+.ss42-home { margin-bottom: 6px; }
+.ss42-hub { display: flex; flex-direction: column; gap: 22px; }
+.ss42-hero { display: flex; align-items: center; gap: 16px; padding: 18px 20px; border-radius: 18px; background: var(--sidebar); box-shadow: inset 0 0 0 1px var(--border); }
+.ss42-hero img, .ss42-hico { width: 60px; height: 60px; flex: none; border-radius: 18px; object-fit: cover; }
+.ss42-hico { display: grid; place-items: center; font-size: 24px; font-weight: 800; color: #fff; background: var(--sv, var(--brand)); }
+.ss42-hero > div { min-width: 0; }
+.ss42-hero h2 { margin: 0 0 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ss42-hub h5 { margin: 0 0 8px; font-size: 12px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
+.ss42-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 10px; }
+.ss42-card { all: unset; box-sizing: border-box; display: flex; align-items: flex-start; gap: 12px; padding: 14px; border-radius: 14px; cursor: pointer; background: var(--sidebar); box-shadow: inset 0 0 0 1px var(--border); transition: transform .15s, box-shadow .15s; }
+.ss42-card:hover { transform: translateY(-1px); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--brand) 60%, var(--border)); }
+.ss42-card:focus-visible { outline: 2px solid var(--brand); }
+.ss42-cic { width: 36px; height: 36px; flex: none; display: grid; place-items: center; border-radius: 11px; color: var(--brand); background: color-mix(in srgb, var(--brand) 14%, transparent); }
+.ss42-cic svg { width: 18px; height: 18px; }
+.ss42-card > span:last-child { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.ss42-card b { font-size: 14.5px; color: var(--header); }
+.ss42-card small { font-size: 12.5px; line-height: 1.35; color: var(--muted); }
+.ss42-crumb { display: flex; align-items: center; gap: 8px; margin: -24px 0 14px; font-size: 13px; color: var(--muted); }
+.ss42-crumb button { all: unset; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; color: var(--link, var(--brand)); font-weight: 600; }
+.ss42-crumb button:hover { text-decoration: underline; }
+.ss42-crumb svg { width: 14px; height: 14px; }
+.ss42-crumb b { color: var(--header); font-weight: 700; }
+@media (max-width: 700px) { .ss42-crumb { margin-top: 0; } .ss42-cards { grid-template-columns: 1fr; } }
+
+/* ---- a custom app background: no flickering line at the panel edges ---- */
+/* Chrome draws a thin, flickering line where blurred see-through panels meet. The picture behind
+   has its own blur setting, so the panels are a little more solid instead. */
+html.has-app-bg .sidebar { backdrop-filter: none; background: color-mix(in srgb, var(--sidebar) 82%, transparent); }
+html.has-app-bg .main { backdrop-filter: none; background: color-mix(in srgb, var(--main) 84%, transparent); }
+
+/* ---- very wide characters (like "﷽") stay inside their boxes ---- */
+.server-head .sh-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rail-btn .sv-initials { max-width: 100%; overflow: hidden; white-space: nowrap; }
+.srv-tag { max-width: 100%; overflow: hidden; }
+.tp-opt { min-width: 0; overflow: hidden; }
+.tp-opt small { display: block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ss-head .sv-nav-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* the Closet's favorite button is an icon now (filled when it's a favorite) */
+.cm-fav .ui-ic { width: 14px; height: 14px; vertical-align: -2px; }
+.cm-fav.on .ui-ic { fill: currentColor; }

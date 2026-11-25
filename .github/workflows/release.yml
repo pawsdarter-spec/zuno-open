@@ -1,0 +1,57 @@
+# Builds the Windows installer on GitHub and publishes it as a release.
+# Runs from the Actions tab ("Run workflow"), or when you push a version tag (like v0.6.0).
+# Downloaded copies of Zuno check these releases and update themselves.
+name: Release Zuno
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  id-token: write # lets the workflow prove to heyzuno.uk that the upload comes from here
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install
+      - name: Build the installer
+        run: |
+          set -o pipefail
+          # Updates come from heyzuno.uk/download (the repository is private, so GitHub can't
+          # serve them to the app directly). The files still go on the GitHub release below.
+          npx electron-builder --win --publish never 2>&1 | tee build.log
+      - name: Publish the release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -o pipefail
+          VERSION=$(node -p "require('./package.json').version")
+          # Release notes come from public/whats-new.json, the same notes the app shows.
+          node -e "const n=require('./public/whats-new.json'); console.log('## '+n.title+'\n\n'+n.items.map(i=>'- '+i).join('\n'))" > notes.md
+          FILES="dist/Zuno-Setup.exe dist/Zuno-Setup.exe.blockmap dist/latest.yml"
+          if gh release view "v$VERSION" >/dev/null 2>&1; then
+            gh release upload "v$VERSION" $FILES --clobber 2>&1 | tee -a build.log
+            gh release edit "v$VERSION" --title "Zuno $VERSION" --notes-file notes.md --draft=false --latest 2>&1 | tee -a build.log
+          else
+            gh release create "v$VERSION" $FILES --title "Zuno $VERSION" --notes-file notes.md --target "$GITHUB_SHA" --latest 2>&1 | tee -a build.log
+          fi
+      - name: Send it to heyzuno.uk/download
+        if: github.ref == 'refs/heads/main'
+        run: |
+          set -o pipefail
+          node .github/scripts/upload-release.js 2>&1 | tee -a build.log
+      - name: Show what went wrong
+        if: failure()
+        run: |
+          # Put the end of the build output in the run's summary notes so it's easy to read.
+          tail -c 3500 build.log | tr '\r\n' '  ' | sed 's/%/%25/g' | xargs -0 -I{} echo "::error title=Build output::{}"

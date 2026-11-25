@@ -1,0 +1,163 @@
+/* Zuno 0.43 */
+
+/* ---- right-click menus: one icon column, even rows, calm separators ---- */
+#layer .menu > button { display: flex; align-items: center; gap: 10px; }
+#layer .menu > button > .mi-ico { width: 18px; height: 18px; flex: none; display: grid; place-items: center; opacity: .85; }
+#layer .menu > button > .mi-ico svg { width: 16px; height: 16px; }
+#layer .menu > button.danger > .mi-ico { opacity: 1; }
+#layer .menu > .sep { margin: 4px 6px; }
+
+/* ---- profiles: the side panel ---- */
+.overlay .modal.pf29-modal.has-pf43 { max-width: 880px; }
+.overlay .modal.pf29-modal.has-pf43.pcm-closed { max-width: 460px; }
+.modal.has-pf43 > .pf43-side { width: 380px; min-height: 520px; background: var(--floating); }
+.pf43-in { position: absolute; inset: 0; display: flex; flex-direction: column; }
+.pf43-tabs { display: flex; gap: 2px; padding: 12px 12px 0; border-bottom: 1px solid var(--border); overflow-x: auto; scrollbar-width: none; flex: none; }
+.pf43-tabs button { all: unset; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; padding: 9px 10px 11px; font-size: 13.5px; font-weight: 700; color: var(--muted); border-bottom: 2px solid transparent; margin-bottom: -1px; white-space: nowrap; }
+.pf43-tabs button:hover { color: var(--text); }
+.pf43-tabs button.on { color: var(--header); border-bottom-color: var(--header); }
+.pf43-n { min-width: 18px; padding: 0 5px; border-radius: 9px; background: var(--hover); font-size: 11px; line-height: 18px; text-align: center; color: var(--text); }
+.pf43-panes { flex: 1; min-height: 0; position: relative; }
+.pf43-pane { position: absolute; inset: 0; overflow-y: auto; padding: 14px; scrollbar-width: thin; }
+.pf43-pane[hidden] { display: none; }
+.pf43-pane[data-pane="comments"] { padding: 0; overflow: hidden; }
+.pf43-comments { position: absolute; inset: 0; }
+.pf43-comments .pcm-head .pcm-x, .pf43-comments .pcm-head > b, .pf43-comments .pcm-head > .pcm-n { display: none; }
+.pf43-comments .pcm-head:not(:has(.pcm-visitors)) { display: none; }
+.pf43-x { display: none; }
+.pf43-sec { margin-bottom: 16px; padding: 14px; border-radius: 14px; background: rgba(0, 0, 0, .2); box-shadow: inset 0 0 0 1px var(--border); }
+.pf43-sec[hidden] { display: none; }
+.pf43-sec > h5 { display: flex; align-items: baseline; gap: 8px; margin: 0 0 10px; font-size: 13px; font-weight: 800; color: var(--header); text-transform: none; letter-spacing: 0; }
+.pf43-sec .ac42 { margin: 0; background: transparent; box-shadow: none; padding: 0; }
+.pf43-sec .ac42-head { display: none; }
+.pf43-sec .ac42-art { width: 80px; height: 80px; }
+.pf43-listen { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 12px; width: 100%; box-sizing: border-box; text-decoration: none; }
+.pf43-listen svg { width: 16px; height: 16px; color: #1ed760; }
+.pf43-empty { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 8px 6px; text-align: center; }
+.pf43-empty svg:first-child { width: 72px; height: 60px; opacity: .85; }
+.pf43-empty b { font-size: 14px; color: var(--header); }
+.pf43-rot { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.pf43-game { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.pf43-game img, .pf43-gph { width: 100%; aspect-ratio: 3 / 4; border-radius: 8px; object-fit: cover; background: var(--input); box-shadow: 0 6px 16px rgba(0, 0, 0, .3); }
+.pf43-gph { display: grid; place-items: center; color: var(--muted); }
+.pf43-gph svg { width: 28px; height: 28px; }
+.pf43-game b { font-size: 12.5px; color: var(--header); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 3px; }
+.pf43-game small { font-size: 11.5px; color: var(--muted); }
+.pf43-note { grid-column: 1 / -1; }
+.pf43-toggle { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 12px; }
+.pf43-statrow { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.pf43-statrow > div { display: flex; flex-direction: column; padding: 8px 10px; border-radius: 10px; background: var(--hover); }
+.pf43-statrow b { font-size: 18px; color: var(--header); }
+.pf43-statrow small { font-size: 11.5px; color: var(--muted); }
+.pf43-statrow i { font-style: normal; font-weight: 700; }
+.pf43-statrow i.up { color: #3fcf8e; } .pf43-statrow i.down { color: #f5b14c; }
+.pf43-spark { display: flex; align-items: flex-end; gap: 3px; height: 38px; margin-top: 10px; }
+.pf43-spark i { flex: 1; min-height: 3px; border-radius: 3px 3px 1px 1px; background: color-mix(in srgb, var(--brand) 70%, transparent); }
+/* The panel takes the profile's theme colors. */
+.pf43-side.pf43-themed { background: linear-gradient(180deg, var(--pt1), var(--pt2)) !important; }
+.pf43-side.pf43-themed .pf43-tabs { border-bottom-color: rgba(255, 255, 255, .12); }
+.pf43-side.pf43-themed .pf43-sec { background: rgba(0, 0, 0, .3); box-shadow: none; }
+/* In the full profile the activity lives in the panel, not twice. */
+.modal.has-pf43:not(.pc-compact):not(.pcm-closed) .pc-body > .pc-act42 { display: none; }
+/* The row that opens the panel is for phones; the card keeps a cleaner look on computers. */
+@media (min-width: 761px) { .modal.has-pf43 .pf43-row { display: none; } }
+@media (max-width: 760px) {
+  .modal.has-pf43 > .pf43-side { width: auto; min-height: 0; }
+  .modal.pf29-modal.has-pcm:not(.pcm-closed) > .pf43-side .pf43-in { position: absolute; inset: 0; }
+  .pf43-x { display: block; position: absolute; top: 10px; right: 10px; width: 30px; height: 30px; border: 0; border-radius: 50%; background: var(--hover); color: var(--text); cursor: pointer; }
+  .pf43-tabs { padding-right: 48px; }
+}
+
+/* ---- your own profile: status right there ---- */
+.pf43-me { margin: 10px 0 4px; padding: 12px; border-radius: 12px; background: rgba(0, 0, 0, .22); box-shadow: inset 0 0 0 1px var(--border); }
+#layer .modal.pc-compact .pc-body > .pf43-me.pc-extra { display: block !important; }
+.pf43-me-head { display: flex; align-items: center; gap: 7px; margin-bottom: 8px; font-size: 12.5px; color: var(--header); }
+.pf43-me-head svg { width: 15px; height: 15px; color: var(--brand); }
+.pf43-sts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.pf43-sts button { all: unset; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 7px 4px; border-radius: 9px; font-size: 12.5px; font-weight: 600; color: var(--text); background: var(--hover); }
+.pf43-sts button.on { background: color-mix(in srgb, var(--brand) 26%, transparent); color: var(--header); box-shadow: inset 0 0 0 1px var(--brand); }
+.pf43-sts .swatch { width: 9px; height: 9px; border-radius: 50%; flex: none; }
+.pf43-sts .swatch.s-online { background: #23a55a; } .pf43-sts .swatch.s-idle { background: #f0b232; } .pf43-sts .swatch.s-dnd { background: #f23f43; } .pf43-sts .swatch.s-invisible { background: #80848e; }
+.pf43-cs { display: flex; gap: 6px; margin-top: 8px; }
+.pf43-cs input { flex: 1; min-width: 0; padding: 7px 10px; border-radius: 9px; border: 0; background: var(--input); color: var(--text); font: inherit; font-size: 13.5px; }
+
+/* ---- profile polish ---- */
+.modal.has-pf43 > .pcard { box-shadow: 0 24px 60px rgba(0, 0, 0, .45); }
+.modal.has-pf43 > .pf43-side { box-shadow: inset 0 0 0 1px var(--border), 0 24px 60px rgba(0, 0, 0, .45); border-radius: 18px; }
+.modal.has-pf43 > .pcard { border-radius: 18px; }
+.modal.has-pf43 .pc-body { border-radius: 14px; }
+.modal.has-pf43 .widgets { display: flex; flex-direction: column; gap: 10px; margin: 0; }
+
+/* ---- a DM's header shows what they're up to ---- */
+.dm43-act { all: unset; cursor: pointer; display: inline-flex; align-items: center; min-width: 0; margin-left: 10px; padding: 3px 9px; border-radius: 999px; font-size: 12px; color: var(--muted); background: var(--hover); max-width: 260px; }
+.dm43-act:hover { color: var(--text); }
+.dm43-act .act42 { max-width: 100%; }
+@media (max-width: 760px) { .dm43-act { display: none; } }
+
+/* ---- Spotify in Settings › Connections ---- */
+.sp43 { margin: -4px 0 12px; padding: 4px 14px 12px; border-radius: 0 0 12px 12px; background: rgba(0, 0, 0, .14); }
+.sp43 .setting-row { padding: 10px 0; }
+.sp43-last { display: block; line-height: 1.45; }
+.sp43-last svg { width: 14px; height: 14px; vertical-align: -2px; }
+
+/* ---- Open in app ---- */
+#open-app43 svg { width: 22px; height: 22px; }
+
+/* ---- 0.43.1: Last.fm help ---- */
+.lf43-help { display: flex; gap: 10px; align-items: flex-start; margin: 4px 0 10px; padding: 10px 12px; border-radius: 10px; font-size: 13px; line-height: 1.45; background: rgba(213, 16, 7, .1); box-shadow: inset 0 0 0 1px rgba(213, 16, 7, .3); }
+.lf43-help svg { width: 18px; height: 18px; flex: none; margin-top: 1px; color: #ff5a4f; }
+.lf43 { padding-top: 10px; }
+
+/* ---- 0.43.1: the board is joined to the profile card ---- */
+@media (min-width: 761px) {
+  .overlay .modal.has-pf43:not(.pcm-closed):not(.pc-compact) { gap: 0; }
+  .modal.has-pf43:not(.pcm-closed):not(.pc-compact) > .pcard { border-radius: 18px 0 0 18px; }
+  .modal.has-pf43:not(.pcm-closed):not(.pc-compact) > .pf43-side { border-radius: 0 18px 18px 0; box-shadow: inset 1px 0 0 rgba(255, 255, 255, .06), 0 24px 60px rgba(0, 0, 0, .45); }
+}
+.pf43-glow { position: absolute; left: 0; right: 0; top: 0; height: 160px; background-size: cover; background-position: center; opacity: .2; pointer-events: none; z-index: 0;
+  -webkit-mask-image: linear-gradient(180deg, #000 0%, rgba(0, 0, 0, .55) 55%, transparent 100%); mask-image: linear-gradient(180deg, #000 0%, rgba(0, 0, 0, .55) 55%, transparent 100%); }
+.pf43-side > .pf43-in { z-index: 1; }
+.pf43-tabs { background: transparent; border-bottom-color: rgba(255, 255, 255, .08); }
+.pf43-tabs button { padding: 8px 12px; margin: 0 0 8px; border: 0; border-radius: 999px; }
+.pf43-tabs button:hover { background: rgba(255, 255, 255, .06); }
+.pf43-tabs button.on { background: rgba(255, 255, 255, .12); border-bottom: 0; }
+.pf43-sec { background: rgba(0, 0, 0, .28); backdrop-filter: blur(2px); }
+
+/* ---- 0.43.1: link and scam warnings ---- */
+.lw43-host { padding: 10px 12px; border-radius: 10px; background: var(--input); font-family: var(--mono, monospace); font-size: 13.5px; color: var(--header); word-break: break-all; }
+.scam43 { display: flex; gap: 8px; align-items: flex-start; margin-top: 6px; padding: 8px 10px; border-radius: 10px; font-size: 12.5px; line-height: 1.4; color: #f5c46b; background: rgba(245, 177, 76, .1); box-shadow: inset 0 0 0 1px rgba(245, 177, 76, .3); max-width: 520px; }
+.scam43 svg { width: 15px; height: 15px; flex: none; margin-top: 1px; }
+
+/* ---- 0.43.1: show newer messages ---- */
+#messages .load-newer { display: block; margin: 12px auto; }
+
+/* ---- 0.43.1: loading placeholders ---- */
+.sk43-host { display: block; }
+.sk43 { display: flex; flex-direction: column; gap: 10px; padding: 6px 2px; width: 100%; }
+.sk43 i { display: block; height: 12px; border-radius: 6px; background: linear-gradient(90deg, var(--hover) 25%, color-mix(in srgb, var(--hover) 50%, var(--header) 8%) 50%, var(--hover) 75%); background-size: 200% 100%; animation: sk43 1.2s ease-in-out infinite; }
+.sk43 i:nth-child(1) { width: 80%; } .sk43 i:nth-child(2) { width: 60%; } .sk43 i:nth-child(3) { width: 70%; }
+@keyframes sk43 { from { background-position: 100% 0; } to { background-position: -100% 0; } }
+
+/* ---- 0.43.1: the user panel ---- */
+#me-btn .up43-sub { display: flex; align-items: center; gap: 4px; min-width: 0; }
+#me-btn .up43-sub > span:last-child, #me-btn .up43-sub .act42 > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#me-btn .up43-emo { flex: none; }
+#me-btn .up43-sub .act42 svg { width: 12px; height: 12px; }
+#me-btn { border-radius: 10px; transition: background .15s; }
+
+/* ---- 0.43.1: performance mode (only when it's turned on) ---- */
+html.perf43 *, html.perf43 *::before, html.perf43 *::after { animation-duration: 0s !important; animation-iteration-count: 1 !important; transition: none !important; backdrop-filter: none !important; }
+html.perf43 video.pc-bg { display: none; }
+html.perf43 .sk43 i { animation: none !important; }
+
+/* ---- old PC apps ---- */
+.oldapp43 { position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%); z-index: 300; display: flex; align-items: center; gap: 12px; max-width: min(720px, calc(100vw - 32px)); padding: 12px 14px; border-radius: 14px; background: var(--floating); box-shadow: 0 16px 40px rgba(0, 0, 0, .5), inset 0 0 0 1px color-mix(in srgb, var(--brand) 50%, var(--border)); font-size: 13.5px; color: var(--text); }
+.oldapp43 > svg { width: 22px; height: 22px; flex: none; color: var(--brand); }
+.oldapp43 b { color: var(--header); }
+.oldapp43 .btn { flex: none; }
+.oldapp43-note { display: flex; gap: 8px; align-items: flex-start; margin-top: 10px; padding: 10px 12px; border-radius: 10px; font-size: 13px; line-height: 1.45; background: rgba(245, 177, 76, .1); box-shadow: inset 0 0 0 1px rgba(245, 177, 76, .3); }
+.oldapp43-note svg { width: 16px; height: 16px; flex: none; margin-top: 1px; color: #f5b14c; }
+.oldapp43-note a { color: var(--link, var(--brand)); font-weight: 600; }
+
+.pf43-gap { height: 14px; }
+.pf43-game img.pf43-ico { object-fit: contain; padding: 22%; box-sizing: border-box; image-rendering: auto; }

@@ -1,0 +1,10 @@
+{
+  "version": "0.50.0",
+  "title": "Much smoother",
+  "items": [
+    "New messages no longer make the whole chat redraw: only the new one is added, so busy chats stay smooth (especially on phones) and pictures and videos above stay put.",
+    "The loading screen used to keep animating invisibly in the background after Zuno opened, making phones work non-stop. It's now removed once Zuno is ready, so Zuno sits almost completely still when you're not doing anything.",
+    "Switching chats is lighter, and nothing animates while Zuno is in the background.",
+    "Lots of small behind-the-scenes speed-ups for phones."
+  ]
+}

@@ -1,0 +1,154 @@
+/* Zuno 0.46 */
+
+/* ---------- more app themes ---------- */
+html[data-theme="ocean"] { --rail: #0a1424; --sidebar: #0f1c30; --main: #13233a; --panel: #0d192b; --floating: #070f1b; --input: #1b2e48; --hover: rgba(120, 180, 255, .07); --selected: rgba(120, 180, 255, .14); --border: rgba(160, 200, 255, .07); --bubble-them: #1b2e48; }
+html[data-theme="grape"] { --rail: #160f22; --sidebar: #1e152c; --main: #251a35; --panel: #1b1328; --floating: #100a18; --input: #2f2343; --hover: rgba(200, 160, 255, .07); --selected: rgba(200, 160, 255, .14); --border: rgba(220, 190, 255, .07); --bubble-them: #2f2343; }
+html[data-theme="rose"] { --rail: #1d0f16; --sidebar: #26141d; --main: #2f1a24; --panel: #22121a; --floating: #150a10; --input: #3a222e; --hover: rgba(255, 160, 200, .07); --selected: rgba(255, 160, 200, .14); --border: rgba(255, 190, 215, .07); --bubble-them: #3a222e; }
+html[data-theme="forest"] { --rail: #0d1810; --sidebar: #132016; --main: #18281c; --panel: #111d14; --floating: #08100a; --input: #213425; --hover: rgba(150, 230, 160, .07); --selected: rgba(150, 230, 160, .14); --border: rgba(180, 240, 190, .07); --bubble-them: #213425; }
+html[data-theme="ember"] { --rail: #1a100b; --sidebar: #231711; --main: #2c1d16; --panel: #201510; --floating: #120a06; --input: #38261d; --hover: rgba(255, 180, 120, .07); --selected: rgba(255, 180, 120, .14); --border: rgba(255, 200, 160, .07); --bubble-them: #38261d; }
+html[data-theme="slate"] { --rail: #15171a; --sidebar: #1c1e22; --main: #23262b; --panel: #191b1f; --floating: #0f1012; --input: #2d3036; --hover: rgba(200, 210, 230, .06); --selected: rgba(200, 210, 230, .12); --border: rgba(220, 225, 240, .07); --bubble-them: #2d3036; }
+html[data-theme="mocha"] { --rail: #1a1411; --sidebar: #221b17; --main: #2a221d; --panel: #1e1814; --floating: #120e0b; --input: #352b25; --hover: rgba(230, 200, 170, .07); --selected: rgba(230, 200, 170, .13); --border: rgba(240, 215, 190, .07); --bubble-them: #352b25; }
+html[data-theme="nebula"] { --rail: #0f1024; --sidebar: #15172f; --main: #1b1d3a; --panel: #13152b; --floating: #0a0b1a; --input: #252849; --hover: rgba(170, 170, 255, .08); --selected: rgba(170, 170, 255, .15); --border: rgba(190, 190, 255, .08); --bubble-them: #252849; }
+html[data-theme="crimson"] { --rail: #170809; --sidebar: #200d0f; --main: #2a1214; --panel: #1d0b0d; --floating: #110506; --input: #36191c; --hover: rgba(255, 140, 140, .07); --selected: rgba(255, 140, 140, .14); --border: rgba(255, 170, 170, .07); --bubble-them: #36191c; }
+html[data-theme="arctic"] { --rail: #111a22; --sidebar: #17212b; --main: #1c2833; --panel: #141e27; --floating: #0b1218; --input: #253441; --hover: rgba(170, 220, 255, .07); --selected: rgba(170, 220, 255, .14); --border: rgba(190, 225, 255, .08); --bubble-them: #253441; }
+html[data-theme="ocean"] .rail, html[data-theme="grape"] .rail, html[data-theme="rose"] .rail, html[data-theme="forest"] .rail, html[data-theme="ember"] .rail,
+html[data-theme="slate"] .rail, html[data-theme="mocha"] .rail, html[data-theme="nebula"] .rail, html[data-theme="crimson"] .rail, html[data-theme="arctic"] .rail { background: var(--rail); }
+/* the two light ones share the Light theme's fixes */
+html[data-theme="sakura"], html[data-theme="sand"] { --text: #2a1d22; --header: #170c10; --muted: #7a6168; --faint: #b29ca3; --foam: #7a2448; --hover: rgba(80, 20, 40, .06); --selected: rgba(80, 20, 40, .11); --border: rgba(60, 20, 30, .1); }
+html[data-theme="sakura"] { --rail: #f4dbe4; --sidebar: #fbeaf0; --main: #fff5f8; --panel: #fcedf2; --floating: #ffffff; --input: #f6e0e8; --bubble-them: #fbeaf0; --bubble-me: #ffd9e6; }
+html[data-theme="sand"] { --rail: #ece2cf; --sidebar: #f5eedf; --main: #fbf6ec; --panel: #f7f0e3; --floating: #ffffff; --input: #efe5d3; --bubble-them: #f5eedf; --bubble-me: #f1e4c4; --text: #2b241a; --header: #17120b; --muted: #75685a; --foam: #6b4a14; }
+html[data-theme="sakura"] body, html[data-theme="sand"] body { background: var(--rail); }
+html[data-theme="sakura"] .rail, html[data-theme="sand"] .rail { background: rgba(255, 255, 255, .6); }
+html[data-theme="sakura"] .menu, html[data-theme="sakura"] .dialog, html[data-theme="sakura"] .modal,
+html[data-theme="sand"] .menu, html[data-theme="sand"] .dialog, html[data-theme="sand"] .modal { box-shadow: 0 8px 28px rgba(60, 20, 30, .18); }
+html[data-theme="sakura"] input, html[data-theme="sakura"] textarea, html[data-theme="sakura"] select,
+html[data-theme="sand"] input, html[data-theme="sand"] textarea, html[data-theme="sand"] select { color: var(--text); }
+html[data-theme="sakura"] .msg .content, html[data-theme="sand"] .msg .content { color: var(--text); }
+html[data-theme="sakura"] .settings, html[data-theme="sakura"] .settings-nav, html[data-theme="sand"] .settings, html[data-theme="sand"] .settings-nav { background: var(--sidebar); }
+html[data-theme="sakura"] .settings-main, html[data-theme="sand"] .settings-main { background: var(--main); }
+.theme-pick { flex-wrap: wrap; }
+
+/* ---------- game pictures that didn't load ---------- */
+.art-ph47 { display: grid !important; place-items: center; color: var(--muted); background: var(--input); }
+.art-ph47 svg { width: 40%; height: 40%; max-width: 30px; max-height: 30px; }
+
+/* ---------- adding a bot ---------- */
+.ab47-ov { z-index: 140; }
+.ab47-ov.out { opacity: 0; transition: opacity .15s; }
+.ab47.dialog { width: min(440px, 100%); max-height: calc(100vh - 40px); overflow-y: auto; padding: 24px 22px 18px; }
+.ab47-head { text-align: center; padding-bottom: 14px; border-bottom: 1px solid var(--border); margin-bottom: 14px; }
+.ab47-pair { display: flex; align-items: center; justify-content: center; gap: 14px; margin-bottom: 12px; }
+.ab47-av .avatar { box-shadow: 0 0 0 4px var(--floating); }
+.ab47-dots { display: flex; gap: 5px; }
+.ab47-dots b { width: 6px; height: 6px; border-radius: 50%; background: var(--muted); animation: ab47dot 1.2s infinite ease-in-out; }
+.ab47-dots b:nth-child(2) { animation-delay: .15s; } .ab47-dots b:nth-child(3) { animation-delay: .3s; }
+@keyframes ab47dot { 0%, 100% { opacity: .3; transform: scale(.8); } 50% { opacity: 1; transform: scale(1.1); } }
+.ab47-name { font-family: var(--display); font-size: 21px; font-weight: 700; color: var(--header); }
+.ab47-sub { color: var(--muted); margin-top: 2px; }
+.ab47-who { font-size: 12px; color: var(--faint); margin-top: 8px; }
+.ab47-label { display: block; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .02em; color: var(--muted); margin: 4px 0 8px; }
+.ab47-servers { display: flex; flex-direction: column; gap: 6px; max-height: 240px; overflow-y: auto; }
+.ab47-sv { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 10px; background: var(--input); text-align: left; box-shadow: inset 0 0 0 1px transparent; transition: box-shadow .12s, background .12s; }
+.ab47-sv:hover { background: var(--hover); }
+.ab47-sv.on { box-shadow: inset 0 0 0 2px var(--brand); }
+.ab47-svn { flex: 1; min-width: 0; font-weight: 600; color: var(--header); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ab47-svi { width: 32px; height: 32px; flex: none; border-radius: 10px; overflow: hidden; display: grid; }
+.ab47-svi img, .ab47-svi span { width: 100%; height: 100%; object-fit: cover; display: grid; place-items: center; font-size: 12px; font-weight: 700; color: #fff; }
+.ab47-tick { color: var(--brand); display: grid; }
+.ab47-tick svg { width: 18px; height: 18px; }
+.ab47-to { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 10px; background: var(--input); margin-bottom: 14px; color: var(--text); }
+.ab47-perms { display: flex; flex-direction: column; border-radius: 10px; background: var(--input); overflow: hidden; }
+.ab47-perm { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; cursor: pointer; border-top: 1px solid var(--border); }
+.ab47-perm:first-child { border-top: 0; }
+.ab47-perm:hover { background: var(--hover); }
+.ab47-perm input { position: absolute; opacity: 0; pointer-events: none; }
+.ab47-box { width: 20px; height: 20px; flex: none; border-radius: 6px; display: grid; place-items: center; box-shadow: inset 0 0 0 2px var(--faint); color: transparent; margin-top: 1px; transition: background .12s, box-shadow .12s; }
+.ab47-box svg { width: 14px; height: 14px; }
+.ab47-perm input:checked + .ab47-box { background: var(--brand); box-shadow: none; color: #fff; }
+.ab47-perm.risky input:checked + .ab47-box { background: var(--yellow); }
+.ab47-pt { display: flex; flex-direction: column; min-width: 0; }
+.ab47-pt b { color: var(--header); font-weight: 600; }
+.ab47-pt small { color: var(--muted); font-size: 12.5px; line-height: 1.35; }
+.ab47-perm.off { cursor: not-allowed; opacity: .55; }
+.ab47-empty { display: flex; align-items: center; gap: 8px; padding: 12px; color: var(--text); }
+.ab47-empty svg { width: 16px; height: 16px; color: var(--brand); }
+.ab47-facts { display: flex; flex-direction: column; gap: 8px; margin: 14px 0 4px; }
+.ab47-facts > div { display: flex; gap: 10px; align-items: flex-start; font-size: 13px; color: var(--muted); }
+.ab47-facts > div svg { width: 16px; height: 16px; flex: none; margin-top: 1px; }
+.ab47-facts b { color: var(--text); }
+.ab47-facts .warn { color: var(--yellow); }
+.ab47-note { font-size: 12px; color: var(--faint); margin: 10px 0 0; }
+.ab47-acts { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
+.ab47-done { text-align: center; }
+.ab47-done h3 { margin: 10px 0 4px; font-family: var(--display); font-size: 22px; color: var(--header); }
+.ab47-done p { color: var(--muted); margin: 0; }
+.ab47-done .ab47-acts { justify-content: center; }
+.ab47-ok { width: 64px; height: 64px; margin: 4px auto 0; border-radius: 50%; display: grid; place-items: center; background: var(--green); color: #fff; animation: ab47pop .4s var(--spring); }
+.ab47-ok svg { width: 34px; height: 34px; stroke-width: 3; }
+@keyframes ab47pop { from { transform: scale(.3); opacity: 0; } }
+
+/* ---------- streams: whole picture first, then zoom with the wheel ---------- */
+.call-tiles .tile.focused video, .call-tiles.has-focus .tile.focused video, .tile.screen video, .tile:fullscreen video { object-fit: contain !important; }
+.call-tiles .tile.focused, .tile.screen { overflow: hidden; }
+.call-tiles .tile.focused video, .tile.screen video { transition: transform .06s linear; will-change: transform; }
+.sz47 { position: absolute; left: 50%; bottom: 12px; transform: translateX(-50%); z-index: 6; display: flex; align-items: center; gap: 2px; padding: 3px; border-radius: 10px; background: rgba(0, 0, 0, .72); color: #fff; font-size: 12px; font-weight: 600; backdrop-filter: blur(6px); }
+.sz47 button { min-width: 26px; height: 24px; border-radius: 7px; color: #fff; font-weight: 700; padding: 0 6px; }
+.sz47 button:hover { background: rgba(255, 255, 255, .14); }
+.sz47 span { min-width: 42px; text-align: center; font-variant-numeric: tabular-nums; }
+.sz47 .fit { font-weight: 600; margin-left: 2px; }
+
+/* (0.47) the all-badges window covers and blurs everything, including the profile card under it */
+#layer .ab39-ov { z-index: 160; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+/* the viewer's close button also sits in the top corner, where people look for it */
+.lb33-ov .lb33-x47 { position: fixed; top: calc(var(--tb, 0px) + 14px); right: 16px; z-index: 3; width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; background: rgba(255, 255, 255, .12); color: #fff; font-size: 18px; }
+.lb33-ov .lb33-x47:hover { background: rgba(255, 255, 255, .24); }
+.lightbox .lb-x47 { position: fixed; top: calc(var(--tb, 0px) + 14px); right: 16px; width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; background: rgba(255, 255, 255, .12); color: #fff; font-size: 18px; }
+.lb33-x47 svg, .lb-x47 svg { width: 20px; height: 20px; }
+
+/* menus over dialogs (Add role or member) */
+.menu.mo47 { display: flex; flex-direction: column; overflow: hidden; padding: 6px; width: 260px; }
+.mo47 .mo47-search { flex: none; padding: 0 0 6px; }
+.mo47 .mo47-search input { width: 100%; box-sizing: border-box; height: 32px; padding: 0 10px; border-radius: 8px; border: 0; background: var(--input); color: var(--text); font: inherit; }
+.mo47 .mo47-list { flex: 1; min-height: 0; overflow-y: auto; }
+.mo47 [hidden] { display: none !important; }
+
+/* the simpler message menu */
+.menu.msg-menu.mm47 { width: 220px; }
+.menu.mm47 > button { padding-top: 7px; padding-bottom: 7px; }
+.menu.mm47 .mm-chev { margin-left: auto; color: var(--muted); }
+/* (0.47) a shared screen is never cropped, wherever it shows */
+.tile.has-video.screen video, .tile.focused video[data-vid], #voice-stage .tile.focused video, #call-slot .tile.focused video { object-fit: contain !important; }
+.tile.has-video { overflow: hidden; }
+
+/* voice changer */
+.beta47 { display: inline-block; margin-left: 6px; padding: 1px 6px; border-radius: 6px; font-size: 10px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; background: var(--brand); color: #fff; vertical-align: 1px; }
+.vfx47-list { display: flex; flex-wrap: wrap; gap: 6px; }
+.vfx47-opt { padding: 7px 14px; border-radius: 999px; background: var(--input); color: var(--text); font-weight: 600; box-shadow: inset 0 0 0 1px var(--border); }
+.vfx47-opt:hover { background: var(--hover); }
+.vfx47-opt.on { background: var(--brand); color: #fff; box-shadow: none; }
+
+/* (0.47) A narrow message box (iPad, small windows, chat beside a call) keeps room for typing:
+   polls, scheduling, times and stickers move into the "⋯" menu, like on phones. */
+#composer { container: composer47 / inline-size; }
+@container composer47 (max-width: 600px) {
+  .composer-box > #composer-poll, .composer-box > #composer-sched, .composer-box > #composer-time45, .composer-box > #composer-sticker { display: none !important; }
+  .composer-box > .composer-more { display: grid; }
+  .composer-box.has-text > #composer-voice { display: none; }
+}
+@container composer47 (max-width: 380px) {
+  .composer-box > #composer-gif, .composer-box > .composer-gif { display: none !important; }
+}
+
+/* (0.47) Voice channel chat on a narrow screen (iPad, small windows): the call sits on top and
+   the chat underneath, instead of the call being squeezed into a sliver next to the chat. */
+@media (min-width: 761px) and (max-width: 1130px) {
+  #main.vc-chat:has(> #call-slot.call-panel) { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(180px, 44%) minmax(0, 1fr); }
+  #main.vc-chat:has(> #call-slot.call-panel) > #call-slot { grid-column: 1; grid-row: 2; border-right: 0; border-bottom: 1px solid var(--border); }
+  #main.vc-chat:has(> #call-slot.call-panel) > .body-row { grid-column: 1; grid-row: 3; }
+  #main.vc-chat:has(> #call-slot.call-panel) #call-slot .call-tiles .tile { width: min(420px, 44%); }
+  #main.vc-chat:has(> #call-slot.call-panel) #call-slot .call-tiles .tile.focus, #main.vc-chat:has(> #call-slot.call-panel) #call-slot .call-tiles .tile.screen { width: min(900px, 96%); }
+}
+/* the voice channel's Set Status button stays reachable on narrow top bars */
+@media (max-width: 1130px) {
+  #main .topbar #vs-btn { flex: 0 1 auto; min-width: 36px; max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+}

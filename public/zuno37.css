@@ -1,0 +1,25 @@
+/* Zuno 0.37: Verified Creator card in My Account, and its review in Moderation. */
+.cr37 { margin-top: 18px; padding: 18px 20px; border-radius: 18px; background: var(--sidebar); box-shadow: inset 0 0 0 1px var(--border); display: flex; flex-direction: column; gap: 12px; }
+.cr37 .pf-card-head { display: grid; grid-template-columns: 38px 1fr; column-gap: 12px; align-items: center; margin: 0; }
+.cr37 .m36-ic { grid-row: 1 / span 2; width: 38px; height: 38px; border-radius: 12px; display: grid; place-items: center; color: #fff; background: linear-gradient(135deg, #ff6b8b, #d4145a); }
+.cr37 .m36-ic svg { width: 20px; height: 20px; }
+.cr37 h3 { margin: 0; font-size: 16px !important; font-weight: 800; color: var(--header); text-transform: none !important; letter-spacing: 0 !important; }
+.cr37 .pf-card-head span:not(.m36-ic) { font-size: 13px; color: var(--muted); }
+.cr37 > .btn { align-self: flex-start; }
+.cr37-needs { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 6px; font-size: 14px; }
+.cr37-needs code { padding: 1px 6px; border-radius: 6px; background: var(--input); font-size: 13px; }
+.cr37-form { display: flex; flex-direction: column; gap: 2px; }
+.cr37-form[hidden] { display: none; }
+.cr37-form .field input, .cr37-form .field textarea { border-radius: 10px; }
+.cr37-state { display: flex; flex-direction: column; gap: 4px; padding: 12px 14px; border-radius: 12px; background: var(--input); font-size: 14px; }
+.cr37-state.ok { flex-direction: row; align-items: center; flex-wrap: wrap; gap: 10px; background: color-mix(in srgb, #2fbf71 14%, var(--input)); }
+.cr37-state.wait { background: color-mix(in srgb, var(--yellow) 12%, var(--input)); }
+.cr37-state.no { background: color-mix(in srgb, var(--red) 12%, var(--input)); }
+.cr37-badge { display: inline-flex; align-items: center; gap: 6px; }
+.cr37-badge svg { width: 22px; height: 22px; }
+.cr37-rv { padding: 14px 16px; margin-bottom: 12px; border-radius: 14px; background: var(--sidebar); box-shadow: inset 0 0 0 1px var(--border); display: flex; flex-direction: column; gap: 10px; }
+.cr37-rv .rv-maker { align-self: flex-start; }
+.cr37-rows { display: flex; flex-direction: column; gap: 6px; font-size: 14px; }
+.cr37-rows > div { display: grid; grid-template-columns: 100px 1fr; gap: 10px; overflow-wrap: anywhere; }
+.cr37-rows > div > span:first-child { color: var(--muted); font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; padding-top: 2px; }
+.cr37-rv .rv-acts { display: flex; gap: 8px; }

@@ -1011,7 +1011,7 @@ async function loadConversation(conv, after) {
   rememberUnreadForDivider(conv);
   const convo = state.convos[conv];
   if (convo?.loaded) { renderMessages(true); after?.(); return; }
-  $('#messages').innerHTML = '<div class="spacer"></div><div class="muted" style="padding:16px">Loading…</div>';
+  $('#messages').innerHTML = typeof skel53 === 'function' ? skel53('messages') : '<div class="spacer"></div><div class="muted" style="padding:16px">Loading…</div>';
   try {
     const r = await api('GET', `${convBase(conv)}/messages`);
     if (r.user) state.users[r.user.id] = { ...state.users[r.user.id], ...r.user };

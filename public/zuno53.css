@@ -1,0 +1,147 @@
+/* Zuno 0.53 */
+
+/* ======================= lighter chat ======================= */
+/* The soft light behind the chat stays still: sliding it around made the whole app restyle every
+   frame, even with nothing happening, and kept a big extra layer in graphics memory. */
+.chat::before { animation: none !important; will-change: auto; inset: 0; }
+/* The message list is laid out on its own, so typing (the box growing, the send button changing)
+   doesn't make the browser measure every message again. */
+#messages { contain: strict; }
+
+/* ======================= loading sketches ======================= */
+.sk53 { width: 100%; box-sizing: border-box; }
+.sk53 :is(i, b) { display: block; border-radius: 6px; background: linear-gradient(90deg, var(--hover) 25%, color-mix(in srgb, var(--hover) 55%, #fff 7%) 50%, var(--hover) 75%); background-size: 200% 100%; animation: sk53 1.3s ease-in-out infinite; }
+@keyframes sk53 { from { background-position: 100% 0; } to { background-position: -100% 0; } }
+html.perf43 .sk53 :is(i, b), .reduce-motion .sk53 :is(i, b) { animation: none; }
+@media (prefers-reduced-motion: reduce) { .sk53 :is(i, b) { animation: none; } }
+.sk53-bars { display: flex; flex-direction: column; gap: 10px; padding: 6px 2px; }
+.sk53-bars b { height: 12px; }
+/* chat messages */
+.sk53-msgs { display: flex; flex-direction: column; justify-content: flex-end; gap: 4px; padding: 16px 16px 8px; min-height: 100%; }
+.sk53-msgs p { margin: 12px 0 0; display: grid; grid-template-columns: 40px 1fr; column-gap: 14px; row-gap: 7px; align-items: start; }
+.sk53-msgs p.cont { margin-top: 0; }
+.sk53-msgs p i { width: 40px; height: 40px; border-radius: 50%; grid-row: span 3; }
+.sk53-msgs p.cont i { visibility: hidden; height: 0; }
+.sk53-msgs p.cont b.nm { display: none; }
+.sk53-msgs p b { height: 12px; grid-column: 2; }
+.sk53-msgs p b.nm { height: 13px; opacity: .8; }
+/* rows of people or things */
+.sk53-rows { display: flex; flex-direction: column; gap: 6px; padding: 4px 0; }
+.sk53-rows p { margin: 0; display: grid; grid-template-columns: 34px 1fr; column-gap: 12px; row-gap: 7px; padding: 6px 4px; align-items: center; }
+.sk53-rows p i { width: 34px; height: 34px; border-radius: 50%; grid-row: span 2; }
+.sk53-rows p b { height: 11px; }
+.sk53-rows p b.s { height: 9px; opacity: .7; }
+/* cards */
+.sk53-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; grid-column: 1 / -1; }
+.sk53-cards p { margin: 0; display: flex; flex-direction: column; gap: 8px; padding: 10px; border-radius: 14px; background: color-mix(in srgb, var(--hover) 40%, transparent); }
+.sk53-cards p i { height: 90px; border-radius: 10px; }
+.sk53-cards p b { height: 11px; width: 70%; }
+.sk53-cards p b.s { width: 45%; height: 9px; }
+.sk53-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.sk53-chips i { width: 32px; height: 32px; border-radius: 50%; }
+.sk53-card { display: flex; flex-direction: column; gap: 10px; }
+.sk53-card i { height: 70px; border-radius: 12px; }
+.sk53-card b { height: 12px; width: 60%; }
+.sk53-card b.s { width: 40%; }
+#messages > .sk53-msgs { flex: 1; }
+
+/* Start-up sketch, shaped like where you're going (move.js picks it). */
+html[data-sk53="friends"] .sk45-msgs { justify-content: flex-start; gap: 6px; padding-top: 10px; }
+html[data-sk53="friends"] .sk45-msgs p { padding: 8px 0; border-bottom: 1px solid color-mix(in srgb, var(--hover) 60%, transparent); grid-template-columns: 36px 1fr; }
+html[data-sk53="friends"] .sk45-msgs p i { width: 36px; height: 36px; grid-row: span 2; }
+html[data-sk53="friends"] .sk45-msgs p b:nth-of-type(n+3) { display: none; }
+html[data-sk53="friends"] .sk45-main b.box { display: none; }
+html[data-sk53="server"] .sk45-side b { height: 26px; width: 70%; margin-left: 8px; }
+html[data-sk53="server"] .sk45-side b:first-child { height: 34px; width: auto; margin: 0 0 6px; }
+html[data-sk53="server"] .sk45-side b.r { height: 26px; width: 62%; margin-left: 8px; }
+html[data-sk53="dm"] .sk45-side b.r, html[data-sk53="friends"] .sk45-side b.r { height: 40px; border-radius: 20px 10px 10px 20px; width: 86%; }
+.sk53-auth { display: none; }
+html[data-sk53="auth"] .sk45 { display: none; }
+html[data-sk53="auth"] .sk53-auth { display: flex; flex-direction: column; align-items: center; gap: 14px; width: min(440px, 88vw); margin: auto; padding: 32px; border-radius: 20px; background: var(--sidebar); box-sizing: border-box; }
+html[data-sk53="auth"] .splash { display: grid; place-items: center; }
+.sk53-auth :is(i, b) { display: block; border-radius: 10px; background: linear-gradient(90deg, rgba(255,255,255,.05) 25%, rgba(255,255,255,.1) 50%, rgba(255,255,255,.05) 75%); background-size: 200% 100%; animation: sk45-shine 1.4s linear infinite; }
+.sk53-auth i { width: 72px; height: 72px; border-radius: 50%; }
+.sk53-auth b { height: 14px; width: 60%; }
+.sk53-auth b.f { height: 42px; width: 100%; }
+.sk53-auth b.btn { height: 44px; width: 100%; margin-top: 6px; }
+.splash.gone .sk53-auth :is(i, b) { animation: none; }
+/* Phones open to the list of chats, so that's what the sketch shows there. */
+@media (max-width: 760px) {
+  html[data-sk53="friends"] .sk45, html[data-sk53="dm"]:not([data-sk53v="chat"]) .sk45 { grid-template-columns: 1fr; }
+  html[data-sk53="friends"] .sk45-side { display: flex !important; }
+  html[data-sk53="friends"] .sk45-main { display: none; }
+  html[data-sk53="friends"] .sk45-side b.r { width: 100%; height: 52px; border-radius: 26px 14px 14px 26px; margin-left: 0; }
+}
+
+/* ======================= Moderation ======================= */
+.mod-tabs.mt53 { display: flex; flex-wrap: wrap; align-items: center; gap: 2px; width: fit-content; max-width: 100%; padding: 4px; }
+.mod-tabs.mt53 > button { white-space: nowrap; padding: 6px 9px; font-size: 13px; line-height: 1.2; display: inline-flex; align-items: center; gap: 6px; flex: none; }
+.mod-tabs.mt53 .mt53-sep { width: 1px; height: 18px; background: var(--border, rgba(255,255,255,.12)); margin: 0 2px; flex: none; }
+.mod-tabs.mt53 .cm-count { margin: 0; }
+.mod-tabs.mt53 .cm-count.dim53 { background: color-mix(in srgb, var(--text, #fff) 18%, transparent); color: inherit; }
+#mod-body.mod53-body, .mod53-body { margin-top: 14px; }
+.mod53-h { display: flex; align-items: center; gap: 8px; margin: 18px 0 6px; font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted, #9aa); }
+.mod53-h .ui-ic { width: 16px; height: 16px; }
+.mod53-hint { margin: 6px 0 10px; }
+.mod53-list { display: flex; flex-direction: column; gap: 2px; }
+.mod53-row { display: flex; align-items: center; gap: 12px; padding: 8px 10px; border-radius: 10px; min-width: 0; }
+.mod53-row:hover { background: var(--hover); }
+.mod53-row[hidden] { display: none; }
+.mod53-who { flex: 1; min-width: 0; }
+.mod53-who .muted.small { overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.45; }
+.mod53-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mod53-acts { display: flex; align-items: center; gap: 6px; flex: none; }
+.mod53-acts .btn-sm { padding: 5px 10px; }
+.mod53-more .ui-ic { width: 16px; height: 16px; }
+.mod53-pill { display: inline-block; padding: 1px 7px; border-radius: 999px; font-size: 11.5px; font-weight: 600; background: var(--hover); color: var(--muted, #9aa); vertical-align: 1px; }
+.mod53-pill.red { background: color-mix(in srgb, #ed4245 22%, transparent); color: #ff8a8c; }
+.mod53-pill.amber { background: color-mix(in srgb, #f0b232 22%, transparent); color: #f5c76a; }
+.mod53-empty { padding: 14px 10px; color: var(--muted, #9aa); }
+.mod53-sub { margin: 0 0 6px 58px; padding: 4px 8px; border-left: 2px solid var(--border, rgba(255,255,255,.12)); }
+.mod53-sub[hidden] { display: none; }
+.mod53-svrow { display: flex; align-items: center; gap: 10px; padding: 6px 4px; }
+.sv53-ic { display: inline-grid; place-items: center; border-radius: 30%; overflow: hidden; flex: none; color: #fff; font-weight: 700; }
+.sv53-ic img { width: 100%; height: 100%; object-fit: cover; }
+.days53 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+@media (max-width: 760px) {
+  .mod53-row { flex-wrap: wrap; }
+  .mod53-acts { width: 100%; justify-content: flex-end; flex-wrap: wrap; }
+  .mod53-sub { margin-left: 12px; }
+}
+
+/* Transfer ownership (founder) */
+.ov53 .dialog.tr53 { width: min(480px, 92vw); }
+.tr53-list { display: flex; flex-direction: column; gap: 2px; max-height: 320px; overflow: auto; margin-top: 10px; }
+.tr53-row { display: flex; align-items: center; gap: 10px; padding: 7px 8px; border-radius: 10px; background: none; border: 0; color: inherit; text-align: left; cursor: pointer; font: inherit; width: 100%; }
+.tr53-row:hover:not(:disabled) { background: var(--hover); }
+.tr53-row:disabled { opacity: .6; cursor: default; }
+.tr53-row > span:not(.mod53-pill) { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ======================= Delete account ======================= */
+.del53 { margin-top: 18px; padding: 16px 20px; border-radius: 18px; background: color-mix(in srgb, #ed4245 7%, var(--sidebar)); box-shadow: inset 0 0 0 1px color-mix(in srgb, #ed4245 30%, transparent); display: flex; align-items: center; gap: 14px; }
+.del53-txt { flex: 1; display: flex; flex-direction: column; gap: 3px; }
+.del53-txt b { display: inline-flex; align-items: center; gap: 7px; }
+.del53-txt .ui-ic { width: 17px; height: 17px; color: #ff8a8c; }
+@media (max-width: 760px) { .del53 { flex-direction: column; align-items: stretch; } }
+.ov53 .dialog.del53-modal { width: min(460px, 92vw); }
+.del53-form h3 { display: flex; align-items: center; gap: 8px; }
+.del53-form h3 .ui-ic { color: #ff8a8c; }
+.del53-list { margin: 0 0 14px; padding-left: 18px; color: var(--muted, #9aa); line-height: 1.5; font-size: 14px; }
+.del53-svs { display: flex; flex-direction: column; gap: 6px; }
+.del53-sv { display: flex; align-items: center; gap: 10px; padding: 6px; border-radius: 10px; background: var(--hover); }
+.del53-sv > div { flex: 1; min-width: 0; }
+
+/* ======================= Verified Creator badge look ======================= */
+.cb53 { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.cb53-opt { display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px 5px 6px; border-radius: 999px; border: 1px solid var(--border, rgba(255,255,255,.12)); background: none; color: inherit; font: inherit; font-size: 13px; cursor: pointer; }
+.cb53-opt.on { border-color: var(--brand); background: color-mix(in srgb, var(--brand) 14%, transparent); }
+.cb53-opt .pbadge { width: 20px; height: 20px; display: inline-grid; }
+.cb53-opt .pbadge svg { width: 20px; height: 20px; }
+
+/* ======================= channel permissions: search ======================= */
+.pe53-col { display: flex; flex-direction: column; gap: 8px; min-height: 0; min-width: 0; }
+.pe53-col > .pe-perms { flex: 1; min-height: 0; }
+.pe53-search { display: flex; align-items: center; gap: 8px; padding: 0 12px; height: 38px; border-radius: 10px; background: var(--input, rgba(0,0,0,.25)); box-shadow: inset 0 0 0 1px var(--border, rgba(255,255,255,.08)); flex: none; }
+.pe53-search .ui-ic { width: 16px; height: 16px; opacity: .6; flex: none; }
+.pe53-search input { flex: 1; min-width: 0; background: none; border: 0; outline: 0; color: inherit; font: inherit; }
+.pe-row[hidden] { display: none !important; }

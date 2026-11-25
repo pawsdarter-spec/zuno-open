@@ -1,11 +1,17 @@
 {
-  "version": "0.52.0",
-  "title": "Better pictures on phones",
+  "version": "0.53.0",
+  "title": "Lighter, cleaner Zuno",
   "items": [
-    "Phones: pictures open full screen with who sent them and their message at the bottom. Tap once to see just the picture, tap again to bring everything back.",
-    "Phones: zooming is much easier. Pinch and the spot under your fingers stays put, double-tap to zoom in or out, and drag to look around.",
-    "Phones: swipe a picture up or down to close it.",
-    "Phones: hold a picture for Save, Forward, Share, Copy Link, Open in Browser and Jump to Message.",
-    "Phones: React right from the picture."
+    "Zuno is lighter: it does almost nothing while you're idle, and typing and scrolling through chats are much smoother.",
+    "Messages are cleaner: the flat Classic style is now the default. You can switch back to Bubbles in Settings › Appearance.",
+    "While something loads you see a sketch of it (messages, lists, cards, the sign-in page) instead of plain grey bars.",
+    "Games you play now show their real picture on your profile instead of a blank window icon.",
+    "You can delete your account in Settings › My Account (at the bottom).",
+    "Fixed: changing your banner color now saves.",
+    "Senior and Talented Artists can send up to 6 creations for review at once.",
+    "Verified Creators can pick a Red or Dark badge look in Settings › My Account.",
+    "Channel permissions have a search box.",
+    "In Zuno Official, only staff can ping @everyone.",
+    "Staff: Moderation is simpler, with new Bans & Timeouts and Servers tabs, Unban, and ending server bans and timeouts from one place."
   ]
 }

@@ -1,4 +1,12 @@
 'use strict';
+// (0.53) The start-up sketch looks like what's about to open: the sign-in page, a chat in a
+// server, a DM, or your list of chats (zuno53.css).
+try {
+  const v = JSON.parse(sessionStorage.getItem('zuno_last_view') || 'null');
+  document.documentElement.dataset.sk53 = !localStorage.getItem('zuno_token') ? 'auth'
+    : /[?&]open=|\/invite\//.test(location.href) ? 'server'
+    : v?.type === 'channel' ? 'server' : v?.type === 'dm' || v?.type === 'group' ? 'dm' : 'friends';
+} catch {}
 // Zuno lives at heyzuno.uk now. Opening the old onrender.com address moves you there, logged in.
 (function () {
   const NEW_HOST = 'heyzuno.uk';

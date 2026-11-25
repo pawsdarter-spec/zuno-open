@@ -6,7 +6,6 @@
 const KEYWORDS_BEFORE_REGEX = new Set(['return', 'typeof', 'instanceof', 'in', 'of', 'new', 'delete', 'void', 'throw', 'case', 'do', 'else', 'yield', 'await']);
 
 function minifyJs(src) {
-  let out = '';
   let i = 0;
   const n = src.length;
   // What came last that matters for "/": 'value' (then / divides) or 'op' (then / starts a regex).
@@ -15,8 +14,14 @@ function minifyJs(src) {
   const tplStack = []; // brace depth inside each open ${ … }
   let braceDepth = 0;
   let lineStart = true; // only whitespace written on this line so far
-  const push = s => { out += s; lineStart = false; };
-  const newline = () => { if (!lineStart) { out = out.replace(/[ \t]+$/, ''); out += '\n'; lineStart = true; } };
+  // (0.53) The output is kept as finished lines plus the current one, so looking at "the last
+  // character written" never has to flatten the whole bundle (that made each start take seconds).
+  const done = [];
+  let cur = '';
+  const push = s => { cur += s; lineStart = false; };
+  const isWs = ch => ch === 32 || ch === 9 || ch === 10 || ch === 13 || ch === 12 || ch === 11 || ch === 160 || ch === 0xfeff || ch === 0x2028 || ch === 0x2029 || (ch >= 0x2000 && ch <= 0x200a) || ch === 0x3000 || ch === 0x1680 || ch === 0x202f || ch === 0x205f;
+  const endsSpace = () => (cur ? isWs(cur.charCodeAt(cur.length - 1)) : done.length > 0);
+  const newline = () => { if (!lineStart) { let e = cur.length; while (e > 0 && (cur.charCodeAt(e - 1) === 32 || cur.charCodeAt(e - 1) === 9)) e--; done.push(cur.slice(0, e)); cur = ''; lineStart = true; } };
 
   const readTemplate = () => {
     // at a backtick or after "}" closing a ${ }: copy until ` or ${
@@ -37,7 +42,7 @@ function minifyJs(src) {
     if (c === '\n' || c === '\r') { i++; newline(); continue; }
     if (c === ' ' || c === '\t' || c === '\f' || c === '\v' || c === ' ' || c === '﻿') {
       i++;
-      if (!lineStart && !/\s$/.test(out)) out += ' ';
+      if (!lineStart && !endsSpace()) cur += ' ';
       continue;
     }
     // comments
@@ -47,7 +52,7 @@ function minifyJs(src) {
       if (end < 0) throw new Error('unterminated comment');
       const body = src.slice(i, end + 2);
       i = end + 2;
-      if (body.includes('\n')) newline(); else if (!lineStart && !/\s$/.test(out)) out += ' ';
+      if (body.includes('\n')) newline(); else if (!lineStart && !endsSpace()) cur += ' ';
       continue;
     }
     // strings
@@ -120,6 +125,7 @@ function minifyJs(src) {
     else if ((c === '+' || c === '-') && src[i] === c) { push(c); i++; } // ++ / -- keep what came before
     else last = 'op';
   }
+  const out = done.join('\n') + (done.length ? '\n' : '') + cur;
   return out.replace(/[ \t]+$/gm, '').replace(/\n{2,}/g, '\n').trim() + '\n';
 }
 

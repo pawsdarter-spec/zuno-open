@@ -251,7 +251,7 @@ module.exports = function zuno19(z) {
     threadEmit(sv, ch, 'thread-message', { threadId: t.id, message, author: publicUser(me), thread: threadMeta(t) });
     // People mentioned by @username in a thread get it in their inbox.
     for (const mm of content.matchAll(/(^|[^\w@])@([a-z0-9_.]{2,32})\b/gi)) {
-      const u = Object.values(data.users).find(x => x.username === mm[2].toLowerCase());
+      const u = z.userByName ? z.userByName(mm[2]) : Object.values(data.users).find(x => x.username === mm[2].toLowerCase());
       if (u && u.id !== me.id && human(u) && z.canView(sv, ch, u.id)) z.notify?.(u.id, { type: 'mention', from: me.id, conv: 'ch:' + ch.id, msgId: t.parentId, text: content.slice(0, 140), title: `🧵 ${t.name}`, server: sv.name, serverId: sv.id });
     }
     return { message };

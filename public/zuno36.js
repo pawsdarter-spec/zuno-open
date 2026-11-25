@@ -16,7 +16,8 @@ const PF36_ICONS = {
 const NOTE36 = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/></svg>';
 
 function pf36Thumb(kind) {
-  const me = state.me;
+  // (0.53) The banner color you're trying shows here too, before it's saved.
+  const me = settingsDraft?.bannerColor ? { ...state.me, bannerColor: settingsDraft.bannerColor } : state.me;
   if (kind === 'avatar') return me.avatar ? `<img src="${esc(me.avatar)}" alt="">` : `<span class="m36-ini" style="background:${esc(me.bannerColor || 'var(--brand)')}">${esc((me.displayName || '?')[0].toUpperCase())}</span>`;
   if (kind === 'banner') return me.profileBanner ? `<img src="${esc(me.profileBanner.url)}" alt="">` : `<span class="m36-swatch" style="background:${esc(me.bannerColor || '#0aa896')}"></span>`;
   if (kind === 'bg') { const bg = me.profileBackground; return bg ? (bg.type === 'video' ? `<video src="${esc(bg.url)}#t=0.1" muted playsinline preload="metadata"></video>` : `<img src="${esc(bg.url)}" alt="">`) : '<span class="m36-none">None</span>'; }
@@ -81,7 +82,11 @@ function pf36Polish() {
     $('.m36-acts', bannerField)?.prepend(box);
     if (note) bannerField.appendChild(note);
     colorField.remove();
-    input?.addEventListener('input', () => { state.me.bannerColor = input.value; pf36Refresh(); });
+    // (0.53) The color goes into the unsaved changes (it used to overwrite the saved one in this
+    // window, so Save Changes never appeared and the color was lost).
+    const pick = () => { if (settingsDraft) settingsDraft.bannerColor = input.value; if (hex) hex.textContent = input.value; pf36Refresh(); renderSaveBar(); };
+    input?.addEventListener('input', pick);
+    input?.addEventListener('change', pick);
   }
   pf36Row(byTitle(/^Profile Background/), 'bg', 'Background');
   pf36Row(byTitle(/^Profile Sound/), 'sound', 'Profile sound');

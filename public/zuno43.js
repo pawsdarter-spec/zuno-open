@@ -648,7 +648,8 @@ new MutationObserver(list => {
     for (const el of [n, ...$$('.fp-empty, .pcm-empty, .muted', n)]) {
       if (!el.matches?.('.fp-empty, .pcm-empty, .muted') || el.children.length || el.textContent.trim() !== 'Loading…') continue;
       el.classList.add('sk43-host');
-      el.innerHTML = '<span class="sk43"><i></i><i></i><i></i></span>';
+      // (0.53) Shaped like what's coming (people, cards, a card…) when zuno53.js knows.
+      el.innerHTML = typeof skel53For === 'function' ? skel53For(el) : '<span class="sk43"><i></i><i></i><i></i></span>';
     }
   }
 }).observe(document.body, { childList: true, subtree: true });

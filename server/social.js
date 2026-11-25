@@ -152,7 +152,12 @@ module.exports = function social(z) {
     // A real Spotify connection wins over the desktop app.
     if (act.source === 'desktop' && prev?.source === 'spotify' && Date.now() - prev.at < 60e3 && kind === 'music') return;
     if (kind === 'music' && act.name === 'Spotify' && !songShown(me)) { if (prev) setActivity(me, null, 'music'); return; }
-    if (kind === 'game') { z.trackPlay?.(me, act.name); z.rememberGameIcon?.(act.name, act.art); }
+    if (kind === 'game') {
+      z.trackPlay?.(me, act.name); z.rememberGameIcon?.(act.name, act.art);
+      // (0.53) Windows' plain "program" icon, or a game we draw a proper logo for, never wins over
+      // the real picture.
+      if (z.isGenericIcon?.(act.art) || z.knownGameLogo?.(act.name)) act.art = null;
+    }
     // The same song or game keeps the picture it already had (no flicker while a lookup runs).
     const same = prev && prev.name === act.name && prev.details === act.details;
     const songKey = kind === 'music' && act.details ? `${act.state || ''}|${act.details}`.toLowerCase() : null;

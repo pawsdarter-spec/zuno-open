@@ -148,7 +148,8 @@ async function renderStanding(body) {
 // ======================= message style: Bubbles or Classic =======================
 // (0.48) Phones default to Classic (clean rows, like other big chat apps); computers keep Bubbles.
 // Whatever you pick in Settings › Appearance wins.
-const defaultMsgStyle = () => (VW <= 760 ? 'classic' : 'bubbles');
+// (0.53) Classic (flat, no bubbles) is the default everywhere; Bubbles is still a choice.
+const defaultMsgStyle = () => 'classic';
 function messageStyle() { try { return localStorage.getItem('zuno_msg_style') || defaultMsgStyle(); } catch { return defaultMsgStyle(); } }
 function applyMessageStyle() { document.documentElement.dataset.msgstyle = messageStyle(); }
 applyMessageStyle();

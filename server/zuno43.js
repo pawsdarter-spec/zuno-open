@@ -82,7 +82,7 @@ module.exports = function (z) {
   const covers = new Map();
   function getJson(url) {
     return new Promise((resolve, reject) => {
-      const req = https.get(url, { timeout: 10000, headers: { 'User-Agent': 'Zuno (heyzuno.uk)', Accept: 'application/json' } }, res => {
+      const req = https.get(url, { timeout: 10000, headers: { 'User-Agent': 'ZunoCovers/1.1 (https://heyzuno.uk; game cover lookup)', Accept: 'application/json' } }, res => {
         if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) { res.resume(); return getJson(new URL(res.headers.location, url).href).then(resolve, reject); }
         let raw = ''; res.on('data', c => (raw += c)); res.on('end', () => { try { resolve({ status: res.statusCode, json: JSON.parse(raw) }); } catch { resolve({ status: res.statusCode, json: null }); } });
       });
@@ -103,6 +103,13 @@ module.exports = function (z) {
         const r = await getJson(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(wiki.replace(/ /g, '_'))}`);
         const img = r.json?.thumbnail?.source || r.json?.originalimage?.source;
         if (r.status === 200 && img) return img;
+      } catch {}
+      // (0.53) The page-images API, for when the summary API is slow or refuses us.
+      try {
+        const r = await getJson(`https://en.wikipedia.org/w/api.php?action=query&prop=pageimages&format=json&pithumbsize=400&redirects=1&titles=${encodeURIComponent(wiki)}`);
+        const pages = Object.values(r.json?.query?.pages || {});
+        const img = pages[0]?.thumbnail?.source;
+        if (img) return img;
       } catch {}
     }
     try {
@@ -125,16 +132,36 @@ module.exports = function (z) {
   // "Games in Rotation" showed a blank controller until the game was opened again).
   data.gameIcons46 ||= {};
   const icons = { has: k => !!data.gameIcons46[k], get: k => data.gameIcons46[k] };
+  // (0.53) Windows hands back the same plain "program" icon for every game it can't read the icon of
+  // (a blue window). A picture reported for two different games is that plain icon: it's forgotten
+  // and never used, so the game gets its cover or drawn tile instead.
+  data.genericIcons53 ||= {};
+  const artKey = art => require('crypto').createHash('sha1').update(art).digest('hex').slice(0, 16);
+  const artOwner = new Map();
+  for (const [k, v] of Object.entries(data.gameIcons46)) { const h = artKey(v); if (artOwner.has(h) && artOwner.get(h) !== k) data.genericIcons53[h] = 1; else artOwner.set(h, k); }
+  for (const [k, v] of Object.entries(data.gameIcons46)) if (data.genericIcons53[artKey(v)]) delete data.gameIcons46[k];
+  z.isGenericIcon = art => !!(art && /^data:image\//.test(art) && data.genericIcons53[artKey(art)]);
+  z.knownGameLogo = name => { const k = norm(name); return !!(LOGO47[k] || LOGO47[k.replace(/(player|studio|beta|launcher)+$/, '')]); };
   z.rememberGameIcon = (name, art) => {
     if (!art || !/^data:image\//.test(art) || art.length > 70000) return;
     const k = norm(name);
+    const h = artKey(art);
+    if (data.genericIcons53[h]) return;
+    const owner = artOwner.get(h);
+    if (owner && owner !== k) {
+      data.genericIcons53[h] = 1;
+      for (const [kk, v] of Object.entries(data.gameIcons46)) if (artKey(v) === h) delete data.gameIcons46[kk];
+      save();
+      return;
+    }
+    artOwner.set(h, k);
     if (data.gameIcons46[k] === art) return;
     data.gameIcons46[k] = art;
     const keys = Object.keys(data.gameIcons46);
     if (keys.length > 400) delete data.gameIcons46[keys[0]];
     save();
   };
-  z.gameIconNow = name => data.gameIcons46[norm(name)] || null;
+  z.gameIconNow = name => (z.knownGameLogo(name) ? null : data.gameIcons46[norm(name)] || null);
   // (0.47) Last resort, so a game never shows a blank box: a drawn tile (the Roblox logo for Roblox,
   // the game's initials on a colour from its name for anything else). A real cover replaces it as
   // soon as one is found.
@@ -185,7 +212,7 @@ module.exports = function (z) {
     const cutoff = day(Date.now() - 14 * 864e5);
     const games = Object.entries(u.playtime || {}).map(([name, g]) => ({ name, ms: Object.entries(g.days || {}).filter(([d]) => d >= cutoff).reduce((a, [, v]) => a + v, 0), last: g.last || 0 }))
       .filter(g => g.ms >= 5 * 60e3).sort((a, b) => b.ms - a.ms).slice(0, 8);
-    await Promise.all(games.map(async g => { g.cover = z.gameCoverNow(g.name) ?? await z.gameCover(g.name).catch(() => null); if (!g.cover && icons.has(norm(g.name))) { g.cover = icons.get(norm(g.name)); g.icon = true; } if (!g.cover) g.cover = z.gameTile(g.name); }));
+    await Promise.all(games.map(async g => { g.cover = z.gameCoverNow(g.name) ?? await z.gameCover(g.name).catch(() => null); if (!g.cover && z.gameIconNow(g.name)) { g.cover = z.gameIconNow(g.name); g.icon = true; } if (!g.cover) g.cover = z.gameTile(g.name); }));
     return { games, showing: u.showRotation !== false };
   });
   hooks.patchMe.push((me, body) => { if ('showRotation' in body) me.showRotation = !!body.showRotation; });

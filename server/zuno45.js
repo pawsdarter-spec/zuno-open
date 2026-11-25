@@ -166,8 +166,7 @@ module.exports.official = function (z) {
   const { data, route, fail, hooks, save } = z;
   route('POST', '/api/official/session', async ({ me, token, req }) => {
     if (!z.isFounder(me.id)) fail(403, 'Only the founder can use the Zuno Official account.');
-    // (security) The Zuno account needs two-factor login on the founder's own account.
-    if (!me.twoFactor && !me.deviceLock?.on) fail(403, 'Turn on two-factor login or Trusted devices only (Settings › My Account) to use the Zuno Official account.');
+    // (0.53) Your password is enough (no two-factor or trusted devices needed first).
     z.needReauth(token);
     const zuno = data.users[z.SYSTEM_ID];
     if (!zuno) fail(404, 'The Zuno account is missing.');

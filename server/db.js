@@ -192,9 +192,10 @@ async function writeJsonLater() {
 // least every 15 seconds while anything is being touched, so nothing is ever missed for long.
 const SAVE_DELAY = 1000;
 const FULL_EVERY = 15000;
+const FULL_GAP = 3000;
 let timer = null;
 let fullWanted = false;
-let lastFull = Date.now();
+let lastFull = 0;
 const touched = new Map(); // kind -> Set(id)
 let slowWarned = 0;
 function runSave() {
@@ -202,7 +203,11 @@ function runSave() {
   const t0 = Date.now();
   if (MODE !== 'sqlite') { touched.clear(); fullWanted = false; return writeJsonLater(); }
   try {
-    if (fullWanted || Date.now() - lastFull > FULL_EVERY) { fullWanted = false; touched.clear(); writeSqlite(); lastFull = Date.now(); }
+    // (0.53) A full check (which looks over every account and server) runs at most every 3 seconds;
+    // busy moments write just what was touched in between.
+    const fullDue = Date.now() - lastFull > FULL_EVERY || (fullWanted && Date.now() - lastFull >= FULL_GAP);
+    if (fullDue) { fullWanted = false; touched.clear(); writeSqlite(); lastFull = Date.now(); }
+    else if (fullWanted) { if (touched.size) { const list = [...touched]; touched.clear(); writeTouched(list); } if (!timer) timer = setTimeout(runSave, Math.max(50, lastFull + FULL_GAP - Date.now())); }
     else if (touched.size) { const list = [...touched]; touched.clear(); writeTouched(list); if (!timer) timer = setTimeout(runSave, FULL_EVERY); }
   } catch (err) { console.error('Saving failed:', err.message); }
   const ms = Date.now() - t0;

@@ -67,7 +67,8 @@ module.exports = function (z) {
     }
     return wears[id] || 0;
   }
-  const isArtist = u => z.badgesFor(u).includes('artist');
+  // (0.53) Every artist badge counts (Senior and Talented Artist replace the plain one, so they used to get 3).
+  const isArtist = u => z.badgesFor(u).some(b => ['artist', 'artist_senior', 'artist_talented', 'art_manager'].includes(b));
   const pendingCap = u => (isArtist(u) ? 6 : 3);
 
   // ---------- what everyone sees on you ----------

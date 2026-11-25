@@ -200,6 +200,22 @@ const BADGE_RULES = { chatterbox: 500, social: 10, voiceHours: 10, seniorBugs: 5
 const OG_UNTIL = Date.parse(process.env.ZUNO_OG_UNTIL || '2027-01-01T00:00:00Z');
 // "syl" (once "veil") is Zuno's founder. More staff can be added with ZUNO_STAFF, or given the badge in the app.
 const STAFF_NAMES = new Set([...CONFIG.STAFF, ...(process.env.ZUNO_STAFF || '').split(',').map(s => s.trim().toLowerCase()).filter(Boolean)]);
+// (0.53) Finding someone by username used to walk every account (for every @mention, friend
+// request…). A small index answers straight away; it's rebuilt when the number of accounts changes
+// or a lookup doesn't match (someone renamed).
+let nameIndex = new Map(), nameIndexSize = -1, nameIndexAt = 0;
+function userByName(name) {
+  name = String(name || '').toLowerCase();
+  const n = Object.keys(data.users).length;
+  const fresh = () => { nameIndex = new Map(); for (const u of Object.values(data.users)) if (u?.username && !nameIndex.has(u.username)) nameIndex.set(u.username, u); nameIndexSize = n; nameIndexAt = Date.now(); };
+  if (nameIndexSize !== n) fresh();
+  let u = nameIndex.get(name);
+  // A stale entry (renamed or removed) always refreshes; a plain miss at most every 2 seconds, so
+  // words like @everyone don't rebuild it on every message.
+  if (u && (u.username !== name || data.users[u.id] !== u)) { fresh(); u = nameIndex.get(name); }
+  else if (!u && Date.now() - nameIndexAt > 2000) { fresh(); u = nameIndex.get(name); }
+  return u && u.username === name ? u : null;
+}
 function isStaff(u) {
   if (!u) return false;
   if (u.system || STAFF_NAMES.has(u.username)) return true;
@@ -443,7 +459,9 @@ const buckets = new Map(); // key -> { count, resetAt }
 // (0.43.1) Big changes (deleting a server, giving it away, removing a passkey) need your password
 // again within the last 10 minutes, even when you're logged in.
 const REAUTH_MSG = "Confirm it's you to do that.";
-function needReauth(key) { const s = key && data.sessions[key]; if (!s || Date.now() - (s.reauthAt || 0) > 10 * 60e3) fail(403, REAUTH_MSG); }
+// (0.53) The founder confirms with their password only, and it lasts an hour (moderation work
+// shouldn't ask again every few minutes).
+function needReauth(key) { const s = key && data.sessions[key]; const uid = typeof s === 'string' ? s : s?.uid; const ttl = uid && isFounder(uid) ? 60 * 60e3 : 10 * 60e3; if (!s || Date.now() - (s.reauthAt || 0) > ttl) fail(403, REAUTH_MSG); }
 function limit(key, max, windowMs, message = 'Slow down a little and try again in a moment.') {
   const now = Date.now();
   let b = buckets.get(key);
@@ -1065,7 +1083,7 @@ route('POST', '/api/friends/requests', async ({ me, body }) => {
   const fresh = Date.now() - (me.createdAt || 0) < 3 * 864e5;
   limit('fr:' + me.id, fresh ? 10 : 40, 3600e3, fresh ? 'New accounts can send 10 friend requests an hour. Try again later.' : "You've sent a lot of friend requests. Try again in a bit.");
   const username = clean(body.username, 64).toLowerCase().replace(/^@/, '');
-  const target = Object.values(data.users).find(u => u.username === username);
+  const target = userByName(username);
   if (!target) fail(404, "Hm, didn't work. Double check that the username is correct.");
   if (target.id === me.id) fail(400, "You can't add yourself as a friend.");
   if (target.system) fail(400, "Zuno is the official Zuno account. It's already in your DMs!");
@@ -1290,7 +1308,7 @@ function findMentions(content, conv, author) {
   const text = String(content);
   const named = new Set(); // every @name that matched a person here
   for (const m of text.matchAll(/(^|[^\w@])@([a-z0-9_.]{2,32})\b/gi)) {
-    const u = Object.values(data.users).find(x => x.username === m[2].toLowerCase());
+    const u = userByName(m[2]);
     if (u && conv.members.includes(u.id)) { users.add(u.id); named.add(m[2].toLowerCase()); }
   }
   if (conv.kind === 'channel' && author) {
@@ -1790,7 +1808,10 @@ const REPORT_REASONS = {
 };
 const FOREVER = 8.64e15;
 const isSuspended = u => (u?.suspendedUntil || 0) > Date.now();
-const modUser = u => u && ({ ...publicUser(u), suspendedUntil: isSuspended(u) ? u.suspendedUntil : null, warnings: u.mod?.warnings || 0, reportsAgainst: Object.values(data.reports).filter(r => r.targetUserId === u.id).length, createdAt: u.createdAt });
+// (0.53) Report counts are tallied once per request instead of once per person on the list.
+let reportTally = null, reportTallyAt = 0;
+const reportsAgainst = uid => { if (!reportTally || Date.now() - reportTallyAt > 2000) { reportTally = new Map(); for (const r of Object.values(data.reports)) reportTally.set(r.targetUserId, (reportTally.get(r.targetUserId) || 0) + 1); reportTallyAt = Date.now(); } return reportTally.get(uid) || 0; };
+const modUser = u => u && ({ ...publicUser(u), suspendedUntil: isSuspended(u) ? u.suspendedUntil : null, warnings: u.mod?.warnings || 0, reportsAgainst: reportsAgainst(u.id), createdAt: u.createdAt, banned: !!(u.banned && !u.banned.restored), restorable: !!(u.banned && !u.banned.restored && !u.banned.purged && u.banned.snapshot) });
 function convOf(me, conv) { conv = String(conv); return conv.startsWith('ch:') ? channelConv(me, conv.slice(3)) : conv.startsWith('g:') ? groupConv(me, conv.slice(2)) : dmConv(me, conv); }
 // Rebuild a conversation for staff from a report, without needing to be in it.
 function staffConv(where) {
@@ -1884,8 +1905,15 @@ function modAction(staff, target, action, { days = 0, note = '', reportId = null
       : `⏸️ **Your account is in a timeout for ${Math.round((until - Date.now()) / 864e5)} day(s).** You can read, but not send messages or make changes until it ends. The exact end time shows at the bottom of Zuno.${why}`);
     for (const id of userRooms(target.id)) leaveRoom(id, target.id);
     if (action === 'ban') deleteBannedAccount(target, note);
+  } else if (action === 'unban') {
+    // (0.53) Staff can lift a Zuno ban: the name and profile come back (servers and friends don't).
+    if (!target.banned || target.banned.restored) fail(400, "They aren't banned.");
+    if (target.banned.purged || !target.banned.snapshot) fail(400, 'This account was wiped after its ban, so it can\'t come back.');
+    if (target.banned.appeal?.status === 'pending') target.banned.appeal = { ...target.banned.appeal, status: 'approved', decidedBy: staff.id, decidedAt: Date.now() };
+    restoreBannedAccount(target);
+    systemMessage(target.id, `✅ **Your Zuno ban was lifted.** Welcome back. Your name and profile are restored (servers and friends need re-adding).${why}`);
   } else if (action === 'unsuspend') {
-    if (target.deleted) fail(400, "This account was deleted when it was banned, so it can't come back.");
+    if (target.deleted) fail(400, "This account was deleted when it was banned. Use Unban to bring it back.");
     target.suspendedUntil = 0;
     systemMessage(target.id, '✅ **Your account is back to normal.** Thanks for your patience.');
   } else fail(400, 'Unknown action.');
@@ -1973,7 +2001,7 @@ function staffGuard(me, u) {
   if (isStaff(u) && !overStaff(me)) fail(403, 'Only the founder or a Zuno Manager can do that to other staff.');
 }
 // Everything other staff do with staff tools, or in servers they don't own, goes to the founder right away.
-function founder() { return Object.values(data.users).find(u => u.username === CONFIG.FOUNDER && !u.bot) || null; }
+function founder() { const u = userByName(CONFIG.FOUNDER); return u && !u.bot ? u : null; }
 function tellFounder(actor, text, extra = {}) {
   const f = founder();
   if (!f || !actor || actor.id === f.id || actor.system || !isStaff(actor)) return;
@@ -2949,8 +2977,11 @@ route('PUT', '/api/servers/:id/members/:userId/roles', async ({ me, params, body
   return { roles: sv.memberRoles[uid] };
 });
 route('POST', '/api/servers/:id/transfer', async ({ me, params, body, token }) => {
-  const sv = getServer(me, params.id, { owner: true });
+  // (0.53) The founder can give any server to one of its members, even one they don't own or aren't in.
+  const sv = isFounder(me.id) && !me.system ? data.servers[params.id] : getServer(me, params.id, { owner: true });
+  if (!sv) fail(404, 'Server not found.');
   needReauth(token);
+  if (String(body.userId || '') === sv.ownerId) fail(400, 'They already own it.');
   const uid = String(body.userId || '');
   const u = data.users[uid];
   if (!u || !sv.members.includes(uid) || u.bot) fail(400, 'Pick a member of the server.');
@@ -3636,7 +3667,7 @@ function openStream(req, res, user, token = null) {
   res.zunoToken = token;
   res.writeHead(200, {
     'Content-Type': 'text/event-stream',
-    'Cache-Control': 'no-cache',
+    'Cache-Control': 'no-cache, no-transform', // (0.53) no proxy may hold updates back to compress them
     Connection: 'keep-alive',
     'X-Accel-Buffering': 'no',
   });
@@ -4139,7 +4170,7 @@ const ctx2 = {
   PKG, streamWrite, dmRecord, clientIp, ACCENTS, BLOOM_ACCENTS, voiceUpdate, canEditRole, checkGrant, basePerms, SERVER_COLORS, channelConvFor, sendMail: (...a) => feat.sendMail(...a), feat,
   invitePreview, DISCOVERY_TAGS, effectiveStatus, isFounder, CONFIG, appView, devBot, getManagedServer, audit, isOnline,
   outranks, canReadAttachment, rolesOf, badgesFor, REPORT_REASONS, joinServer, friendIds, USERNAME_RE, STAFF_NAMES,
-  removeMember, channelMessagesOf: id => data.channelMessages[id],
+  removeMember, channelMessagesOf: id => data.channelMessages[id], userByName,
   svLimits: () => ({ emoji: 50, sounds: 24, level: 0 }), // Server Blooming raises these (community.js)
 };
 const social = require('./social')(ctx2);
@@ -4175,6 +4206,7 @@ require('./zuno46').reviews(ctx2);
 require('./zuno46').safety(ctx2);
 require('./zuno47')(ctx2);
 require('./zuno50')(ctx2);
+require('./zuno53')(ctx2);
 
 // Zuno's big lookup tables (users, servers, sessions…) don't inherit JavaScript's built-in object,
 // so an id like "__proto__" or "constructor" finds nothing instead of something unexpected. Done in

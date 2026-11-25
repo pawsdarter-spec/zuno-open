@@ -559,7 +559,7 @@ step('0.19: threads, stickers, saved folders, catch me up, AutoMod, audit search
   assert.strictEqual((await ok('GET', `/api/channels/${ch}/messages`, null, ctx.alice)).messages.find(m => m.id === first.id).thread.count, 1);
   await no(404, 'GET', `/api/threads/${thread.id}`, null, ctx.veil);
   // Stickers: Zuno's own, and a server's
-  assert.strictEqual((await ok('POST', `/api/channels/${ch}/messages`, { sticker: { id: 'zuno:hi' } }, ctx.bob)).message.sticker.name, 'Hi!');
+  await no(400, 'POST', `/api/channels/${ch}/messages`, { sticker: { id: 'zuno:hi' } }, ctx.bob); // built-in stickers were retired in 0.51
   const png = Buffer.from('89504e470d0a1a0a0000000d49484452000000010000000108060000001f15c4890000000d4944415478da63f8cfc0f01f0005000201ae0a0f0b0000000049454e44ae426082', 'hex');
   const res = await fetch(`${BASE}/api/servers/${sv.id}/stickers`, { method: 'POST', headers: { Authorization: `Bearer ${ctx.alice}`, 'X-Sticker-Name': 'Wave' }, body: png });
   const up = await res.json();

@@ -171,7 +171,8 @@ module.exports = function zuno19(z) {
   function cleanSticker(me, st) {
     if (!st) return undefined;
     const id = String(st.id || '');
-    if (BUILTIN_STICKERS[id]) return { id, name: BUILTIN_STICKERS[id][0] };
+    // (0.51) The built-in Zuno stickers were retired: old messages keep showing them, new ones can't use them.
+    if (BUILTIN_STICKERS[id]) fail(400, "That sticker isn't available anymore.");
     const sv = data.servers[String(st.serverId || '')];
     const s = sv?.members.includes(me.id) && (sv.stickers || []).find(x => x.id === id);
     if (!s) fail(400, "That sticker isn't available anymore.");

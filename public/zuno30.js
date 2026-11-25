@@ -437,10 +437,10 @@ const favKey = f => (f.serverId ? f.serverId + ':' : '') + f.id;
 openStickerPicker = async function (anchor, onPick) {
   const [lib, favs] = await Promise.all([loadStickers(true), loadFavStickers()]);
   const sections = [
-    { id: 'zuno', name: 'Zuno', icon: `<span class="stk-rail-zuno">${mascot('happy')}</span>`, list: Object.keys(ZUNO_STICKERS).map(id => ({ id })) },
+    // (0.51) The built-in Zuno sticker set is gone from the picker; old messages that used one still show it.
     ...lib.servers.map(sv => { const full = svById(sv.id); return { id: sv.id, name: sv.name, icon: full ? serverIcon(full, 28) : esc(sv.name[0]), list: sv.stickers.map(s => ({ ...s, serverId: sv.id })) }; }),
   ];
-  const find = f => (f.serverId ? sections.find(x => x.id === f.serverId)?.list.find(s => s.id === f.id) : ZUNO_STICKERS[f.id] ? { id: f.id } : null);
+  const find = f => (f.serverId ? sections.find(x => x.id === f.serverId)?.list.find(s => s.id === f.id) : null);
   const box = popover(anchor, 'sticker-pop stk30', `<div class="pop-head">Stickers<input class="stk-q" placeholder="Search stickers" autocomplete="off"></div>
     <div class="stk-body"><div class="stk-rail"></div><div class="stk-scroll"></div></div>`);
   // A comfortable height (the generic popup lets it grow to the whole window), so it sits above
@@ -457,7 +457,7 @@ openStickerPicker = async function (anchor, onPick) {
     const all = [...(favList.length ? [{ id: 'fav', name: 'Favorites', icon: '<span class="stk-rail-star">★</span>', list: favList }] : []), ...sections.map(sec => ({ ...sec, list: sec.list.filter(match) })).filter(sec => sec.list.length)];
     rail.innerHTML = all.map(sec => `<button class="stk-rail-b" data-jump="${esc(sec.id)}" title="${esc(sec.name)}">${sec.icon}</button>`).join('');
     scroll.innerHTML = all.length ? all.map(sec => `<section class="stk-sec" data-sec="${esc(sec.id)}"><h5>${sec.id === 'fav' ? '★ ' : ''}${esc(sec.name)} <span class="muted small">${sec.list.length}</span></h5>
-      <div class="stk-grid">${sec.list.map(s => item(s, favSet.has(favKey(s)))).join('')}</div></section>`).join('') : '<div class="fp-empty">No stickers match that.</div>';
+      <div class="stk-grid">${sec.list.map(s => item(s, favSet.has(favKey(s)))).join('')}</div></section>`).join('') : (q ? '<div class="fp-empty">No stickers match that.</div>' : '<div class="fp-empty">No stickers yet. Servers you\'re in can add their own in Server Settings.</div>');
     $$('[data-jump]', rail).forEach(b => b.addEventListener('click', () => $(`[data-sec="${CSS.escape(b.dataset.jump)}"]`, scroll)?.scrollIntoView({ block: 'start', behavior: 'smooth' })));
     $$('[data-stk]', scroll).forEach(b => b.addEventListener('click', () => {
       const k = b.dataset.stk;

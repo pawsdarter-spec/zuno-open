@@ -1,9 +1,12 @@
 {
-  "version": "0.50.1",
-  "title": "Smoother swipes and official links",
+  "version": "0.51.0",
+  "title": "A Discord-style refresh",
   "items": [
-    "Phones: swiping to open and close your chats and friends is much smoother. Only the chat panel moves while you drag, and scrolling never waits on it.",
-    "Phones: Friends, Requests and Bloom now fit on one line.",
-    "Zuno Official has a new #official-links channel with every official Zuno link in one place: the PC app, status page, Terms, Privacy Policy, security reports, our open source code and an invite for your friends."
+    "Phones: the emoji, GIF and sticker pickers open where your keyboard would be, and the keyboard no longer pops up on its own. Tap the emoji button again to go back to typing.",
+    "Phones: picking an emoji keeps the picker open so you can add a few in a row.",
+    "Phones: the message box has a cleaner look, with a rounded send button and no scrollbar, and the ⋯ button tucks away while you type.",
+    "Phones: profiles slide up from the bottom with big Message, Call and Video buttons. Drag them down to close.",
+    "PC and browser: a new frame with one panel and a rounded corner, your account bar floating across the bottom left, quieter highlights, a flatter message box and thin scrollbars.",
+    "The built-in Zuno stickers are gone. Stickers your servers upload are still there, and old messages that used a Zuno sticker still show it."
   ]
 }

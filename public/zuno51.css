@@ -1,0 +1,85 @@
+/* ======================= Zuno 0.51 ======================= */
+@keyframes up51 { from { transform: translate3d(0, 100%, 0); } to { transform: translate3d(0, 0, 0); } }
+
+/* ---------- phones ---------- */
+@media (max-width: 760px) {
+  /* Message box, Discord style: one soft filled box, plain icons, a rounded-square send button. */
+  .composer .composer-box { min-height: 50px; border-radius: 25px !important; padding: 5px 5px 5px 4px; gap: 0; align-items: flex-end;
+    background: color-mix(in srgb, var(--text) 8%, var(--main)); box-shadow: none; }
+  .composer .composer-box:focus-within { box-shadow: none; }
+  .composer .composer-plus { width: 40px; height: 40px; margin: 0; background: transparent; color: var(--muted); }
+  .composer .composer-plus svg { width: 26px; height: 26px; }
+  .composer .composer-more { height: 40px; color: var(--muted); }
+  .composer .composer-box.typing51 .composer-more { display: none; }
+  .composer #composer-input { font-size: 16.5px !important; line-height: 22px; padding: 9px 6px; color: var(--header); scrollbar-width: none; caret-color: var(--brand); }
+  .composer #composer-input::-webkit-scrollbar { display: none; }
+  .composer #composer-input::placeholder { color: var(--muted); opacity: .85; }
+  .composer .composer-emoji { width: 40px; height: 40px; }
+  .composer .composer-voice { width: 40px; height: 40px; color: var(--muted); }
+  .composer .composer-send { width: 46px; height: 40px; margin: 0 0 0 4px; border-radius: 13px; }
+  .composer .composer-send.ready { background: var(--brand); color: #fff; }
+  #messages { scrollbar-width: none; }
+  #messages::-webkit-scrollbar { display: none; }
+
+  /* Emoji, GIF and sticker pickers sit where the keyboard would be. */
+  .emoji-picker, #layer .sticker-pop { left: 0 !important; right: 0 !important; top: auto !important; bottom: 0 !important;
+    width: 100% !important; max-width: none !important; height: min(48dvh, 400px) !important; max-height: none !important;
+    border-radius: 18px 18px 0 0 !important; padding-bottom: env(safe-area-inset-bottom); box-sizing: border-box;
+    box-shadow: 0 -10px 30px rgba(0, 0, 0, .35) !important; animation: up51 .26s cubic-bezier(.2, .9, .3, 1) !important; }
+  html.pk51 .app > .main { padding-bottom: var(--pk51, 0px); }
+  html.pk51 .app > .main .composer { padding-bottom: 8px; }
+
+  /* Profiles: a sheet from the bottom with a handle; drag it down to close. */
+  .overlay.sheet51-ov { display: flex !important; flex-direction: column; justify-content: flex-end; align-items: stretch !important; padding: 0 !important; overflow: hidden !important; transition: background-color .22s; }
+  .overlay.sheet51-ov .modal.sheet51 { width: 100% !important; max-width: none !important; margin: auto 0 0 !important; flex: none;
+    border-radius: 20px 20px 0 0 !important; max-height: 92dvh !important; overflow: hidden;
+    animation: up51 .32s cubic-bezier(.2, .9, .3, 1) !important; transition: transform .24s cubic-bezier(.2, .9, .3, 1); will-change: transform; }
+  .overlay.sheet51-ov .modal.sheet51.drag51 { transition: none; }
+  .modal.sheet51 > .pcard { max-height: 92dvh !important; border-radius: 20px 20px 0 0 !important; padding-bottom: env(safe-area-inset-bottom); }
+  .grab51 { position: absolute; z-index: 6; top: 8px; left: 50%; width: 40px; height: 5px; margin-left: -20px; border-radius: 3px; background: rgba(255, 255, 255, .6); box-shadow: 0 1px 4px rgba(0, 0, 0, .3); }
+  .modal.sheet51.has-acts51 .pf-bar > [data-a="msg"] { display: none; }
+  .acts51 { display: flex; gap: 8px; padding: 2px 16px 12px; }
+  .acts51 > button { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 0 8px; border-radius: 14px;
+    background: color-mix(in srgb, var(--text) 9%, transparent); color: var(--header); font-size: 13px; font-weight: 700; transition: transform .15s; }
+  .acts51 > button[data-x51="msg"] { background: var(--brand); color: #fff; }
+  .acts51 > button:active { transform: scale(.95); }
+}
+
+/* ---------- big screens: a Discord-like frame ---------- */
+html.frame51 .app { gap: 0; padding: 0; background: var(--rail); }
+html.frame51 .titlebar:not(.hidden) ~ .app { padding-top: var(--tb, 32px); }
+html.frame51 .app > .rail { background: transparent; border-radius: 0; box-shadow: none; backdrop-filter: none; padding: 12px 0 var(--dock51, 88px); }
+html.frame51 .app > .sidebar { margin-top: 8px; border-radius: 14px 0 0 0; background: var(--sidebar); box-shadow: none; border: 1px solid color-mix(in srgb, var(--text) 9%, transparent); border-width: 1px 0 0 1px; }
+html.frame51 .app > .sidebar .sidebar-scroll { padding-bottom: var(--dock51, 88px); }
+html.frame51 .app > .main { margin-top: 8px; border-radius: 0; background: var(--main); box-shadow: none; border: 1px solid color-mix(in srgb, var(--text) 9%, transparent); border-width: 1px 0 0 1px; }
+html.frame51 .app > .main .topbar { height: 50px; }
+html.frame51 .app > .main .topbar .title { font-family: var(--font); font-weight: 700; font-size: 16px; }
+html.frame51 .app .sidebar-top { height: 50px; }
+html.frame51 .app .profile-panel, html.frame51 .app .member-panel { margin: 0 !important; border-radius: 0 !important; border-left: 1px solid var(--border) !important; }
+
+/* Your account bar floats across the bottom of the dock and the side list. */
+.dock51 { position: fixed; left: 8px; bottom: 8px; z-index: 30; width: calc(76px + 264px - 16px); display: flex; flex-direction: column;
+  background: var(--panel); border-radius: 12px; overflow: hidden; box-shadow: 0 0 0 1px var(--border), 0 10px 28px rgba(0, 0, 0, .4); }
+.dock51 > .user-panel { margin: 0; height: 56px; border-radius: 0; background: transparent; box-shadow: none; padding: 0 8px; }
+.dock51 > #voice-bar:empty { display: none; }
+.dock51 > #voice-bar:not(:empty) { border-bottom: 1px solid var(--border); }
+
+/* Lists: quiet grey highlight instead of a coloured bar. */
+html.frame51 .sidebar :is(.nav-item, .dm-item, .ch-item) { transition: background-color .12s, color .12s; }
+html.frame51 .sidebar :is(.nav-item, .dm-item, .ch-item):hover { background: var(--hover) !important; }
+html.frame51 .sidebar :is(.nav-item, .dm-item, .ch-item).active { background: var(--selected) !important; box-shadow: none !important; }
+/* Spaces: the side pill shows which one is open, so no glowing ring. */
+html.frame51 .rail .rail-btn.active, html.frame51 .rail .rail-item.active .rail-btn { box-shadow: none !important; }
+html.frame51 .rail .rail-btn { transition: border-radius .18s, background-color .18s, transform .18s; }
+
+/* Message box: a flat rounded box, icons light up on hover. */
+html.frame51 .main .composer { padding: 0 16px 6px; }
+html.frame51 .main .composer-box { border-radius: 10px !important; min-height: 52px; box-shadow: none; background: var(--input); align-items: center; }
+html.frame51 .main .composer-box:focus-within { box-shadow: 0 0 0 1px color-mix(in srgb, var(--brand) 35%, transparent); }
+html.frame51 .main .composer-box > button:not(.composer-send) { color: var(--muted); transition: color .12s, transform .15s; }
+html.frame51 .main .composer-box > button:not(.composer-send):hover { color: var(--header); }
+html.frame51 .main .composer-plus { width: 28px; height: 28px; border-radius: 50%; margin: 0 10px 0 4px; display: grid; place-items: center; }
+
+/* Thin, quiet scrollbars like Discord's. */
+html.frame51 .app :is(#messages, .sidebar-scroll, .member-panel, .profile-panel) { scrollbar-width: thin; scrollbar-color: color-mix(in srgb, var(--text) 18%, transparent) transparent; }
+html.frame51 .app .sidebar-scroll:not(:hover) { scrollbar-color: transparent transparent; }

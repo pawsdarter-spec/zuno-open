@@ -26,6 +26,7 @@ const PREF_DEFAULTS = {
 };
 
 const PORT = Number(process.env.PORT) || 3000;
+const burner = require('./burner');
 const PKG = (() => { try { return JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'package.json'), 'utf8')); } catch { return {}; } })();
 const SERVER_VERSION = PKG.version || '0';
 // Desktop apps older than this must update before they can use Zuno (keeps everyone together).
@@ -93,7 +94,20 @@ const BANNER_COLORS = ['#5865f2', '#eb459e', '#3ba55c', '#faa61a', '#ed4245', '#
 
 // Hashing a password takes real work on purpose (so stolen hashes are slow to crack). It runs on
 // Node's background threads, so a burst of logins never freezes chat for everyone else.
-const scrypt = (pw, salt) => new Promise((resolve, reject) => crypto.scrypt(pw, salt, 64, (err, key) => (err ? reject(err) : resolve(key))));
+const scryptRaw = (pw, salt) => new Promise((resolve, reject) => crypto.scrypt(pw, salt, 64, (err, key) => (err ? reject(err) : resolve(key))));
+// (0.53.1) At most 3 password checks run at once (each takes real CPU), with a short line behind
+// them; a flood of logins gets "busy" instead of starving everything else.
+let scryptBusy = 0;
+const scryptLine = [];
+async function scrypt(pw, salt) {
+  if (scryptBusy >= 3) {
+    if (scryptLine.length >= 60) throw new HttpError(503, 'Zuno is busy right now. Try again in a moment.');
+    await new Promise(ok => scryptLine.push(ok));
+  }
+  scryptBusy++;
+  try { return await scryptRaw(String(pw).slice(0, 1024), salt); }
+  finally { scryptBusy--; scryptLine.shift()?.(); }
+}
 // The shortest password a new account (or a password change) can use. Older, shorter passwords still log in.
 const MIN_PASSWORD = 8;
 async function hashPassword(pw) {
@@ -472,16 +486,89 @@ setInterval(() => { const now = Date.now(); for (const [k, b] of buckets) if (b.
 // Someone's real address, for speed limits, login alerts and the device map. On Render, Zuno sits
 // behind Cloudflare, which sets CF-Connecting-IP itself and refuses requests that try to fake it.
 // X-Forwarded-For can't be trusted on its own: anyone can put anything at the start of it.
-function clientIp(req) {
-  if (process.env.RENDER) {
-    const cf = String(req.headers['cf-connecting-ip'] || '').trim();
-    if (cf) return cf;
-    const hops = String(req.headers['x-forwarded-for'] || '').split(',').map(x => x.trim()).filter(Boolean);
-    if (hops.length >= 2) return hops[hops.length - 2]; // [... what the client sent, the client, Cloudflare]
-  }
-  if (process.env.ZUNO_TRUST_XFF === '1') return String(req.headers['x-forwarded-for'] || '').split(',')[0].trim() || req.socket.remoteAddress || '?';
-  return req.socket.remoteAddress || '?';
+// (0.53.1) Cloudflare's own header is only believed when the request really came through
+// Cloudflare (the hop Render saw is one of Cloudflare's addresses). With Cloudflare set to "DNS
+// only", anyone could send a made-up CF-Connecting-IP (or extra X-Forwarded-For entries) and look
+// like a new person on every request, slipping past every speed limit.
+const CF_V4 = ['173.245.48.0/20', '103.21.244.0/22', '103.22.200.0/22', '103.31.4.0/22', '141.101.64.0/18', '108.162.192.0/18', '190.93.240.0/20', '188.114.96.0/20', '197.234.240.0/22', '198.41.128.0/17', '162.158.0.0/15', '104.16.0.0/13', '104.24.0.0/14', '172.64.0.0/13', '131.0.72.0/22']
+  .map(c => { const [ip, bits] = c.split('/'); return [ip.split('.').reduce((a, o) => (a << 8) + Number(o), 0) >>> 0, Number(bits)]; });
+const CF_V6 = ['2400:cb00:', '2606:4700:', '2803:f800:', '2405:b500:', '2405:8100:', '2a06:98c', '2a06:98d', '2a06:98e', '2a06:98f', '2c0f:f248:'];
+function isCloudflare(ip) {
+  ip = String(ip || '').replace(/^::ffff:/, '').toLowerCase();
+  if (ip.includes(':')) return CF_V6.some(p => ip.startsWith(p));
+  const parts = ip.split('.');
+  if (parts.length !== 4) return false;
+  const n = parts.reduce((a, o) => (a << 8) + (Number(o) & 255), 0) >>> 0;
+  return CF_V4.some(([base, bits]) => (n >>> (32 - bits)) === (base >>> (32 - bits)));
 }
+function clientIp(req) {
+  if (req.zunoIp) return req.zunoIp;
+  let ip;
+  if (process.env.RENDER) {
+    // Render adds the address it saw last; anything before that was written by the sender.
+    const hops = String(req.headers['x-forwarded-for'] || '').split(',').map(x => x.trim()).filter(Boolean);
+    const seen = hops[hops.length - 1] || req.socket.remoteAddress || '?';
+    const cf = String(req.headers['cf-connecting-ip'] || '').trim();
+    ip = cf && isCloudflare(seen) ? cf : seen;
+  } else if (process.env.ZUNO_TRUST_XFF === '1') ip = String(req.headers['x-forwarded-for'] || '').split(',')[0].trim() || req.socket.remoteAddress || '?';
+  else ip = req.socket.remoteAddress || '?';
+  ip = ip.replace(/^::ffff:/, '').slice(0, 64);
+  req.zunoIp = ip;
+  return ip;
+}
+// (0.53.1) The shield: every request (pages, files, the API) counts against its address before any
+// other work is done. Too many in 10 seconds gets a tiny "slow down"; keep going and the address is
+// shut out for a while with no work done at all, so a flood can't eat the server's time.
+const SHIELD_WINDOW = 10e3, SHIELD_MAX = Number(process.env.ZUNO_SHIELD_MAX) || 160, SHIELD_JAIL = 10 * 60e3;
+const shieldMap = new Map(); // ip -> { n, reset, over, jail }
+const blockJail = new Map(); // "a.b.c" block -> { ips, until }
+// Addresses to always turn away, from the ZUNO_BLOCK setting on Render (comma-separated starts of
+// addresses, like "149.13.193.,203.0.113.").
+const BLOCKED_PREFIXES = String(process.env.ZUNO_BLOCK || '').split(',').map(x => x.trim()).filter(x => x.length >= 4);
+const ipBlock = ip => (ip.includes(':') ? ip.split(':').slice(0, 3).join(':') + '::/48' : ip.split('.').slice(0, 3).join('.') + '.0/24');
+function shieldBlocks(req, res) {
+  const ip = clientIp(req), now = Date.now();
+  let b = shieldMap.get(ip);
+  if (!b) { b = { n: 0, reset: now + SHIELD_WINDOW, over: 0, jail: 0 }; shieldMap.set(ip, b); }
+  if (b.jail > now) { refuse(res, 429); return true; }
+  if (BLOCKED_PREFIXES.some(p => ip.startsWith(p))) { refuse(res, 403); return true; }
+  const block = ipBlock(ip), bj = blockJail.get(block);
+  if (bj?.until > now) { refuse(res, 429); return true; }
+  if (b.reset < now) { b.n = 0; b.reset = now + SHIELD_WINDOW; b.over = Math.max(0, b.over - 1); }
+  // App files are cheap (kept in memory) and a page load asks for many: they count a quarter.
+  const was = b.n;
+  b.n += req.url.startsWith('/api/') || req.url.startsWith('/uploads/') || req.url.startsWith('/files/') ? 1 : 0.25;
+  if (b.n <= SHIELD_MAX) return false;
+  if ((was <= SHIELD_MAX && ++b.over >= 3) || (was < SHIELD_MAX * 3 && b.n >= SHIELD_MAX * 3)) {
+    b.jail = now + SHIELD_JAIL; console.warn(`Shield: ${ip} shut out for 10 minutes (flooding).`);
+    // Three flooding addresses from one block (the same /24, or /48 for IPv6): the whole block is
+    // shut out for an hour, so moving to the next address doesn't help.
+    const j = blockJail.get(block) || { ips: new Set(), until: 0 };
+    j.ips.add(ip); blockJail.set(block, j);
+    if (j.ips.size >= 3 && j.until < now) { j.until = now + 60 * 60e3; console.warn(`Shield: the whole ${block} block shut out for an hour.`); }
+  }
+  refuse(res, 429);
+  return true;
+}
+// (0.53.1) When the server is swamped (its clock falls behind), requests that aren't from someone
+// logged in are turned away at once, so the people already using Zuno keep it working.
+const lagWatch = require('perf_hooks').monitorEventLoopDelay({ resolution: 20 });
+lagWatch.enable();
+let overloaded = false;
+setInterval(() => { overloaded = lagWatch.mean / 1e6 > 250; if (overloaded) console.warn(`Busy: ${Math.round(lagWatch.mean / 1e6)} ms behind, turning away guests.`); lagWatch.reset(); }, 2000).unref();
+function shedsLoad(req, res) {
+  if (!overloaded || !req.url.startsWith('/api/')) return false;
+  const a = String(req.headers.authorization || '');
+  if (a.startsWith('Bearer ') && sessionFor(tokenKey(a.slice(7).trim()))) return false;
+  if (a.startsWith('Bot ')) return false;
+  if (req.url.startsWith('/api/events?ticket=')) return false;
+  refuse(res, 503);
+  return true;
+}
+function refuse(res, code) {
+  try { res.writeHead(code, { 'Content-Type': 'application/json', 'Retry-After': '60', Connection: 'close', 'Cache-Control': 'no-store' }); res.end('{"error":"Too many requests. Wait a minute and try again."}'); } catch {}
+}
+setInterval(() => { const now = Date.now(); for (const [k, b] of shieldMap) if (b.reset < now - 60e3 && b.jail < now) shieldMap.delete(k); for (const [k, j] of blockJail) if (j.until < now && ![...j.ips].some(ip => shieldMap.get(ip)?.jail > now)) blockJail.delete(k); }, 60e3).unref();
 // Route-level limits: [method, path pattern, max, window, who]
 const LIMITS = [
   ['POST', /^\/api\/register$/, 5, 10 * 60e3, 'ip', 'Too many new accounts from here. Try again later.'],
@@ -498,6 +585,8 @@ function checkLimits(req, pathname, me) {
   // An overall ceiling on top of the per-action limits, so one person or script can't flood the API.
   if (!me) limit('api-ip:' + clientIp(req), 300, 60e3, 'Too many requests. Wait a minute and try again.');
   else if (req.method !== 'GET' && !me.bot) limit('api-w:' + me.id, 300, 60e3, "You're doing that too fast. Wait a minute.");
+  // (0.53.1) Reading has a ceiling too (a logged-in script could fetch heavy pages endlessly).
+  if (me && !me.bot) limit('api-r:' + me.id, 900, 60e3, 'Too many requests. Wait a minute and try again.');
   for (const [method, re, max, win, who, msg] of LIMITS) {
     if (req.method === method && re.test(pathname)) limit(`${re}:${who === 'ip' ? clientIp(req) : me?.id || clientIp(req)}`, max, win, msg);
   }
@@ -550,7 +639,18 @@ function readBody(req) {
   });
 }
 
+// (0.53.1) Uploads being received are held in memory: all of them together stay under 160 MB, so a
+// pile of big uploads at once can't run the server out of memory.
+let rawInFlight = 0;
+const RAW_BUDGET = 160 * 1048576;
 function readRaw(req, limit) {
+  const declared = Number(req.headers['content-length'] || 0);
+  const reserve = Math.min(limit, declared || limit);
+  if (rawInFlight + reserve > RAW_BUDGET) { req.resume(); return Promise.reject(new HttpError(503, 'Lots of uploads are happening right now. Try again in a moment.')); }
+  rawInFlight += reserve;
+  return readRawInner(req, limit).finally(() => { rawInFlight -= reserve; });
+}
+function readRawInner(req, limit) {
   return new Promise((resolve, reject) => {
     const declared = Number(req.headers['content-length'] || 0);
     if (declared > limit) { reject(new HttpError(413, `That file is too big (max ${Math.round(limit / 1048576 * 10) / 10} MB).`)); req.resume(); return; }
@@ -654,6 +754,7 @@ route('POST', '/api/register', async ({ body, req, res }) => {
   const username = clean(body.username, 64).toLowerCase();
   const password = String(body.password || '');
   if (!EMAIL_RE.test(email)) fail(400, 'Please enter a valid email address.');
+  { const why = await burner.checkEmail(email); if (why) fail(400, why); } // (0.53.1) no throwaway emails
   if (!USERNAME_RE.test(username)) fail(400, 'Usernames must be 2–32 characters: letters, numbers, _ and . only.');
   if (password.length < MIN_PASSWORD) fail(400, `Passwords need at least ${MIN_PASSWORD} characters.`);
   if (badUsername(username)) fail(400, NAME_ERROR);
@@ -3683,7 +3784,10 @@ function openStream(req, res, user, token = null) {
   }
   const wasOnline = isOnline(user.id);
   if (!streams.has(user.id)) streams.set(user.id, new Set());
-  streams.get(user.id).add(res);
+  // (0.53.1) At most 10 live connections per account: the oldest is closed (it reconnects if real).
+  const mine = streams.get(user.id);
+  if (mine.size >= 10) { const old = mine.values().next().value; mine.delete(old); try { old.end(); } catch {} }
+  mine.add(res);
   if (!wasOnline) broadcastUser(user);
 
   const ping = setInterval(() => streamWrite(res, ': ping\n\n'), 25000);
@@ -3975,7 +4079,7 @@ const CSP = [
   "frame-ancestors 'none'",
 ].join('; ');
 // One bad request (a broken web address, a weird header) must never take the whole server down.
-const server = http.createServer((req, res) => handleRequest(req, res).catch(err => {
+const server = http.createServer((req, res) => (shieldBlocks(req, res) || shedsLoad(req, res) ? null : handleRequest(req, res))?.catch(err => {
   if (!(err instanceof URIError)) console.error('Request failed:', err);
   try { if (!res.headersSent) res.writeHead(400, { 'Content-Type': 'text/plain' }); res.end('Bad request'); } catch {}
 }));
@@ -4016,6 +4120,7 @@ async function handleRequest(req, res) {
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('Referrer-Policy', 'same-origin');
   res.setHeader('X-Frame-Options', 'DENY');
+  if (process.env.RENDER) res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains'); // (0.53.1) browsers always use https
   res.setHeader('X-Permitted-Cross-Domain-Policies', 'none');
   // Content Security Policy: the browser only runs Zuno's own scripts (plus YouTube's player for
   // Listen/Watch Together and the map library), never script written into a page or a message.
@@ -4109,7 +4214,9 @@ async function handleRequest(req, res) {
       // An id like "__proto__" would look up the built-in object instead of a user or server.
       if (Object.values(params).some(v => UNSAFE_KEYS.has(v))) fail(404, 'Not found.');
       const body = r.raw ? await readRaw(req, typeof r.raw === 'function' ? (me ? r.raw(me) : 1_000_000) : r.raw)
-        : ['POST', 'PATCH', 'PUT'].includes(req.method) ? await readBody(req) : {};
+        : ['POST', 'PATCH', 'PUT'].includes(req.method) ? await readBody(req)
+        // (0.53.1) DELETE bodies are read too (Reply Later, closing a DM and phone unsubscribe sent theirs and lost them).
+        : req.method === 'DELETE' ? await readBody(req).catch(e => { if (e?.status === 413) throw e; return {}; }) : {};
       const result = await r.handler({ req, res, me, token, params, body, query: url.searchParams });
       if (req.method !== 'GET') soonEnforceRooms();
       if (me && req.method !== 'GET' && !me.bot && isStaff(me)) {
@@ -4153,7 +4260,7 @@ module.exports = { start, flush };
 
 // Everything added in 0.14 (accounts, pins, polls, nicknames, Zuno bots, themes…) lives in features.js.
 const feat = require('./features')({
-  checkName, badUsername, NAME_ERROR, cleanName, stripInvisible, topPos, judgeText, staffGuard, pruneDevices, data, save, route, fail, hooks, clean, newId, send, emit, publicUser, privateMe, broadcastUser, postMessage, systemMessage,
+  checkEmail: burner.checkEmail, checkName, badUsername, NAME_ERROR, cleanName, stripInvisible, topPos, judgeText, staffGuard, pruneDevices, data, save, route, fail, hooks, clean, newId, send, emit, publicUser, privateMe, broadcastUser, postMessage, systemMessage,
   channelConv, channelConvFor, dmConv, groupConv, convOf, findChannel, findMessage, getServer, getManagedServer, ensureRoles, need, can, permsIn, canView, basePerms,
   outranks, canEditRole, roleById, rolesOf, audit, refreshServer, serverSummary, officialServer, isStaff, needStaff, hasBloom, isBlocked, areFriends,
   hashPassword, checkPassword, MIN_PASSWORD, createSession, endSessions, sessionFor, limit, clientIp, sniff, storeUpload, removeUpload, PERM_INFO, PERM_KEYS,
@@ -4170,7 +4277,7 @@ const ctx2 = {
   PKG, streamWrite, dmRecord, clientIp, ACCENTS, BLOOM_ACCENTS, voiceUpdate, canEditRole, checkGrant, basePerms, SERVER_COLORS, channelConvFor, sendMail: (...a) => feat.sendMail(...a), feat,
   invitePreview, DISCOVERY_TAGS, effectiveStatus, isFounder, CONFIG, appView, devBot, getManagedServer, audit, isOnline,
   outranks, canReadAttachment, rolesOf, badgesFor, REPORT_REASONS, joinServer, friendIds, USERNAME_RE, STAFF_NAMES,
-  removeMember, channelMessagesOf: id => data.channelMessages[id], userByName,
+  removeMember, channelMessagesOf: id => data.channelMessages[id], userByName, checkEmail: burner.checkEmail,
   svLimits: () => ({ emoji: 50, sounds: 24, level: 0 }), // Server Blooming raises these (community.js)
 };
 const social = require('./social')(ctx2);
@@ -4243,6 +4350,19 @@ save();
 // Run directly with `node server/index.js` / `npm start`.
 // A mistake somewhere async shouldn't stop Zuno for everyone: log it and keep going.
 process.on('unhandledRejection', err => console.error('Unhandled promise rejection:', err));
+// (0.53.1) One mistake in a background callback mustn't take Zuno down for everyone either.
+let crashCount = 0;
+process.on('uncaughtException', err => {
+  console.error('Uncaught error (Zuno kept running):', err);
+  if (++crashCount > 200) { try { flush(); } catch {} process.exit(1); } // something is badly wrong: restart clean
+});
+setInterval(() => { crashCount = 0; }, 600e3).unref();
+// (0.53.1) Slow or half-open connections are cut off instead of tying the server up.
+server.headersTimeout = 20e3;
+server.requestTimeout = 180e3; // big uploads still have time
+server.keepAliveTimeout = 65e3;
+server.maxHeadersCount = 80;
+server.on('clientError', (err, socket) => { try { socket.end('HTTP/1.1 400 Bad Request\r\nConnection: close\r\n\r\n'); } catch {} });
 if (require.main === module) {
   start().catch(err => {
     if (err.code === 'EADDRINUSE') console.error(`\n  Port ${PORT} is already in use. Is Zuno already running?\n`);

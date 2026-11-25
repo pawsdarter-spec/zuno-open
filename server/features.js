@@ -109,6 +109,7 @@ module.exports = function features(z) {
     if (!await z.checkPassword(String(body.password || ''), me.passwordHash)) fail(400, 'Your password is wrong.');
     const email = clean(body.email, 254).toLowerCase();
     if (!z.EMAIL_RE.test(email)) fail(400, 'Please enter a valid email address.');
+    { const why = await z.checkEmail?.(email); if (why) fail(400, why); } // (0.53.1) no throwaway emails
     if (users().some(u => u.email === email && u.id !== me.id)) fail(409, 'Another account already uses that email.');
     const oldEmail = me.email;
     me.email = email; me.emailVerified = false;

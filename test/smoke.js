@@ -30,7 +30,7 @@ const fakeAi = http.createServer((req, res) => {
 
 function boot() {
   return new Promise((resolve, reject) => {
-    server = spawn(process.execPath, [path.join(__dirname, '..', 'server', 'index.js')], { env: { ...process.env, PORT, ZUNO_DATA_DIR: DIR, STRIPE_SECRET_KEY: '', RESEND_API_KEY: '', ZUNO_STAFF_SETUP: '1', ZUNO_TRUST_XFF: '1', ANTHROPIC_API_KEY: 'test-key', ANTHROPIC_BASE_URL: `http://localhost:${AI_PORT}`, ZUNO_PUSH_TEST_URL: `http://localhost:${AI_PORT + 1}/push/` }, stdio: ['ignore', 'pipe', 'pipe'] });
+    server = spawn(process.execPath, [path.join(__dirname, '..', 'server', 'index.js')], { env: { ...process.env, PORT, ZUNO_DATA_DIR: DIR, STRIPE_SECRET_KEY: '', RESEND_API_KEY: '', ZUNO_STAFF_SETUP: '1', ZUNO_TRUST_XFF: '1', ZUNO_SHIELD_MAX: '100000', ANTHROPIC_API_KEY: 'test-key', ANTHROPIC_BASE_URL: `http://localhost:${AI_PORT}`, ZUNO_PUSH_TEST_URL: `http://localhost:${AI_PORT + 1}/push/` }, stdio: ['ignore', 'pipe', 'pipe'] });
     let out = '';
     server.stdout.on('data', d => { out += d; if (out.includes('Zuno is running')) resolve(); });
     server.stderr.on('data', d => process.stderr.write(d));

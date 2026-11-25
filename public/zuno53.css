@@ -145,3 +145,16 @@ html[data-sk53="auth"] .splash { display: grid; place-items: center; }
 .pe53-search .ui-ic { width: 16px; height: 16px; opacity: .6; flex: none; }
 .pe53-search input { flex: 1; min-width: 0; background: none; border: 0; outline: 0; color: inherit; font: inherit; }
 .pe-row[hidden] { display: none !important; }
+
+/* ======================= phones: notifications from the top ======================= */
+.nb53 { position: fixed; top: calc(8px + env(safe-area-inset-top)); left: 50%; width: min(440px, calc(100vw - 16px)); box-sizing: border-box; z-index: 400;
+  display: flex; align-items: center; gap: 11px; padding: 10px 14px; border-radius: 18px; background: #141a19; background: color-mix(in srgb, var(--sidebar, #1b2322) 85%, #000);
+  box-shadow: 0 10px 30px rgba(0,0,0,.45), inset 0 0 0 1px rgba(255,255,255,.07); transform: translate3d(-50%, calc(-100% - 20px), 0); transition: transform .26s cubic-bezier(.2,.8,.2,1); cursor: pointer; touch-action: none; }
+.nb53.in { transform: translate3d(-50%, 0, 0); }
+.nb53 .avatar { flex: none; }
+.nb53-txt { flex: 1; min-width: 0; }
+.nb53-top { display: flex; align-items: baseline; gap: 6px; min-width: 0; }
+.nb53-top b { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: none; max-width: 60%; }
+.nb53-top span { font-size: 12px; color: var(--muted, #9aa); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.nb53-msg { font-size: 14px; color: var(--text, #dfe); overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.35; }
+.reduce-motion .nb53 { transition: none; }

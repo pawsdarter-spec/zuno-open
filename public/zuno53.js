@@ -455,3 +455,49 @@ async function startDelete53() {
     return r;
   };
 }
+
+// ======================= phones: notifications drop down from the top =======================
+// (0.53.1) A DM, a ping or a reply while you're in Zuno on a phone shows as a card at the top of the
+// screen (whatever your status, except Do Not Disturb): tap it to open, swipe it up to dismiss.
+function banner53({ who, title, where, text, open }) {
+  if (!isPhone() || document.hidden || state.me?.statusPref === 'dnd') return;
+  $('.nb53')?.remove();
+  const el = document.createElement('div');
+  el.className = 'nb53';
+  el.setAttribute('role', 'status');
+  el.innerHTML = `${avatar(who || { displayName: '?' }, 38)}<div class="nb53-txt"><div class="nb53-top"><b>${esc(title)}</b>${where ? `<span>${esc(where)}</span>` : ''}</div><div class="nb53-msg">${esc(text)}</div></div>`;
+  document.body.appendChild(el);
+  requestAnimationFrame(() => el.classList.add('in'));
+  let gone = false, y0 = null, dy = 0;
+  const close = () => { if (gone) return; gone = true; el.classList.remove('in'); el.style.transform = ''; setTimeout(() => el.remove(), 260); };
+  const t = setTimeout(close, 4500);
+  el.addEventListener('touchstart', e => { y0 = e.touches[0].clientY; dy = 0; el.style.transition = 'none'; }, { passive: true });
+  el.addEventListener('touchmove', e => { if (y0 == null) return; dy = Math.min(0, e.touches[0].clientY - y0); el.style.transform = `translate3d(-50%, ${dy}px, 0)`; }, { passive: true });
+  el.addEventListener('touchend', () => { el.style.transition = ''; if (dy < -30) { clearTimeout(t); close(); } else el.style.transform = ''; y0 = null; });
+  el.addEventListener('click', () => { if (Math.abs(dy) > 8) return; clearTimeout(t); close(); open?.(); });
+}
+const msgText53 = m => (m.e2e ? '🔒 Encrypted message' : m.content || (m.attachments?.length ? '📎 Sent a file' : m.sticker ? 'Sent a sticker' : m.gif ? 'Sent a GIF' : m.poll ? '📊 Poll' : 'Sent a message')).slice(0, 160);
+{
+  const _notify53 = notify;
+  notify = function (peerId, message, ...a) {
+    const r = _notify53(peerId, message, ...a);
+    try {
+      if (!message?.call && !(activePeer() === peerId && !document.hidden) && !isMuted('dm:' + peerId) && !isMuted(peerId)) {
+        const u = user(message.authorId) || user(peerId);
+        banner53({ who: u, title: u?.displayName || 'New message', where: 'Direct message', text: msgText53(message), open: () => openDM(peerId) });
+      }
+    } catch {}
+    return r;
+  };
+  const _nm53 = notifyMention;
+  notifyMention = function (conv, serverId, channelId, message, ...a) {
+    const r = _nm53(conv, serverId, channelId, message, ...a);
+    try {
+      if (!(activeConv() === conv && !document.hidden) && !isMuted('ch:' + channelId) && !isMuted('sv:' + serverId)) {
+        const sv = state.servers.find(s => s.id === serverId), ch = sv?.channels.find(c => c.id === channelId), u = user(message.authorId);
+        banner53({ who: u, title: u?.displayName || 'Someone', where: `#${ch?.name || 'channel'} · ${sv?.name || ''}`, text: msgText53(message), open: () => openChannel(serverId, channelId) });
+      }
+    } catch {}
+    return r;
+  };
+}

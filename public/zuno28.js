@@ -53,7 +53,7 @@ live28('reply-later', d => { state.replyLater = d.items || []; renderDMList(); }
 const inReplyLater = (conv, id) => (state.replyLater || []).some(x => x.conv === conv && x.msgId === id);
 async function setReplyLater(conv, msgId, on) {
   try {
-    const r = on ? await api('POST', '/api/me/reply-later', { conv, msgId }) : await api('DELETE', '/api/me/reply-later', { conv, msgId });
+    const r = on ? await api('POST', '/api/me/reply-later', { conv, msgId }) : await api('DELETE', `/api/me/reply-later?conv=${encodeURIComponent(conv)}&msgId=${encodeURIComponent(msgId)}`) /* (0.53.1) DELETE sends no body */;
     state.replyLater = r.items; renderDMList();
     toast(on ? '⏰ Saved to Reply Later (top of your DMs)' : 'Removed from Reply Later');
   } catch (e) { toast(e.message, true); }

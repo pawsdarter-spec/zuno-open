@@ -399,7 +399,7 @@ module.exports = function studio(z) {
     send(uid, 'notif', { unread: unreadCount(u) });
   }
   z.notify = notify;
-  const unreadCount = u => (u.notifs || []).filter(n => n.at > (u.notifsSeenAt || 0)).length;
+  const unreadCount = u => (u.notifs || []).filter(n => n.at > (u.notifsSeenAt || 0) && !n.read).length;
   hooks.meExtras.push(me => ({ notifUnread: unreadCount(me) }));
   const snippet = m => (m.content || (m.attachments ? '📎 Attachment' : m.gif ? 'GIF' : m.poll ? `📊 ${m.poll.question}` : '')).slice(0, 140);
   const whereOf = (conv, uid) => (conv.kind === 'channel' ? { conv: 'ch:' + conv.channel.id, title: `#${conv.channel.name}`, server: conv.server.name, serverId: conv.server.id } : conv.kind === 'group' ? { conv: 'g:' + conv.group.id, title: conv.group.name || 'Group chat' } : { conv: conv.idFor(uid), title: 'Direct message' });
@@ -439,7 +439,7 @@ module.exports = function studio(z) {
   route('GET', '/api/me/notifications', async ({ me }) => {
     const items = (me.notifs || []).slice().reverse().filter(n => !n.from || data.users[n.from]);
     const people = [...new Set(items.map(n => n.from).filter(Boolean))].map(id => publicUser(data.users[id])).filter(Boolean);
-    return { items: items.map(n => ({ ...n, unread: n.at > (me.notifsSeenAt || 0) })), users: people, unread: unreadCount(me) };
+    return { items: items.map(n => ({ ...n, unread: n.at > (me.notifsSeenAt || 0) && !n.read })), users: people, unread: unreadCount(me) };
   });
   route('POST', '/api/me/notifications/seen', async ({ me }) => {
     me.notifsSeenAt = Date.now(); save();

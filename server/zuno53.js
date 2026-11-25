@@ -148,4 +148,18 @@ module.exports = function (z) {
   // ======================= the Verified Creator badge, dark =======================
   hooks.publicUser.push(u => (u?.creatorDark ? { creatorDark: true } : {}));
   hooks.patchMe.push((me, body) => { if ('creatorDark' in body) me.creatorDark = !!body.creatorDark; });
+
+  // ======================= reading a chat clears its notifications =======================
+  // (0.53.1) Looking at the message you were pinged about now clears it from Notifications (and the
+  // phone tab's number), instead of waiting until you open the Notifications tab.
+  hooks.onRead.push((conv, me, at) => {
+    const key = conv.idFor(me.id);
+    let changed = false;
+    for (const n of me.notifs || []) if (!n.read && n.conv === key && n.at <= at + 1000) { n.read = true; changed = true; }
+    if (conv.kind === 'channel' && (me.inbox || []).some(p => p.channelId === conv.channel.id)) { me.inbox = me.inbox.filter(p => p.channelId !== conv.channel.id || p.at > at + 1000); changed = true; z.send(me.id, 'inbox', { count: me.inbox.length }); }
+    if (!changed) return;
+    save();
+    const unread = (me.notifs || []).filter(n => n.at > (me.notifsSeenAt || 0) && !n.read).length;
+    z.send(me.id, 'notif', { unread });
+  });
 };

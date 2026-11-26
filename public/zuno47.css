@@ -152,3 +152,6 @@ html[data-theme="sakura"] .settings-main, html[data-theme="sand"] .settings-main
 @media (max-width: 1130px) {
   #main .topbar #vs-btn { flex: 0 1 auto; min-width: 36px; max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 }
+/* A shared screen fills its tile exactly: sized to the tile, not to the picture, so a tile limited
+   by max-height no longer crops the top and bottom (the tile is a grid, which let the video grow). */
+.tile > video[data-vid] { position: absolute; inset: 0; width: 100%; height: 100%; }

@@ -1121,6 +1121,56 @@ async function fetchGifBytes(url, max) {
   }
   fail(502, "Couldn't get that GIF. Try another.");
 }
+// A GIF someone first sent as a file only opens for people who can see that first message. Sent
+// again from the GIF picker (favorites), it's copied once into a plain file, so everyone who can
+// see the new message can see it, and it keeps working if the first message is deleted.
+const gifCopyJobs = new Map();
+const needsGifCopy = url => typeof url === 'string' && LOCAL_GIF.test(url) && !!attachmentForFile(path.basename(url));
+async function shareableGif(me, url) {
+  if (!needsGifCopy(url)) return url;
+  const name = path.basename(url);
+  data.gifCopies ||= {};
+  if (data.gifCopies[name]) return data.gifCopies[name];
+  if (me && !canReadAttachment(me, attachmentForFile(name))) fail(404, "That GIF isn't around anymore.");
+  if (!gifCopyJobs.has(name)) gifCopyJobs.set(name, fetchGifBytes(url, 50e6).then(buf => {
+    const copy = storeUpload(buf, 'gif');
+    data.gifCopies[name] = copy; save();
+    return copy;
+  }).finally(() => gifCopyJobs.delete(name)));
+  return gifCopyJobs.get(name);
+}
+async function shareGif(me, gif) {
+  if (!gif) return gif;
+  const url = await shareableGif(me, gif.url);
+  const preview = gif.preview === gif.url || needsGifCopy(gif.preview) ? url : gif.preview;
+  return url === gif.url && preview === gif.preview ? gif : { ...gif, url, preview, from: gif.url };
+}
+// Messages sent before this, and forwards, get fixed in the background.
+async function fixGifMessage(list, m) {
+  try {
+    const strip = g => { if (!g) return g; const { from, ...rest } = g; return rest; };
+    const gif = m.gif && strip(await shareGif(null, m.gif)), fgif = m.forward?.gif ? strip(await shareGif(null, m.forward.gif)) : null;
+    const same = (a, b) => !a || !b || a.url === b.url;
+    if (same(gif, m.gif) && same(fgif, m.forward?.gif)) return null;
+    const i = list.indexOf(m);
+    if (i < 0) return null;
+    return (list[i] = { ...m, ...(m.gif ? { gif } : {}), ...(fgif ? { forward: { ...m.forward, gif: fgif } } : {}) });
+  } catch { return null; }
+}
+const gifNeedsFix = m => needsGifCopy(m?.gif?.url) || needsGifCopy(m?.forward?.gif?.url);
+async function fixOldGifMessages() {
+  let n = 0;
+  for (const map of ['dms', 'groupMessages', 'channelMessages', 'threads']) for (const st of Object.values(data[map] || {})) {
+    for (const m of (st.messages || []).filter(gifNeedsFix)) if (await fixGifMessage(st.messages, m)) n++;
+  }
+  if (n) { save(); console.log(`Fixed ${n} GIF message${n === 1 ? '' : 's'}.`); }
+}
+setTimeout(() => fixOldGifMessages().catch(() => {}), 15000).unref();
+hooks.posted.push((conv, m) => {
+  if (!gifNeedsFix(m)) return;
+  const list = conv.peek?.()?.messages;
+  if (list) fixGifMessage(list, m).then(message => { if (message) { save(); emit(conv, 'message-update', { message }); } });
+});
 const GIF_AVATAR_MAX = CONFIG.GIF_AVATAR_MAX;
 route('POST', '/api/me/gif-media', async ({ me, body }) => {
   limit('gifmedia:' + me.id, 20, 60 * 60e3, "You've changed GIFs a lot this hour. Try again a bit later.");
@@ -1518,7 +1568,7 @@ function cleanGif(g) {
   // KLIPY GIFs, or GIFs people uploaded to Zuno (so they can be favorited and sent again).
   const ok = u => typeof u === 'string' && (/^https:\/\/([a-z0-9-]+\.)*klipy\.com\//i.test(u) || /^\/uploads\/[a-z0-9]+\.gif$/.test(u)) && u.length < 600;
   if (!ok(g.url)) fail(400, "That GIF couldn't be sent.");
-  return { url: g.url, preview: ok(g.preview) ? g.preview : g.url, w: Math.min(2000, Number(g.w) || 0), h: Math.min(2000, Number(g.h) || 0), title: clean(g.title, 120) };
+  return { url: g.url, preview: ok(g.preview) ? g.preview : g.url, w: Math.min(2000, Number(g.w) || 0), h: Math.min(2000, Number(g.h) || 0), title: clean(g.title, 120), ...(/^\/uploads\/[a-z0-9]+\.gif$/.test(g.from) ? { from: g.from } : {}) };
 }
 function cleanReply(conv, replyTo) {
   if (!replyTo) return undefined;
@@ -1584,14 +1634,14 @@ for (const [prefix, resolve] of [['/api/dms/:target', dmConv], ['/api/channels/:
     if ((me.mutedUntil || 0) > Date.now()) fail(403, `Your account is muted until ${new Date(me.mutedUntil).toLocaleString()}.`);
     const mode = conv.canWrite();
     const content = cleanContent(body, me);
-    const gif = cleanGif(body.gif);
+    const gif = await shareGif(me, cleanGif(body.gif));
     if (!content && !gif && !body.attachmentIds?.length && !body.poll && !body.forward && !body.e2e && !body.sticker) fail(400, "You can't send an empty message.");
     if (body.attachmentIds?.length && conv.kind === 'channel' && !conv.perms.has('attach_files')) fail(403, "You don't have permission to attach files in this channel.");
     const replyTo = cleanReply(conv, body.replyTo);
     const command = botCommandFor(conv, me, content);
     const attachments = takeAttachments(me, body.attachmentIds, body.attachmentMeta);
     const extra = {};
-    if (gif) extra.gif = gif;
+    if (gif) { extra.gif = { ...gif }; delete extra.gif.from; }
     if (attachments) extra.attachments = attachments;
     if (replyTo) extra.replyTo = body.replyPing === false ? { ...replyTo, noPing: true } : replyTo; // (0.45.1) reply without pinging
     if (command) extra.command = { name: command.name, botId: command.botId };
@@ -2286,7 +2336,7 @@ route('GET', '/api/people/search', async ({ me, query }) => {
 route('PUT', '/api/me/fav-gifs', async ({ me, body }) => {
   const list = Array.isArray(body.gifs) ? body.gifs.slice(0, 100) : [];
   const out = [];
-  for (const g of list) { try { const c = cleanGif(g); if (c && !out.some(x => x.url === c.url)) out.push(c); } catch {} }
+  for (const g of list) { try { const c = await shareGif(me, cleanGif(g)); if (c && !out.some(x => x.url === c.url)) out.push(c); } catch {} }
   me.favGifs = out;
   save();
   return { favGifs: out };

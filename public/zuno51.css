@@ -83,3 +83,18 @@ html.frame51 .main .composer-plus { width: 28px; height: 28px; border-radius: 50
 /* Thin, quiet scrollbars. */
 html.frame51 .app :is(#messages, .sidebar-scroll, .member-panel, .profile-panel) { scrollbar-width: thin; scrollbar-color: color-mix(in srgb, var(--text) 18%, transparent) transparent; }
 html.frame51 .app .sidebar-scroll:not(:hover) { scrollbar-color: transparent transparent; }
+/* Your own app background shows through the new frame again (the frame painted over it). */
+html.frame51.has-app-bg .app { background: transparent; }
+html.frame51.has-app-bg .app > .sidebar { background: color-mix(in srgb, var(--sidebar) 80%, transparent); }
+html.frame51.has-app-bg .app > .main { background: color-mix(in srgb, var(--main) 84%, transparent); }
+html.frame51.has-app-bg .app :is(.member-panel, .profile-panel):not(.drawer-open) { background: color-mix(in srgb, var(--sidebar) 80%, transparent) !important; }
+/* Phones: the chat slides over the server and DM lists, so it can't be see-through or the lists
+   show through it. It paints your background itself instead (same picture, same dimming). */
+@media (max-width: 760px) {
+  html.has-app-bg .app > .main {
+    background: linear-gradient(color-mix(in srgb, var(--main) 78%, transparent), color-mix(in srgb, var(--main) 78%, transparent)),
+      linear-gradient(rgba(0, 0, 0, var(--app-bg-dim, .45)), rgba(0, 0, 0, var(--app-bg-dim, .45))),
+      var(--app-bg) center / cover no-repeat, #000 !important;
+    backdrop-filter: none !important;
+  }
+}

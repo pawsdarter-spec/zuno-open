@@ -95,3 +95,14 @@
 /* Phones: send and the voice-message mic take turns in the same spot (mic when empty, send once
    there's something to send), so the message box keeps its room next to + and ⋯. */
 @media (max-width: 760px) { .composer-box:not(.has-text):has(#composer-voice) > #composer-send { display: none; } }
+/* Narrow (tall) videos: smaller controls so Fullscreen always fits; Download goes first, then speed and PiP. */
+.zp { container: zp / inline-size; }
+@container zp (max-width: 340px) {
+  .zp-row { gap: 0; }
+  .zp-row button, .zp-row a { width: 28px; height: 28px; }
+  .zp-row svg { width: 18px; height: 18px; }
+  .zp-time { font-size: 11px; padding: 0 2px; }
+  .zp-speed { padding: 0 4px; }
+}
+@container zp (max-width: 270px) { .zp-row .zp-dl { display: none; } }
+@container zp (max-width: 210px) { .zp-row .zp-speed, .zp-row [data-zp-act="pip"] { display: none; } }

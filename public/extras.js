@@ -250,10 +250,10 @@ function setFavGifs(list) {
   clearTimeout(favTimer);
   favTimer = setTimeout(() => api('PUT', '/api/me/fav-gifs', { gifs: list }).then(r => { state.me.favGifs = r.favGifs; try { localStorage.removeItem('zuno_fav_gifs'); } catch {} }).catch(e => toast(e.message, true)), 400);
 }
-const isFavGif = url => favGifs().some(f => f.url === url);
+const isFavGif = url => favGifs().some(f => f.url === url || f.from === url);
 function toggleFavGif(g) {
   const on = isFavGif(g.url);
-  setFavGifs(on ? favGifs().filter(f => f.url !== g.url) : [{ url: g.url, preview: g.preview || g.url, w: g.w, h: g.h, title: g.title || '' }, ...favGifs()]);
+  setFavGifs(on ? favGifs().filter(f => f.url !== g.url && f.from !== g.url) : [{ url: g.url, preview: g.preview || g.url, w: g.w, h: g.h, title: g.title || '' }, ...favGifs()]);
   toast(on ? 'Removed from your favorite GIFs' : '★ Added to your favorite GIFs');
   $$(`[data-fav-gif]`).forEach(b => { try { if (JSON.parse(b.dataset.favGif).url === g.url) b.classList.toggle('on', !on); } catch {} });
   return !on;

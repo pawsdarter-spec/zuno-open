@@ -109,7 +109,7 @@ function profileExtrasHtml(u) {
     const roles = sv.roles.filter(r => !r.everyone && mine.includes(r.id)); // highest role first, like the server's role list
     const canAdd = hasPerm(sv, 'manage_roles') && (self || !rolesLockedMe(sv, u.id)) && u.id !== sv.ownerId;
     if (roles.length || canAdd) {
-      html += `<h4>Roles in ${esc(sv.name)}</h4><div class="mr-chips pc-roles">${roles.map(r => `<span class="role-chip" style="--rc:${esc(r.color || '#9aa6a4')}"><i></i>${roleIconHtml(r)}${esc(r.name)}</span>`).join('')}
+      html += `<h4>Roles in ${esc(sv.name)}</h4><div class="mr-chips pc-roles">${roles.map(r => `<span class="role-chip" style="--rc:${esc(r.color || '#9aa6a4')}">${canAdd && !r.managed && canEditRoleMe(sv, r) ? `<button class="rc-x56" data-pc-unrole="${esc(r.id)}" data-uid="${esc(u.id)}" title="Remove ${esc(r.name)}" aria-label="Remove ${esc(r.name)}">✕</button>` : '<i></i>'}${roleIconHtml(r)}${esc(r.name)}</span>`).join('')}
         ${canAdd ? `<button class="role-chip add" data-pc-addrole="${esc(u.id)}" title="Add Roles">+ Add Roles</button>` : ''}</div>`;
     }
     if (sv.nicks?.[u.id]) html += `<div class="muted small pc-nick">Nickname here: <b>${esc(sv.nicks[u.id])}</b></div>`;

@@ -1,7 +1,7 @@
 {
   "name": "zuno",
   "productName": "Zuno",
-  "version": "0.56.0",
+  "version": "0.56.1",
   "description": "Zuno: chat with your friends. Accounts, friends, direct messages and expressive profiles.",
   "author": "Zuno",
   "main": "electron/main.js",

@@ -3154,7 +3154,11 @@ route('PUT', '/api/servers/:id/members/:userId/roles', async ({ me, params, body
   sv.memberRoles[uid] = [...new Set(next)];
   const names = changes.map(id => (next.includes(id) ? '+' : '−') + roleById(sv, id).name).join(', ');
   if (changes.length) audit(sv, me, 'member_roles', { type: 'member', id: uid, name: data.users[uid]?.displayName || '?' }, names);
-  save(); refreshServer(sv);
+  save();
+  // (0.56.1) Only the person whose roles changed reloads (what they can see may have changed);
+  // everyone else just gets the new role list for them. Before, every member reloaded everything
+  // for every click, which made giving roles slow for everyone.
+  if (changes.length) for (const id of sv.members) id === uid ? send(id, 'refresh', { serverId: sv.id }) : send(id, 'member-roles', { serverId: sv.id, userId: uid, roles: sv.memberRoles[uid] });
   return { roles: sv.memberRoles[uid] };
 });
 route('POST', '/api/servers/:id/transfer', async ({ me, params, body, token }) => {
@@ -3166,6 +3170,8 @@ route('POST', '/api/servers/:id/transfer', async ({ me, params, body, token }) =
   const uid = String(body.userId || '');
   const u = data.users[uid];
   if (!u || !sv.members.includes(uid) || u.bot) fail(400, 'Pick a member of the server.');
+  // (0.56.1) Who had it before is remembered, so it can be handed back later.
+  sv.ownerHistory = [...(sv.ownerHistory || []), { from: sv.ownerId, to: uid, by: me.id, at: Date.now() }].slice(-20);
   sv.ownerId = uid;
   audit(sv, me, 'ownership', { type: 'member', id: uid, name: u.displayName });
   save(); refreshServer(sv); broadcastUser(me); broadcastUser(u);

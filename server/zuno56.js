@@ -109,4 +109,33 @@ module.exports = function (z) {
     for (const id of sv.members) { const u = data.users[id]; if (u?.serverTag === sv.id) z.broadcastUser(u); }
     return { tag: sv.tag };
   }, { raw: 600_000 });
+
+  // ======================= giving a server back =======================
+  // (0.56.1) Whoever owns a server can hand it straight back to the person who owned it before them
+  // (for example after the founder looked after a community for a while). They rejoin if they left.
+  const previousOwner = sv => {
+    const h = [...(sv.ownerHistory || [])].reverse().find(x => x.to === sv.ownerId && x.from && x.from !== sv.ownerId);
+    const u = h && data.users[h.from];
+    return live(u) ? u : null;
+  };
+  hooks.serverSummary.push((sv, me) => {
+    if (!me || sv.ownerId !== me.id) return {};
+    const p = previousOwner(sv);
+    return { previousOwner: p ? { id: p.id, displayName: p.displayName, username: p.username } : null };
+  });
+  route('POST', '/api/servers/:id/return-ownership', async ({ me, params, token }) => {
+    const sv = data.servers[params.id];
+    if (!sv || sv.ownerId !== me.id) fail(403, 'Only the owner can give this server back.');
+    z.needReauth(token);
+    const prev = previousOwner(sv);
+    if (!prev) fail(400, "There's no earlier owner to give this server back to.");
+    if ((sv.bans || []).some(b => b.userId === prev.id)) fail(400, `${prev.displayName} is banned from this server. Unban them first.`);
+    if (!sv.members.includes(prev.id)) { sv.members.push(prev.id); (prev.joinedAt ||= {})[sv.id] = Date.now(); }
+    sv.ownerHistory = [...(sv.ownerHistory || []), { from: me.id, to: prev.id, by: me.id, at: Date.now(), returned: true }].slice(-20);
+    sv.ownerId = prev.id;
+    z.audit(sv, me, 'ownership', { type: 'member', id: prev.id, name: prev.displayName });
+    save(); z.refreshServer(sv); z.broadcastUser(me); z.broadcastUser(prev);
+    z.systemMessage(prev.id, `👑 **${me.displayName}** gave **${sv.name}** back to you. You're the owner again.`);
+    return { ok: true, owner: { id: prev.id, displayName: prev.displayName } };
+  });
 };

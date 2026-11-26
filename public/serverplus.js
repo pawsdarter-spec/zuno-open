@@ -77,9 +77,10 @@ openRolePicker = function (sv, uid, anchor) {
     $$('[data-r]', box).forEach(cb => cb.addEventListener('change', async () => {
       const cur = new Set((svById(sv.id) || sv).memberRoles?.[uid] || []);
       cb.checked ? cur.add(cb.dataset.r) : cur.delete(cb.dataset.r);
-      cb.disabled = true;
-      try { await api('PUT', `/api/servers/${sv.id}/members/${uid}/roles`, { roles: [...cur] }); changed = true; await refresh({ serverId: sv.id }); if (box.isConnected) draw($('.rp-q', box).value.trim().toLowerCase()); }
-      catch (err) { toast(err.message, true); cb.checked = !cb.checked; cb.disabled = false; }
+      // (0.56.1) Shows straight away; the change is saved in the background (quick clicks are sent
+      // one after another, each with the latest roles).
+      changed = true;
+      saveMemberRoles(svById(sv.id) || sv, uid, [...cur]);
     }));
   };
   box.innerHTML = `<div class="rp-head">Roles for <b>${esc(nameIn(u, sv))}</b></div><input class="qs-input rp-q" placeholder="Search roles" autocomplete="off"><div class="rp-list"></div>

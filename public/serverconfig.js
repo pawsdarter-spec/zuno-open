@@ -634,7 +634,7 @@ async function ssMembers(body, sv) {
     $$('.ss-member', body).forEach(r => {
       const id = r.dataset.m;
       $('[data-addrole]', r)?.addEventListener('click', e => openRolePicker(sv, id, e.currentTarget));
-      $$('[data-unrole]', r).forEach(b => b.addEventListener('click', () => setMemberRoles(sv, id, (sv.memberRoles?.[id] || []).filter(x => x !== b.dataset.unrole))));
+      $$('[data-unrole]', r).forEach(b => b.addEventListener('click', () => { b.closest('.role-chip')?.remove(); setMemberRoles(sv, id, (sv.memberRoles?.[id] || []).filter(x => x !== b.dataset.unrole)); }));
       $('[data-kick]', r)?.addEventListener('click', () => kickMember(sv, id));
       $('[data-ban]', r)?.addEventListener('click', () => openServerBan(sv, id));
     });
@@ -660,8 +660,27 @@ const outranksMe = (sv, uid) => uid !== state.me.id && !isOwner(sv) && (uid === 
 const rolesLockedMe = (sv, uid) => outranksMe(sv, uid) && !(uid !== sv.ownerId && hasPerm(sv, 'administrator') && myTopPos(sv, uid) === myTopPos(sv));
 const canEditRoleMe = (sv, role) => isOwner(sv) || sv.roles.indexOf(role) > myTopPos(sv);
 async function setMemberRoles(sv, uid, roles) {
-  try { await api('PUT', `/api/servers/${sv.id}/members/${uid}/roles`, { roles }); toast('Roles updated'); await refresh({ serverId: sv.id }); }
-  catch (e) { toast(e.message, true); }
+  await saveMemberRoles(svById(sv.id) || sv, uid, roles);
+}
+// (0.56.1) Role changes show at once and are saved in the background, one request at a time per
+// person, always with their newest roles. Only a failure reloads the server.
+const roleSaves = new Map();
+function memberRolesChanged(sv, uid) {
+  if (state.currentServerId === sv.id) { try { renderMemberList(); } catch {} renderMessagesSoon?.(); }
+  document.dispatchEvent(new CustomEvent('zuno-member-roles', { detail: { serverId: sv.id, userId: uid } }));
+}
+function saveMemberRoles(sv, uid, roles) {
+  (sv.memberRoles ||= {})[uid] = [...new Set(roles)];
+  memberRolesChanged(sv, uid);
+  const key = sv.id + '|' + uid;
+  const run = (roleSaves.get(key) || Promise.resolve()).then(async () => {
+    const want = sv.memberRoles[uid] || [];
+    try { await api('PUT', `/api/servers/${sv.id}/members/${uid}/roles`, { roles: want }); }
+    catch (e) { toast(e.message, true); await refresh({ serverId: sv.id }).catch(() => {}); }
+  });
+  roleSaves.set(key, run);
+  run.then(() => { if (roleSaves.get(key) === run) roleSaves.delete(key); });
+  return run;
 }
 function openRolePicker(sv, uid, anchor) {
   sv = svById(sv.id) || sv;

@@ -42,3 +42,21 @@
   .vb56 { top: auto; bottom: calc(76px + env(safe-area-inset-bottom, 0px)); flex-wrap: wrap; }
   .vb56 > span { flex-basis: 100%; }
 }
+
+/* ---------- roles: the ✕ on a role in a profile ---------- */
+.role-chip .rc-x56 { width: 12px; height: 12px; flex: none; display: grid; place-items: center; border-radius: 50%; background: var(--rc); color: transparent; font-size: 8px; font-weight: 900; line-height: 1; padding: 0; cursor: pointer; }
+.role-chip:hover .rc-x56, .rc-x56:focus-visible { color: #000; background: color-mix(in srgb, var(--rc) 70%, #fff); }
+
+/* ---------- AutoMod presets ---------- */
+.amp56-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 8px; }
+.amp56-card { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; padding: 12px; border-radius: 10px; background: var(--input); box-shadow: inset 0 0 0 1px var(--border); text-align: left; color: var(--text); transition: box-shadow .12s, background .12s; }
+.amp56-card:hover { background: var(--hover); }
+.amp56-card.on { box-shadow: inset 0 0 0 2px var(--brand); }
+.amp56-ico { font-size: 20px; line-height: 1; }
+.amp56-best { display: inline-block; margin-left: 4px; padding: 1px 6px; border-radius: 6px; background: color-mix(in srgb, var(--brand) 22%, transparent); color: var(--brand); font-size: 10px; font-weight: 800; vertical-align: 1px; }
+
+/* ---------- scrolling up in a chat ---------- */
+/* Older messages were skipped while off screen and drawn only when scrolled to, with a guessed
+   height. Their real height then pushed the chat around (the "snap") and drawing them while
+   scrolling made it stutter. Only ~150 messages are on the page anyway, so they're all drawn. */
+#messages > .msg.msg { content-visibility: visible !important; contain-intrinsic-size: none !important; }

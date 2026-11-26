@@ -285,3 +285,129 @@ showServerSection = async function (section, ...rest) {
   if (_onMe56) onMe = function (...a) { const r = _onMe56.apply(this, a); setTimeout(draw, 0); return r; };
   const t = setInterval(() => { if (state.me) { clearInterval(t); draw(); } }, 500);
 }
+
+// ======================= 0.56.1: roles =======================
+// The ✕ on a role in someone's profile takes it off (when you can manage roles and the role is below
+// yours). It disappears at once and is saved in the background.
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-pc-unrole]');
+  if (!b) return;
+  e.preventDefault(); e.stopPropagation();
+  const sv = currentServer(), uid = b.dataset.uid, rid = b.dataset.pcUnrole;
+  if (!sv) return;
+  const chip = b.closest('.role-chip'), wrap = chip?.parentElement;
+  chip?.remove();
+  if (wrap && !wrap.querySelector('.role-chip:not(.add)') && !wrap.querySelector('.add')) wrap.previousElementSibling?.tagName === 'H4' && wrap.previousElementSibling.remove();
+  saveMemberRoles(sv, uid, (sv.memberRoles?.[uid] || []).filter(x => x !== rid));
+}, true);
+// Someone else's roles changed: just their roles are updated (no full reload).
+{
+  const onRoles = e => {
+    let d; try { d = JSON.parse(e.data); } catch { return; }
+    const sv = svById(d.serverId);
+    if (!sv) return;
+    (sv.memberRoles ||= {})[d.userId] = d.roles || [];
+    memberRolesChanged(sv, d.userId);
+  };
+  let hooked = null;
+  const hook = () => { if (state.es && state.es !== hooked) { hooked = state.es; state.es.addEventListener('member-roles', onRoles); } };
+  const _connect56 = connect;
+  connect = function (...a) { const r = _connect56.apply(this, a); hook(); return r; };
+  hook();
+}
+
+// ======================= 0.56.1: give a server back =======================
+// The owner sees "Give Back to <name>" in the server menu when the server came to them from someone
+// else (for example the founder looking after a community for a while).
+{
+  const _osm56 = openServerMenu;
+  openServerMenu = function (anchor, sv = currentServer(), ...a) {
+    const r = _osm56(anchor, sv, ...a);
+    const p = sv?.previousOwner;
+    if (!sv || sv.ownerId !== state.me?.id || !p) return r;
+    const menu = $$('#layer .menu').pop();
+    if (!menu || $('[data-giveback]', menu)) return r;
+    const b = document.createElement('button');
+    b.dataset.giveback = '1';
+    b.innerHTML = `<span class="mi-ico">${uiIcon('crown')}</span><span>Give Back to ${esc(p.displayName)}</span>`;
+    b.addEventListener('click', async () => {
+      closeLayer();
+      if (!await confirmOver(`Give ${sv.name} back to ${p.displayName}?`, `${p.displayName} becomes the owner again. You stay in the server with your roles.`, 'Give Back', true)) return;
+      try { await api('POST', `/api/servers/${sv.id}/return-ownership`); toast(`${p.displayName} owns ${sv.name} again 👑`); await refresh({ serverId: sv.id }).catch(() => {}); }
+      catch (err) { toast(err.message, true); }
+    });
+    const danger = [...menu.children].find(x => /Delete Server|Leave Server/.test(x.textContent));
+    menu.insertBefore(b, danger || null);
+    return r;
+  };
+}
+
+// ======================= 0.56.1: AutoMod presets =======================
+// Server Settings › AutoMod starts with ready-made setups. Picking one fills in the form (your own
+// blocked words, skipped roles and channels and alert channel are kept); press Save to use it.
+const AM_SCAMS56 = ['*free nitro*', '*free bloom*', '*steam gift*', '*claim your prize*', '*claim your reward*', '*crypto giveaway*', '*airdrop*', '*double your money*', '*send me your password*', '*verify your account here*', '*gift for you*', '*you have been selected*'];
+const AM_PRESETS56 = [
+  { id: 'light', icon: '🌱', name: 'Relaxed', desc: 'For friend groups. Only stops spam and invites to other servers.',
+    set: { enabled: true, invites: true, links: false, spam: true, caps: false, mentionLimit: 10, newAccountLinks: 0, timeoutMinutes: 0 } },
+  { id: 'balanced', icon: '🛡️', name: 'Balanced', desc: 'Recommended for most servers. Spam, shouting, mention spam and common scam messages.', best: true,
+    set: { enabled: true, invites: true, links: false, spam: true, caps: true, mentionLimit: 5, newAccountLinks: 60, timeoutMinutes: 1 }, words: AM_SCAMS56 },
+  { id: 'public', icon: '🌍', name: 'Big public server', desc: 'Only links to well-known sites, no links from new accounts for a day, 10-minute timeouts.',
+    set: { enabled: true, invites: true, links: true, spam: true, caps: true, mentionLimit: 3, newAccountLinks: 1440, timeoutMinutes: 10 }, words: AM_SCAMS56,
+    allow: ['youtube.com', 'youtu.be', 'twitch.tv', 'klipy.com', 'wikipedia.org', 'github.com', 'spotify.com', 'reddit.com'] },
+  { id: 'gaming', icon: '🎮', name: 'Gaming', desc: 'Clips and streams are fine; fake gift and trade scams are blocked.',
+    set: { enabled: true, invites: true, links: true, spam: true, caps: false, mentionLimit: 5, newAccountLinks: 60, timeoutMinutes: 5 }, words: AM_SCAMS56,
+    allow: ['youtube.com', 'youtu.be', 'twitch.tv', 'medal.tv', 'store.steampowered.com', 'roblox.com', 'epicgames.com', 'klipy.com'] },
+  { id: 'art', icon: '🎨', name: 'Art & creators', desc: 'Links to portfolio and art sites only, so promo spam stays out.',
+    set: { enabled: true, invites: true, links: true, spam: true, caps: false, mentionLimit: 5, newAccountLinks: 1440, timeoutMinutes: 5 }, words: AM_SCAMS56,
+    allow: ['artstation.com', 'deviantart.com', 'pixiv.net', 'behance.net', 'dribbble.com', 'instagram.com', 'youtube.com', 'youtu.be', 'tiktok.com'] },
+  { id: 'lockdown', icon: '🚨', name: 'Raid lockdown', desc: 'For when you are being raided. No links at all, 2 mentions max, 1-hour timeouts. Turn it back down after.',
+    set: { enabled: true, invites: true, links: true, spam: true, caps: true, mentionLimit: 2, newAccountLinks: 10080, timeoutMinutes: 60 }, words: AM_SCAMS56, allow: [] },
+];
+{
+  const _ssAutomod56 = ssAutomod;
+  ssAutomod = async function (body, sv, ...rest) {
+    const r = await _ssAutomod56(body, sv, ...rest);
+    const f = $('#am-form', body);
+    if (!f || $('.amp56', body)) return r;
+    const box = document.createElement('div');
+    box.className = 'setting-group amp56';
+    box.innerHTML = `<h4 class="setting-head">Start from a preset</h4>
+      <p class="muted small" style="margin:0 0 10px">Fills in the settings below. Your own blocked words, skipped roles and channels, and alert channel stay. Nothing changes until you press Save.</p>
+      <div class="amp56-grid">${AM_PRESETS56.map(p => `<button type="button" class="amp56-card" data-amp="${p.id}"><span class="amp56-ico">${p.icon}</span><b>${esc(p.name)}${p.best ? ' <span class="amp56-best">Recommended</span>' : ''}</b><span class="muted small">${esc(p.desc)}</span></button>`).join('')}</div>`;
+    f.prepend(box);
+    box.addEventListener('click', e => {
+      const b = e.target.closest('[data-amp]');
+      if (!b) return;
+      const p = AM_PRESETS56.find(x => x.id === b.dataset.amp);
+      for (const [k, v] of Object.entries(p.set)) {
+        const el = f.elements[k];
+        if (!el) continue;
+        if (el.type === 'checkbox') el.checked = v; else el.value = String(v);
+      }
+      if (p.words) {
+        const have = f.words.value.split(/[\n,]/).map(s => s.trim()).filter(Boolean);
+        f.words.value = [...new Set([...have, ...p.words])].join('\n');
+      }
+      if (p.allow) f.allowDomains.value = p.allow.join('\n');
+      $$('.amp56-card', box).forEach(x => x.classList.toggle('on', x === b));
+      toast(`${p.name} filled in. Check it, then press Save AutoMod.`);
+      $('#am-save', body)?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    });
+    return r;
+  };
+}
+
+// ======================= 0.56.1: scrolling up =======================
+// Near the top, every scroll event drew another 100 older messages (two watchers asked at once), so
+// the chat stuttered and jumped. Now it's at most once every 300 ms.
+{
+  const _loadOlder56 = loadOlder;
+  // Calls that come while one is waiting share it, so "jump to message" still loads page after page.
+  let at = 0, pending = null;
+  loadOlder = function (...a) {
+    if (pending) return pending;
+    const wait = Math.max(0, 300 - (performance.now() - at));
+    pending = new Promise(r => setTimeout(r, wait)).then(() => { at = performance.now(); return _loadOlder56.apply(this, a); }).finally(() => { pending = null; });
+    return pending;
+  };
+}

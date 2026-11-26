@@ -464,7 +464,14 @@ const _renderSeen26 = renderSeen;
 renderSeen = function (...a) {
   const r = _renderSeen26(...a);
   const tag = $('#messages .seen-tag'), content = tag?.closest('.msg')?.querySelector('.content, .msg-media');
-  if (tag && content) { const row = tag.closest('.msg').getBoundingClientRect(), c = content.getBoundingClientRect(); tag.classList.toggle('right', c.left - row.left > row.right - c.right); }
+  // (0.55.1) Measure the words themselves, not their box: in the flat style the box spans the whole
+  // chat, which made "Seen" jump to the far right on PC.
+  if (tag && content) {
+    const row = tag.closest('.msg').getBoundingClientRect();
+    let c = content.getBoundingClientRect();
+    try { const rg = document.createRange(); rg.selectNodeContents(content); const t = rg.getBoundingClientRect(); if (t.width) c = t; } catch {}
+    tag.classList.toggle('right', c.left - row.left > row.right - c.right);
+  }
   return r;
 };
 

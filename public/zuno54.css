@@ -1,0 +1,18 @@
+/* Zuno 0.54 profile frame and channel flair treatments. */
+.pcard.has-bg > .pc-bg { opacity: var(--pc-bg-opacity, .65); }
+.pcard.has-bg::after { background: linear-gradient(to bottom, rgba(0,0,0,.15), rgba(0,0,0,.45)); }
+.pcard.pf54-frame { border: 2px solid transparent; }
+.pcard.pf54-aurora { border-image: linear-gradient(135deg,#55e7d0,#8a70ff,#f18bc9) 1; box-shadow: 0 0 22px rgba(117,113,255,.22); }
+.pcard.pf54-gold { border-color: #d6ad55; box-shadow: inset 0 0 0 1px rgba(255,226,150,.3),0 0 18px rgba(214,173,85,.2); }
+.pcard.pf54-neon { border-color: #58e6f2; box-shadow: inset 0 0 0 1px rgba(235,69,158,.45),0 0 20px rgba(88,230,242,.25); }
+.pcard.pf54-rose { border-color: #ec8bb7; box-shadow: inset 0 0 0 1px rgba(255,205,224,.25),0 0 18px rgba(236,139,183,.2); }
+.pcard.pf54-ice { border-color: #a9d9f5; box-shadow: inset 0 0 0 1px rgba(255,255,255,.3),0 0 18px rgba(169,217,245,.2); }
+.ch-ico.ch-flair54 { display: inline-grid; place-items: center; width: 20px; font-size: 15px; line-height: 1; }
+.mention.channel[data-goto-ch] { cursor: pointer; text-decoration: none; }
+.mention.channel[data-goto-ch]:hover { text-decoration: underline; filter: brightness(1.2); }
+.pf54-opacity { display:flex; align-items:center; gap:12px; margin-top:8px; }
+.pf54-opacity input { flex:1; }
+.pf54-opacity output { min-width:44px; color:var(--muted); font-variant-numeric:tabular-nums; }
+
+.ch-flair54-emoji { display:inline-block; font-size:14px; line-height:1; }
+.ch-suggest54-hash { color:var(--muted); font-weight:800; }

@@ -726,7 +726,7 @@ const _openSettings27 = openSettings;
 openSettings = function (...a) {
   const r = _openSettings27(...a);
   if (state.me?.isFounder && !$('.settings-nav [data-s="admin"]')) {
-    const anchor = $('.settings-nav [data-s="moderation"]') || $('.settings-nav [data-s="buginbox"]');
+    const anchor = $('.settings-nav [data-s="employee"]') || $('.settings-nav [data-s="buginbox"]');
     if (anchor) {
       anchor.insertAdjacentHTML('afterend', '<button data-s="admin">Admin Dashboard</button>');
       $('.settings-nav [data-s="admin"]').addEventListener('click', () => showSettingsSection('admin'));
@@ -785,6 +785,18 @@ async function renderAdmin(body, quiet = false) {
         ${d.system.storedMessages != null ? `<div class="ad-row"><span>Messages kept in memory</span><b>${fmtNum(d.system.storedMessages)}</b></div><div class="ad-row"><span>Logged-in devices</span><b>${fmtNum(d.system.logins)}</b></div>` : ''}
         <div class="ad-row"><span>AI name judge</span>${check(d.system.aiJudge)}</div><div class="ad-row"><span>Cloud storage</span>${check(d.system.cloudStorage)}</div><div class="ad-row"><span>Sign-up bot check</span>${check(d.system.turnstile)}</div>
         <div class="ad-row"><span>Email</span>${check(d.system.email)}</div><div class="ad-row"><span>Stripe (Bloom payments)</span>${check(d.system.stripe)}</div></div>
+      <div class="setting-group ad-update-publisher"><h4 class="setting-head">Website update publisher</h4>
+        <p class="muted small">Write the update announcement before publishing. Everyone online receives it immediately; people who are offline see it when they next open Zuno. Publishing the notice does not deploy code by itself.</p>
+        <form id="ad-update-form" class="ad-update-form">
+          <label class="field">Version<input name="version" maxlength="32" value="${esc(d.system.version || '')}" placeholder="0.55.0"></label>
+          <label class="field">Popup title<input name="title" maxlength="100" required placeholder="What's new in Zuno?"></label>
+          <label class="field">Update description<textarea name="summary" maxlength="2000" rows="3" required placeholder="Tell everyone what changed…"></textarea></label>
+          <label class="field">Bug fixes <span class="muted small">(one per line)</span><textarea name="fixes" maxlength="3000" rows="4" placeholder="Fixed messages not loading\nFixed profile frame display"></textarea></label>
+          <button class="btn btn-primary btn-sm" type="submit">Preview &amp; Publish Update</button>
+          <span class="muted small" id="ad-update-status" role="status"></span>
+        </form>
+        ${d.siteUpdate ? `<div class="ad-row"><span>Last announcement: <b>${esc(d.siteUpdate.title)}</b></span><small>${new Date(d.siteUpdate.publishedAt).toLocaleString()}</small></div>` : ''}
+      </div>
       <div class="setting-group"><h4 class="setting-head">Bloom gifting event</h4>
         ${ge ? `<div class="ad-row"><span>${esc(ge.name)}</span><b>${ge.gifts} / ${ge.goal} months</b></div><div class="muted small">${ge.givers?.length || 0} gifters · ends ${fmtTime(ge.endsAt)}</div><button class="btn btn-grey btn-sm" data-ge-stop>End event now</button>`
           : `<form class="ad-ge"><input name="name" maxlength="60" placeholder="Event name" value="Gifting Week"><label>Days<input name="days" type="number" min="1" max="31" value="7"></label><label>Goal (months)<input name="goal" type="number" min="1" max="100000" value="100"></label><button class="btn btn-primary btn-sm">Start event</button></form><p class="muted small">Everyone who gifts Bloom while it runs gets the Gift Giver badge.</p>`}</div>
@@ -795,6 +807,19 @@ async function renderAdmin(body, quiet = false) {
     try { await api('PUT', '/api/admin/gift-event', { name: e.target.name.value, days: Number(e.target.days.value), goal: Number(e.target.goal.value) }); toast('Gifting event started'); renderAdmin(body); } catch (err) { toast(err.message, true); }
   });
   $('[data-ge-stop]', body)?.addEventListener('click', () => confirmDialog('End the gifting event?', 'The banner goes away for everyone. Badges already earned stay.', 'End Event', async () => { try { await api('PUT', '/api/admin/gift-event', { stop: true }); renderAdmin(body); } catch (err) { toast(err.message, true); } }));
+  $('#ad-update-form', body)?.addEventListener('submit', async e => {
+    e.preventDefault();
+    const form = e.currentTarget;
+    const payload = { version: form.version.value, title: form.title.value, summary: form.summary.value, fixes: form.fixes.value.split(/\r?\n/).map(x => x.trim()).filter(Boolean) };
+    const preview = `<div class="dialog modal"><h3>Preview website update</h3><h4>${esc(payload.title)}</h4>${payload.version ? `<p class="muted small">Version ${esc(payload.version)}</p>` : ''}<p>${esc(payload.summary).replace(/\n/g, '<br>')}</p>${payload.fixes.length ? `<h4>Bug fixes</h4><ul>${payload.fixes.map(x => `<li>${esc(x)}</li>`).join('')}</ul>` : '<p class="muted small">No bug fixes listed.</p>'}<p class="muted small">This sends the announcement and asks users to refresh. It does not deploy new server code.</p><div class="actions"><button class="btn btn-link" data-a="cancel">Cancel</button><button class="btn btn-primary" data-a="publish">Publish to everyone</button></div></div>`;
+    const ov = openLayer(preview);
+    $('[data-a="cancel"]', ov).addEventListener('click', dismissLayer);
+    $('[data-a="publish"]', ov).addEventListener('click', async () => {
+      const button = $('[data-a="publish"]', ov); button.disabled = true; button.textContent = 'Publishing…';
+      try { await api('POST', '/api/admin/site-update', payload); dismissLayer(); toast('Update announcement sent to everyone'); renderAdmin(body); }
+      catch (err) { button.disabled = false; button.textContent = 'Publish to everyone'; toast(err.message, true); }
+    });
+  });
 }
 
 // ======================= in-game overlay (desktop app) =======================
@@ -831,3 +856,26 @@ renderVoiceSettings = async function (body, ...a) {
   $('#ov-corner', g).addEventListener('change', save);
   return r;
 };
+
+// ======================= website update announcements =======================
+let shownSiteUpdate27 = '';
+function showSiteUpdate27(update) {
+  if (!update?.id || update.id === shownSiteUpdate27) return;
+  shownSiteUpdate27 = update.id;
+  try { if (localStorage.getItem('zuno_site_update_seen') === update.id) return; } catch {}
+  const fixes = Array.isArray(update.fixes) ? update.fixes : [];
+  const ov = openLayer(`<div class="dialog modal site-update-modal"><div class="site-update-mark">✦</div><h3>${esc(update.title || 'Zuno has been updated')}</h3>${update.version ? `<p class="muted small">Version ${esc(update.version)}</p>` : ''}<p>${esc(update.summary || '').replace(/\n/g, '<br>')}</p>${fixes.length ? `<h4>Bug fixes</h4><ul>${fixes.map(x => `<li>${esc(x)}</li>`).join('')}</ul>` : ''}<p class="muted small">Refresh Zuno to load the latest website files.</p><div class="actions"><button class="btn btn-link" data-a="later">Later</button><button class="btn btn-primary" data-a="refresh">Refresh Zuno</button></div></div>`);
+  $('[data-a="later"]', ov).addEventListener('click', () => { try { localStorage.setItem('zuno_site_update_seen', update.id); } catch {} dismissLayer(); });
+  $('[data-a="refresh"]', ov).addEventListener('click', () => { try { localStorage.setItem('zuno_site_update_seen', update.id); } catch {} location.reload(); });
+}
+onLive26?.('site-update', update => showSiteUpdate27(update));
+// Catch announcements published while this account was offline or its live stream was disconnected.
+// (Online people get them instantly over the live connection, so this only checks every 10 minutes.)
+setInterval(async () => {
+  if (!state.me || document.hidden) return;
+  try { const r = await api('GET', '/api/site-update'); if (r.update) showSiteUpdate27(r.update); } catch {}
+}, 600000);
+setTimeout(async () => {
+  if (!state.me) return;
+  try { const r = await api('GET', '/api/site-update'); if (r.update) showSiteUpdate27(r.update); } catch {}
+}, 4000);

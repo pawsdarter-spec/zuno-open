@@ -507,7 +507,7 @@ function connect() {
   es.addEventListener('user', e => onUser(JSON.parse(e.data)));
   es.addEventListener('inbox', e => onInbox(JSON.parse(e.data)));
   es.addEventListener('me', e => { onMe(JSON.parse(e.data)); renderSuspendBanner(); });
-  es.addEventListener('reports', () => { if ($('.settings-nav [data-s="moderation"].active')) renderModeration($('#settings-body')); else api('GET', '/api/mod/reports?status=open').then(r => setModBadge(r.counts.open)).catch(() => {}); });
+  es.addEventListener('reports', () => { if ($('.settings-nav [data-s="moderation"].active')) renderModeration($('#settings-body')); else if ($('.settings-nav [data-s="employee"].active')) renderEmployeeDashboard($('#settings-body')); else api('GET', '/api/mod/reports?status=open').then(r => setModBadge(r.counts.open)).catch(() => {}); });
   es.addEventListener('bugs', () => { const b = $('.settings-nav [data-s="buginbox"].active'); if (b) renderBugInbox($('#settings-body'), $('.bug-filter .on')?.dataset.filter || 'new'); });
   es.addEventListener('refresh', e => refresh(JSON.parse(e.data || '{}')));
   es.addEventListener('message', e => onMessage(JSON.parse(e.data)));
@@ -1620,10 +1620,9 @@ async function openProfile(id) {
     outgoing: `<button class="btn btn-grey" disabled>Request Sent</button><button class="btn btn-grey" data-a="reject">Cancel</button>`,
     none: `<button class="btn btn-green" data-a="add" title="Send Friend Request">Add Friend</button>`,
   }[rel];
-  const staffTools = state.me.isStaff && !u.system && !u.bot ? (state.me.isFounder || u.username !== FOUNDER_NAME ? '<button class="pc-staff" data-a="badges">Manage badges</button>' : '') : '';
   const giftBtn = !u.system && !u.bot && u.id !== state.me.id && (rel === 'friend' || state.me.isFounder) ? '<button class="pc-gift" data-a="gift"><img src="/badges/bloom-new.png" alt="">Gift Bloom</button>' : '';
   const ov = openLayer('<div class="modal"></div>');
-  mountCard($('.modal', ov), profileCard(u, { size: 80, actions: actions + giftBtn + staffTools }), { autoplaySound: true, source: 'popout' });
+  mountCard($('.modal', ov), profileCard(u, { size: 80, actions: actions + giftBtn }), { autoplaySound: true, source: 'popout' });
 
   const on = (a, fn) => $(`[data-a=${a}]`, ov)?.addEventListener('click', () => { closeLayer(); fn(); });
   on('edit', () => openSettings('profile'));
@@ -1632,32 +1631,9 @@ async function openProfile(id) {
   on('accept', () => acceptRequest(req.id));
   on('reject', () => rejectRequest(req.id));
   on('add', () => sendRequest(u.username));
-  on('badges', () => openBadgeManager(u));
   on('gift', () => openBloomGift(u));
   on('resetlink', () => openResetLink(u));
   if (typeof wireProfileExtras === 'function') wireProfileExtras(ov, u);
-}
-
-// Staff only: give or take away badges. The founder's own badges, and the Staff badge, are the
-// founder's to change (the server checks this too).
-const FOUNDER_NAME = 'syl';
-function openBadgeManager(u) {
-  const ov = openLayer(`<div class="dialog modal badge-manager">
-    <h3>Badges for ${esc(u.displayName)}</h3>
-    <p class="muted" style="margin:0 0 8px">Changes show on their profile right away.</p>
-    ${Object.entries(BADGE_INFO).filter(([k]) => !k.startsWith('bloom') && (k !== 'staff' || state.me.isFounder || (state.me.badges || []).includes('zuno_manager')) && (k !== 'zuno_manager' || state.me.isFounder)).map(([k, b]) => `<label class="setting-row">
-      <span class="bm-ico">${b.svg}</span>
-      <div style="flex:1"><div class="setting-title">${b.label}</div><div class="setting-desc">${b.desc}</div></div>
-      <input type="checkbox" class="switch" data-badge="${k}"${(u.badges || []).includes(k) ? ' checked' : ''}></label>`).join('')}
-    <div class="actions"><button class="btn btn-primary" data-a="done">Done</button></div></div>`);
-  $$('[data-badge]', ov).forEach(cb => cb.addEventListener('change', async () => {
-    try {
-      const { user: nu } = await api('POST', `/api/users/${u.id}/badges`, { badge: cb.dataset.badge, on: cb.checked });
-      state.users[nu.id] = { ...state.users[nu.id], ...nu }; u = state.users[nu.id];
-      if (cb.checked) burst(cb, 10);
-    } catch (e) { toast(e.message, true); cb.checked = !cb.checked; }
-  }));
-  $('[data-a=done]', ov).addEventListener('click', dismissLayer);
 }
 
 // ======================= layers: overlays, menus, dialogs =======================
@@ -1833,7 +1809,7 @@ function openSettings(section = 'account') {
       <button data-s="developer">Developer</button>
       <h5 style="margin-top:12px">Help</h5>
       <button data-s="bugs">Report a Bug</button>
-      ${state.me.isStaff ? '<button data-s="buginbox">Bug Reports</button><button data-s="moderation">Moderation</button>' : ''}
+      ${state.me.isStaff ? '<button data-s="buginbox">Bug Reports</button><button data-s="employee">Employee Dashboard</button><button data-s="moderation">Moderation</button>' : ''}
       <div class="sep"></div>
       <button data-s="switch47">Switch Accounts</button>
       <button data-s="logout" style="color:#fa777c">Log Out</button>
@@ -1885,7 +1861,8 @@ function showSettingsSection(section) {
   if (section === 'standing') { settingsDraft = null; return renderStanding(body); }
   if (section === 'privacy') { settingsDraft = null; return renderPrivacy(body); }
   if (section === 'developer') { settingsDraft = null; return renderDeveloper(body); }
-  if (section === 'moderation') { settingsDraft = null; return renderModeration(body); }
+  if (section === 'employee') { settingsDraft = null; return renderEmployeeDashboard(body); }
+  if (section === 'moderation') { settingsDraft = null; return renderModerationGated(body); }
   if (section === 'bugs') { settingsDraft = null; return renderBugReport(body); }
   if (section === 'buginbox') { settingsDraft = null; return renderBugInbox(body); }
   if (section === 'account') {

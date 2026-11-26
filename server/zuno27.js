@@ -809,7 +809,29 @@ module.exports = function zuno27(z) {
       topServers,
       system: { version: z.PKG?.version, uptime: Math.round(process.uptime()), memoryMB: Math.round(mem.rss / 1048576), heapMB: Math.round(mem.heapUsed / 1048576), memoryLimitMB: Number(process.env.ZUNO_MEMORY_MB) || 512, storedMessages: storedMessageCount(), logins: Object.keys(data.sessions || {}).length, node: process.version, aiJudge: !!process.env.ANTHROPIC_API_KEY, turnstile: !!(process.env.TURNSTILE_SITE_KEY && process.env.TURNSTILE_SECRET_KEY), cloudStorage: !!process.env.S3_BUCKET, email: !!(process.env.BREVO_API_KEY || process.env.RESEND_API_KEY), stripe: !!process.env.STRIPE_SECRET_KEY },
       giftEvent: data.giftEvent,
+      siteUpdate: data.siteUpdate || null,
     };
+  });
+  // ======================= website update publisher =======================
+  // Publishing sends a durable release notice to every account. The browser shows a
+  // confirmation popup and reloads only after the user chooses Update now.
+  route('GET', '/api/site-update', async () => ({ update: data.siteUpdate || null }));
+  route('POST', '/api/admin/site-update', async ({ me, body }) => {
+    needFounder(me);
+    const title = clean(body.title, 100);
+    const version = clean(body.version, 32);
+    const summary = clean(body.summary, 2000);
+    const fixes = (Array.isArray(body.fixes) ? body.fixes : String(body.fixes || '').split(/\r?\n/))
+      .map(x => clean(x, 240)).filter(Boolean).slice(0, 20);
+    if (!title || !summary) fail(400, 'Add an update title and description before publishing.');
+    const update = {
+      id: newId(), version: version || (z.PKG?.version || 'latest'), title, summary, fixes,
+      publishedAt: Date.now(), publishedBy: me.id,
+    };
+    data.siteUpdate = update;
+    save();
+    for (const id of Object.keys(data.users)) if (!data.users[id]?.system) send(id, 'site-update', update);
+    return { update };
   });
   route('PUT', '/api/admin/gift-event', async ({ me, body }) => {
     needFounder(me);

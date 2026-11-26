@@ -179,3 +179,13 @@ button.ad-row:hover span { text-decoration: underline; }
 .ad-ge label input { width: 110px; }
 .poll.ranked .po-check { width: 21px; height: 21px; font-size: 12px; font-weight: 800; }
 .mkd-cmds + .setting-head, .mk-detail .setting-head { margin-top: 16px; }
+/* Website update publisher and user-facing release popup */
+.ad-update-form { display: grid; gap: 9px; }
+.ad-update-form .field { display: grid; gap: 5px; color: var(--muted); font-size: 13px; }
+.ad-update-form input, .ad-update-form textarea { width: 100%; box-sizing: border-box; border: 1px solid var(--border); border-radius: 9px; background: var(--input); color: var(--text); padding: 9px 10px; font: inherit; }
+.ad-update-form textarea { resize: vertical; }
+.site-update-modal { max-width: 520px; }
+.site-update-modal h3 { margin-top: 4px; }
+.site-update-modal p { white-space: pre-wrap; line-height: 1.55; }
+.site-update-modal li { margin: 5px 0; }
+.site-update-mark { display: grid; place-items: center; width: 42px; height: 42px; border-radius: 13px; background: color-mix(in srgb, var(--brand) 16%, transparent); color: var(--brand); font-size: 24px; }

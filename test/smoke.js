@@ -30,7 +30,7 @@ const fakeAi = http.createServer((req, res) => {
 
 function boot() {
   return new Promise((resolve, reject) => {
-    server = spawn(process.execPath, [path.join(__dirname, '..', 'server', 'index.js')], { env: { ...process.env, PORT, ZUNO_DATA_DIR: DIR, STRIPE_SECRET_KEY: '', RESEND_API_KEY: '', ZUNO_STAFF_SETUP: '1', ZUNO_TRUST_XFF: '1', ZUNO_SHIELD_MAX: '100000', ANTHROPIC_API_KEY: 'test-key', ANTHROPIC_BASE_URL: `http://localhost:${AI_PORT}`, ZUNO_PUSH_TEST_URL: `http://localhost:${AI_PORT + 1}/push/` }, stdio: ['ignore', 'pipe', 'pipe'] });
+    server = spawn(process.execPath, [path.join(__dirname, '..', 'server', 'index.js')], { env: { ...process.env, PORT, ZUNO_DATA_DIR: DIR, STRIPE_SECRET_KEY: '', RESEND_API_KEY: '', ZUNO_STAFF_SETUP: '1', ZUNO_TRUST_XFF: '1', ZUNO_SHIELD_MAX: '100000', ANTHROPIC_API_KEY: 'test-key', ANTHROPIC_BASE_URL: `http://localhost:${AI_PORT}`, ZUNO_PUSH_TEST_URL: `http://localhost:${AI_PORT + 1}/push/`, ZUNO_STAFF_DASHBOARD_PASSWORD: 'ZUNO_TEST_STAFF_PASSWORD' }, stdio: ['ignore', 'pipe', 'pipe'] });
     let out = '';
     server.stdout.on('data', d => { out += d; if (out.includes('Zuno is running')) resolve(); });
     server.stderr.on('data', d => process.stderr.write(d));
@@ -52,6 +52,7 @@ async function api(method, url, body, token, raw) {
 }
 const ok = async (...a) => { const r = await api(...a); if (r.status !== 200) throw new Error(`${a[0]} ${a[1]} -> ${r.status} ${r.error}`); return r; };
 const no = async (status, ...a) => { const r = await api(...a); assert.strictEqual(r.status, status, `${a[0]} ${a[1]} should be ${status}, got ${r.status} ${r.error || ''}`); return r; };
+const unlockStaff = async token => ok('POST', '/api/employee/auth', { password: 'ZUNO_TEST_STAFF_PASSWORD' }, token);
 
 const steps = [];
 const step = (name, fn) => steps.push([name, fn]);
@@ -64,6 +65,7 @@ step('register and log in', async () => {
   // (security) Staff tools that can take over or delete accounts need a fresh "Confirm it's you".
   await no(403, 'POST', `/api/mod/users/x/reset-link`, {}, ctx.veil);
   await ok('POST', '/api/me/reauth', { password: 'secret12' }, ctx.veil);
+  await unlockStaff(ctx.veil);
   const login = await ok('POST', '/api/login', { login: 'alice', password: 'secret12' });
   ctx.alice2 = login.token;
   await no(401, 'POST', '/api/login', { login: 'alice', password: 'nope' });
@@ -646,8 +648,18 @@ step('0.21: name filter, profile moderation, a Zuno ban deletes the account, ava
   await no(403, 'POST', `/api/mod/users/${tid}/profile`, { parts: ['bio'] }, ctx.alice);
   const after = (await ok('POST', `/api/mod/users/${tid}/profile`, { parts: ['bio'], widgets: [1], note: 'test' }, ctx.veil)).user;
   assert.strictEqual(after.bio, ''); assert.deepStrictEqual(after.widgets.map(w => w.title), ['Hi']);
-  // Short custom invites work.
+  // Custom invites unlock at 10 members and remain available once unlocked.
   const { server } = await ok('POST', '/api/servers', { name: 'Owls' }, t);
+  await no(403, 'PATCH', `/api/servers/${server.id}`, { vanity: 'owl' }, t);
+  const mainInvite = (await ok('GET', `/api/servers/${server.id}`, null, t)).invite;
+  for (let i = 0; i < 9; i++) {
+    const member = await signup({ email: `owl${i}@test.dev`, username: `owlmember${i}`, password: 'secret12' });
+    assert.strictEqual(member.status, 200);
+    await ok('POST', `/api/invites/${mainInvite}/join`, {}, member.token);
+  }
+  const reachedTen = (await ok('GET', `/api/servers/${server.id}`, null, t)).server;
+  assert.strictEqual(reachedTen.memberCount, 10);
+  assert.strictEqual(reachedTen.vanityUnlocked, true);
   await ok('PATCH', `/api/servers/${server.id}`, { vanity: 'owl' }, t);
   await ok('POST', '/api/invites/owl/join', {}, ctx.alice);
   // A Zuno ban deletes the account.
@@ -890,6 +902,13 @@ step('0.27: status schedules, Polls 2.0, games, Discover home, server appeals, m
   await no(403, 'GET', '/api/admin/dashboard', null, ctx.alice);
   const dash = await ok('GET', '/api/admin/dashboard', null, ctx.veil);
   assert.ok(dash.people.total >= 3 && dash.activity.messages.length === 14 && dash.people.signups.length === 30);
+  await no(403, 'POST', '/api/admin/site-update', { title: 'Not allowed', summary: 'Nope' }, ctx.alice);
+  const published = await ok('POST', '/api/admin/site-update', { version: '0.55.0', title: 'A new Zuno update', summary: 'New features are here.', fixes: ['Fixed a loading issue'] }, ctx.veil);
+  assert.strictEqual(published.update.version, '0.55.0');
+  assert.strictEqual(published.update.fixes[0], 'Fixed a loading issue');
+  const latestUpdate = await ok('GET', '/api/site-update', null, ctx.bob);
+  assert.strictEqual(latestUpdate.update.id, published.update.id);
+  assert.strictEqual((await ok('GET', '/api/admin/dashboard', null, ctx.veil)).siteUpdate.id, published.update.id);
   await ok('PUT', '/api/admin/gift-event', { name: 'Test Gifting', days: 3, goal: 10 }, ctx.veil);
   assert.strictEqual((await ok('GET', '/api/gift-event', null, ctx.bob)).event.name, 'Test Gifting');
   await ok('PUT', '/api/admin/gift-event', { stop: true }, ctx.veil);
@@ -1085,6 +1104,7 @@ step('0.34: Veteran Bug Hunter, founder-only Bloom, staff badges, veil reserved'
   assert.ok(p.senior && !p.veteran && p.veteranNeed === 15 && p.need === 15 && p.left === 10, JSON.stringify(p));
   // other staff can't gift Bloom or hand out badges any more; the founder can
   await ok('POST', `/api/users/${ctx.aliceId}/badges`, { badge: 'staff', on: true }, ctx.veil);
+  await unlockStaff(ctx.alice);
   await no(403, 'POST', `/api/users/${ctx.bobId}/bloom`, { days: 7 }, ctx.alice);
   // (0.37) staff can manage other people's badges, but not the Staff badge or the founder's badges
   await ok('POST', `/api/users/${ctx.bobId}/badges`, { badge: 'creator_star', on: true }, ctx.alice);

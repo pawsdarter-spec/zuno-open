@@ -98,6 +98,76 @@ step('event stream: one-use tickets, no login token in the URL, bots still conne
   assert.ok([401, 403].includes((await request('POST', '/api/events/ticket', { headers: { Authorization: `Bot ${bot}` }, body: {} })).res.status), "bots don't use tickets");
 });
 
+step('Employee Dashboard: staff-only profile, badge, naming and restriction controls', async () => {
+  const staff = await register('employee_staff');
+  const target = await register('employee_target');
+  const outsider = await register('employee_outsider');
+  assert.equal((await request('GET', '/api/employee/users?q=employee', { token: outsider.token })).res.status, 403, 'non-staff cannot search employee users');
+  assert.equal((await request('GET', '/api/employee/users?q=employee', { token: staff.token })).res.status, 403, 'staff must unlock the dashboard before using staff APIs');
+  assert.equal((await request('POST', `/api/users/${target.id}/badges`, { token: staff.token, body: { badge: 'artist', on: true } })).res.status, 403, 'badge API requires the dashboard unlock');
+  assert.equal((await request('POST', `/api/mod/users/${target.id}/profile`, { token: staff.token, body: { parts: ['bio'] } })).res.status, 403, 'moderation API requires the dashboard unlock');
+  assert.equal((await request('POST', '/api/employee/auth', { token: staff.token, body: { password: 'incorrect-password' } })).res.status, 403, 'incorrect dashboard password is rejected');
+  await ok('POST', '/api/employee/auth', { password: 'ZUNO_TEST_STAFF_PASSWORD' }, staff.token);
+  const found = await ok('GET', '/api/employee/users?q=employee', null, staff.token);
+  assert.ok(found.users.some(u => u.id === target.id));
+  const changed = await ok('POST', `/api/employee/users/${target.id}/profile`, { username: 'employee_renamed', displayName: 'Employee Renamed', pronouns: 'they/them' }, staff.token);
+  assert.equal(changed.user.username, 'employee_renamed');
+  assert.equal(changed.user.pronouns, 'they/them');
+  await ok('POST', `/api/users/${target.id}/badges`, { badge: 'artist', on: true }, staff.token);
+  const badged = await ok('GET', `/api/users/${target.id}`, null, staff.token);
+  assert.ok(badged.user.badges.includes('artist'));
+
+  await ok('POST', '/api/employee/policies', { kind: 'username', name: 'held_employee', mode: 'hold' }, staff.token);
+  const held = await request('POST', '/api/register', { headers: { 'X-Forwarded-For': '10.8.0.250' }, body: { email: 'held_employee@test.dev', username: 'held_employee', password: 'testing123' } });
+  assert.equal(held.res.status, 409, 'held usernames cannot be registered');
+  await ok('POST', '/api/employee/policies', { kind: 'vanity', name: 'held-vanity', mode: 'hold' }, staff.token);
+  const { server: owned } = await ok('POST', '/api/servers', { name: 'Employee Test Server' }, target.token);
+  const heldVanity = await request('PATCH', `/api/servers/${owned.id}`, { token: target.token, body: { vanity: 'held-vanity' } });
+  assert.equal(heldVanity.res.status, 409, 'held server vanities cannot be claimed');
+  const lockedVanity = await request('PATCH', `/api/servers/${owned.id}`, { token: target.token, body: { vanity: 'employee-server' } });
+  assert.equal(lockedVanity.res.status, 403, 'custom invite links are locked below 10 members');
+  const inviteCode = (await ok('GET', `/api/servers/${owned.id}`, null, target.token)).invite;
+  for (let i = 0; i < 9; i++) {
+    const member = await register(`vanity_member_${i}`);
+    await ok('POST', `/api/invites/${inviteCode}/join`, {}, member.token);
+  }
+  const unlockedServer = (await ok('GET', `/api/servers/${owned.id}`, null, target.token)).server;
+  assert.equal(unlockedServer.memberCount, 10, 'the server reaches the 10-member threshold');
+  assert.equal(unlockedServer.vanityUnlocked, true, 'the server summary reports the vanity unlock');
+  const vanitySaved = await ok('PATCH', `/api/servers/${owned.id}`, { vanity: 'employee-server' }, target.token);
+  assert.equal(vanitySaved.server.vanity, 'employee-server', 'custom invite links can be set at 10 members');
+
+  const { server: dmServer } = await ok('POST', '/api/servers', { name: 'DM-only Test Server' }, target.token);
+  const serverInfo = await ok('GET', `/api/servers/${dmServer.id}`, null, target.token);
+  const textChannel = serverInfo.server.channels.find(c => c.type === 'text');
+  const voice = (await ok('POST', `/api/servers/${dmServer.id}/channels`, { name: 'Voice Test', type: 'voice' }, target.token)).channel;
+  const parentMessage = (await ok('POST', `/api/channels/${textChannel.id}/messages`, { content: 'thread parent' }, target.token)).message;
+  const thread = (await ok('POST', `/api/channels/${textChannel.id}/messages/${parentMessage.id}/thread`, { name: 'Thread before restriction' }, target.token)).thread;
+  await ok('POST', '/api/friends/requests', { username: 'employee_staff' }, target.token);
+  await ok('POST', '/api/friends/requests', { username: 'employee_renamed' }, staff.token); // reciprocal request accepts the pending one
+  await ok('POST', `/api/employee/users/${target.id}/restrictions`, { dmOnly: true }, staff.token);
+  const blockedPost = await request('POST', `/api/channels/${textChannel.id}/messages`, { token: target.token, body: { content: 'should not post' } });
+  assert.equal(blockedPost.res.status, 403, 'DM-only users cannot post in server channels');
+  const blockedThread = await request('POST', `/api/threads/${thread.id}/messages`, { token: target.token, body: { content: 'thread bypass' } });
+  assert.equal(blockedThread.res.status, 403, 'DM-only users cannot post in server threads');
+  const blockedVoice = await request('POST', '/api/rtc/join', { token: target.token, body: { room: `vc:${voice.id}` } });
+  assert.equal(blockedVoice.res.status, 403, 'DM-only users cannot join server voice calls');
+  await ok('POST', `/api/dms/${staff.id}/messages`, { content: 'DM still works' }, target.token);
+  const dmRoom = `dm:${[target.id, staff.id].sort().join(':')}`;
+  await ok('POST', '/api/rtc/join', { room: dmRoom }, target.token);
+  await ok('POST', '/api/rtc/leave', { room: dmRoom }, target.token);
+  await ok('POST', `/api/employee/users/${target.id}/restrictions`, { muteDays: 1 }, staff.token);
+  const mutedDM = await request('POST', `/api/dms/${staff.id}/messages`, { token: target.token, body: { content: 'muted message' } });
+  assert.equal(mutedDM.res.status, 403, 'muted users cannot send DMs');
+  const standing = await ok('GET', '/api/me/standing', null, target.token);
+  assert.equal(standing.dmOnly, true);
+  assert.ok(standing.mutedUntil);
+  await ok('POST', `/api/employee/users/${target.id}/restrictions`, { muteDays: 0, dmOnly: false }, staff.token);
+  const standingAfter = await ok('GET', '/api/me/standing', null, target.token);
+  assert.equal(standingAfter.dmOnly, false);
+  assert.equal(standingAfter.mutedUntil, null);
+});
+
 step('attachments: only people who can see the message can open the file', async () => {
   const owner = await register('auditowner');
   const friend = await register('auditfriend');
@@ -158,7 +228,7 @@ step('avatars and other public pictures stay public', async () => {
 
 async function main() {
   server = spawn(process.execPath, [path.join(__dirname, '..', 'server', 'index.js')], {
-    env: { ...process.env, PORT: String(PORT), ZUNO_DATA_DIR: DIR, STRIPE_SECRET_KEY: '', RESEND_API_KEY: '', ZUNO_STAFF_SETUP: '1', ZUNO_TRUST_XFF: '1', TURNSTILE_SITE_KEY: '', TURNSTILE_SECRET_KEY: '', ZUNO_REQUIRE_TURNSTILE: '', ANTHROPIC_API_KEY: '' },
+    env: { ...process.env, PORT: String(PORT), ZUNO_DATA_DIR: DIR, STRIPE_SECRET_KEY: '', RESEND_API_KEY: '', ZUNO_STAFF_SETUP: '1', ZUNO_STAFF: 'employee_staff', ZUNO_TRUST_XFF: '1', TURNSTILE_SITE_KEY: '', TURNSTILE_SECRET_KEY: '', ZUNO_REQUIRE_TURNSTILE: '', ANTHROPIC_API_KEY: '', ZUNO_STAFF_DASHBOARD_PASSWORD: 'ZUNO_TEST_STAFF_PASSWORD' },
     stdio: ['ignore', 'pipe', 'pipe'],
   });
   let output = '';

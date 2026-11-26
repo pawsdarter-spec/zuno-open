@@ -116,7 +116,7 @@ async function drawStats43(sec) {
   sec.hidden = false;
   sec.innerHTML = `<h5>Your profile <span class="muted small">only you see this</span></h5>
     <div class="pf43-statrow">
-      <div><b>${s.week}</b><small>views this week${diff !== null ? ` <i class="${diff >= 0 ? 'up' : 'down'}">${diff >= 0 ? '+' : ''}${diff}%</i>` : ''}</small></div>
+      <div><b>${s.totalViews ?? s.week}</b><small>profile views total · ${s.week} this week${diff !== null ? ` <i class="${diff >= 0 ? 'up' : 'down'}">${diff >= 0 ? '+' : ''}${diff}%</i>` : ''}</small></div>
       <div><b>${s.likes}</b><small>likes</small></div>
       <div><b>${s.comments}</b><small>comments</small></div>
     </div>
@@ -538,19 +538,30 @@ document.addEventListener('click', e => {
 const SCAM43 = /(free\s+(nitro|bloom|robux|gift|skins?|v-?bucks)|claim\s+(your|a|the)\s+(gift|prize|reward|nitro|bloom)|steam\s+gift|(\x64iscord|nitro|bloom)[\s.-]*gift|airdrop|you\s+(have\s+)?won\s+(a|an|\$)|gift\s*card\s+giveaway|scan\s+(this|the)\s+qr|verify\s+your\s+account\s+(here|now)|double\s+your\s+(money|crypto|bitcoin))/i;
 function markScams43() {
   const box = $('#messages');
-  if (!box) return;
-  for (const row of $$('.msg:not([data-sc43])', box)) {
+  const conv = activeConv();
+  const messages = state.convos[conv]?.messages;
+  const me = state.me;
+  if (!box || !messages?.length || !me) return;
+
+  // Build one lookup for this pass. The old implementation searched the full message array
+  // separately for every visible row, making a long chat increasingly expensive (O(rows × msgs)).
+  const pending = $$('.msg:not([data-sc43])', box);
+  if (!pending.length) return;
+  const byId = new Map(messages.map(m => [String(m.id), m]));
+  const friends = new Set(state.friends || []);
+  for (const row of pending) {
     row.dataset.sc43 = '1';
-    const conv = activeConv(), m = state.convos[conv]?.messages.find(x => x.id === row.dataset.id);
-    if (!m || m.authorId === state.me.id || !m.content || !SCAM43.test(m.content)) continue;
+    const m = byId.get(String(row.dataset.id));
+    if (!m || m.authorId === me.id || !m.content || !SCAM43.test(m.content)) continue;
     const au = user(m.authorId);
-    if (au?.system || au?.isStaff || state.friends?.includes(m.authorId)) continue;
+    if (au?.system || au?.isStaff || friends.has(m.authorId)) continue;
     $('.content', row)?.insertAdjacentHTML('afterend', `<div class="scam43">${uiIcon('warning')}<span>This looks like a common scam. Zuno and Zuno Staff never give away Bloom or prizes in DMs, and never ask for your password or a QR scan.</span></div>`);
   }
 }
 const _renderMessages431 = renderMessages;
+// Message rendering is the source of truth: scan newly rendered rows once instead of waking up
+// every two seconds to inspect the chat even when nothing has changed.
 renderMessages = function (...a) { const r = _renderMessages431(...a); try { markScams43(); } catch {} return r; };
-setInterval(() => { try { markScams43(); } catch {} }, 2000);
 
 // ======================= 0.43.1: old replies, windows and memory =======================
 // Clicking a reply to a message from long ago loads back until it's found, then jumps there.

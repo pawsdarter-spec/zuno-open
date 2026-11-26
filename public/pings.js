@@ -137,6 +137,7 @@ async function renderStanding(body) {
       <div><h3>${s.title}</h3><p>${s.text}</p>
         ${st.suspendedUntil ? `<p class="sc-until">${st.status === 'banned' ? 'Banned' : `Ends ${esc(new Date(st.suspendedUntil).toLocaleString())}`}</p>` : ''}</div>
     </div>
+    ${(st.mutedUntil || st.dmOnly) ? `<div class="bug-row" style="margin-top:12px"><div><b>Additional account restrictions</b>${st.mutedUntil ? `<div class="muted small">Muted until ${esc(new Date(st.mutedUntil).toLocaleString())}</div>` : ''}${st.dmOnly ? '<div class="muted small">Limited to direct messages and DM calls; server posting and voice calls are disabled.</div>' : ''}</div></div>` : ''}
     <div class="standing-meter" aria-label="Standing level">${['All good', 'Warned', 'Limited', 'Banned'].map((l, i) => `<div class="sm-step${i === s.level ? ' on' : ''}${i < s.level ? ' past' : ''}"><i></i><span>${l}</span></div>`).join('')}</div>
     <h4 class="setting-head" style="margin-top:26px">History</h4>
     ${st.history.length ? st.history.map(h => `<div class="bug-row"><div style="flex:1"><b>${esc(STANDING_ACTION[h.action] || h.action)}</b>${h.days ? ` for ${h.days} day${h.days > 1 ? 's' : ''}` : ''}

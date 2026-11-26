@@ -782,7 +782,7 @@ route('POST', '/api/register', async ({ body, req, res }) => {
   await judgeText({ username, 'display name': clean(body.displayName, 32) });
   if (Object.values(data.users).some(u => u.email === email)) fail(409, 'An account with that email already exists.');
   if ((data.bannedEmails || []).includes(sha(email))) fail(403, 'That email belongs to an account that was banned from Zuno.');
-  if (CONFIG.RESERVED_USERNAMES.includes(username) || (STAFF_NAMES.has(username) && process.env.ZUNO_STAFF_SETUP !== '1') || Object.values(data.users).some(u => u.username === username) || (data.heldNames?.[username]?.until > Date.now())) fail(409, 'That username is already taken.');
+  if (CONFIG.RESERVED_USERNAMES.includes(username) || (STAFF_NAMES.has(username) && process.env.ZUNO_STAFF_SETUP !== '1') || Object.values(data.users).some(u => u.username === username) || (data.heldNames?.[username]?.until > Date.now()) || data.employeePolicies?.usernames?.[username]) fail(409, 'That username is unavailable.');
   const id = newId();
   data.users[id] = {
     id, username, email,
@@ -1375,6 +1375,7 @@ function channelConvFor(sv, ch, me = null) {
     peek: () => data.channelMessages[ch.id],
     idFor: () => key,
     canWrite: () => {
+      if (me?.dmOnly) fail(403, 'This account is limited to direct messages and cannot post in servers.');
       if (!perms.has('send_messages')) fail(403, ch.readOnly ? 'This is an announcement channel. Only people allowed to post can send messages here.' : "You don't have permission to send messages in this channel.");
       if (ch.slowmode && !perms.has('bypass_slowmode') && !perms.has('manage_messages') && !perms.has('manage_channels')) {
         const k = ch.id + '|' + me.id, wait = (lastPost.get(k) || 0) + ch.slowmode * 1000 - Date.now();
@@ -1580,6 +1581,7 @@ for (const [prefix, resolve] of [['/api/dms/:target', dmConv], ['/api/channels/:
 
   route('POST', `${prefix}/messages`, async ({ me, params, body }) => {
     const conv = resolve(me, params.target);
+    if ((me.mutedUntil || 0) > Date.now()) fail(403, `Your account is muted until ${new Date(me.mutedUntil).toLocaleString()}.`);
     const mode = conv.canWrite();
     const content = cleanContent(body, me);
     const gif = cleanGif(body.gif);
@@ -2257,7 +2259,7 @@ route('GET', '/api/me/standing', async ({ me }) => {
     .map(e => ({ action: e.action, at: e.at, note: e.note || '', days: e.days })).reverse().slice(0, 50);
   const recentWarnings = history.filter(e => e.action === 'warn' && e.at > Date.now() - 90 * 864e5).length; // warnings fade after 90 days
   const status = me.suspendedUntil >= FOREVER ? 'banned' : isSuspended(me) ? 'timeout' : recentWarnings ? 'warned' : 'good';
-  return { status, suspendedUntil: isSuspended(me) ? me.suspendedUntil : null, warnings: recentWarnings, history };
+  return { status, suspendedUntil: isSuspended(me) ? me.suspendedUntil : null, warnings: recentWarnings, mutedUntil: (me.mutedUntil || 0) > Date.now() ? me.mutedUntil : null, dmOnly: !!me.dmOnly, history };
 });
 
 // ---- find people on Zuno ----
@@ -2661,13 +2663,15 @@ function ensureOfficialMembers() {
 const DISCOVERY_TAGS = ['Gaming', 'Music', 'Art', 'Anime', 'Study', 'Tech', 'Memes', 'Chill', 'Creators', 'Roleplay', 'Sports', 'Movies & TV', 'Books', 'Science', 'Community', 'Language'];
 function serverSummary(sv, me) {
   ensureRoles(sv);
+  // Custom invite links unlock permanently once a server reaches 10 members.
+  if (!sv.vanityUnlockedAt && sv.members.length >= 10) { sv.vanityUnlockedAt = Date.now(); save(); }
   const visible = sv.channels.filter(ch => canView(sv, ch, me.id));
   const manageChannels = can(sv, me.id, 'manage_channels');
   const managing = manageChannels || can(sv, me.id, 'manage_roles');
   return {
     id: sv.id, name: sv.name, ownerId: sv.ownerId, icon: sv.icon || null, iconColor: sv.iconColor, official: !!sv.official,
     banner: sv.banner || null, bannerColor: sv.bannerColor || null, accentColor: sv.accentColor || null,
-    description: sv.description || '', tags: sv.tags || [], discoverable: !!sv.discoverable, vanity: sv.vanity || null,
+    description: sv.description || '', tags: sv.tags || [], discoverable: !!sv.discoverable, vanity: sv.vanity || null, vanityUnlocked: !!sv.vanityUnlockedAt, vanityRequiredMembers: 10,
     rulesChannelId: sv.rulesChannelId || null, minAccountAge: sv.minAccountAge || 0, createdAt: sv.createdAt,
     categories: sv.categories.filter(cat => managing || visible.some(c => c.categoryId === cat.id)),
     roles: sv.roles, memberRoles: sv.memberRoles, myPerms: [...basePerms(sv, me.id)],
@@ -2744,6 +2748,8 @@ route('PATCH', '/api/servers/:id', async ({ me, params, body }) => {
     const v = String(body.vanity || '').toLowerCase().trim();
     if (v) {
       if (!/^[a-z0-9-]{3,24}$/.test(v)) fail(400, 'Custom invites use 3–24 letters, numbers and dashes.');
+      if (data.employeePolicies?.vanities?.[v]) fail(409, 'That server vanity is on hold by Zuno staff.');
+      if (!sv.vanityUnlockedAt && sv.members.length < 10) fail(403, `Custom invite links unlock when your server reaches 10 members. You currently have ${sv.members.length}.`);
       if (Object.values(data.servers).some(x => x.id !== sv.id && (x.vanity === v || x.invite === v)) || (sv.invites || []).some(i => i.code === v)) fail(409, 'That custom invite is already taken.');
     }
     sv.vanity = v || null;
@@ -3242,6 +3248,7 @@ function joinServer(sv, me, via) {
     fail(403, `This server only lets in accounts older than ${sv.minAccountAge >= 168 ? 'a week' : sv.minAccountAge >= 24 ? 'a day' : 'an hour'}. Try again later.`);
   }
   sv.members.push(me.id);
+  if (!sv.vanityUnlockedAt && sv.members.length >= 10) sv.vanityUnlockedAt = Date.now();
   if (sv.removedUsers) sv.removedUsers = sv.removedUsers.filter(id => id !== me.id);
   sv.joinedVia ||= {}; sv.joinedVia[me.id] = via;
   me.joinedAt ||= {}; me.joinedAt[sv.id] = Date.now();
@@ -3582,6 +3589,7 @@ function roomAccess(me, roomId) {
     return { kind: 'group', allowed: g.members, group: g };
   }
   if (roomId.startsWith('vc:')) {
+    if (me.dmOnly) fail(403, 'This account is limited to direct-message calls and cannot join server voice calls.');
     const { sv, ch } = findChannel(roomId.slice(3));
     if (!sv || ch.type !== 'voice' || !sv.members.includes(me.id) || !canView(ensureRoles(sv), ch, me.id)) fail(404, 'Voice channel not found.');
     return { kind: 'voice', allowed: sv.members.filter(id => canView(sv, ch, id)), server: sv, channel: ch };
@@ -3692,6 +3700,7 @@ route('POST', '/api/rtc/join', async ({ me, body }) => {
   const roomId = String(body.room || '');
   const access = roomAccess(me, roomId);
   if (roomId.startsWith('vc:')) {
+    if (me.dmOnly) fail(403, 'This account is limited to direct-message calls and cannot join server voice calls.');
     const { sv, ch } = findChannel(roomId.slice(3));
     const inside = roomMembers(roomId);
     if (!can(sv, me.id, 'connect', ch)) fail(403, "You don't have permission to join this voice channel.");
@@ -4225,6 +4234,13 @@ async function handleRequest(req, res) {
       const me = isBotAuth ? botFromToken(authz.slice(4).trim()) : userFromKey(token);
       if (me && rawToken && !isBotAuth && cookieToken(req) !== rawToken) res.setHeader('Set-Cookie', sessionCookie(rawToken, req));
       if (r.auth && !me) fail(401, isBotAuth ? 'That bot token is invalid. Make a new one in Settings > Developer.' : 'Not signed in.');
+      // Employee tools have a second, one-time password unlock in addition to normal staff roles.
+      // Protect every API used by the Employee Dashboard, not just its visible controls.
+      const employeeProtected = (/^\/api\/employee\/(?!auth$)/.test(url.pathname) || /^\/api\/mod\//.test(url.pathname) || /^\/api\/users\/[^/]+\/badges$/.test(url.pathname));
+      if (employeeProtected && me && isStaff(me) && !me.system) {
+        const employeeSession = token && data.sessions[token];
+        if (!employeeSession || typeof employeeSession !== 'object' || !(employeeSession.employeeAuthUntil > Date.now())) fail(403, 'Sign in to the Employee Dashboard to use staff management tools.');
+      }
       if (isBotAuth && me && !botAllowed(req.method, url.pathname)) fail(403, "Bots can't use that part of the API.");
       if (isBotAuth && me) botScope(me, url.pathname);
       if (me && isSuspended(me) && req.method !== 'GET' && !['/api/logout', '/api/rtc/leave', '/api/appeal'].includes(url.pathname) && !url.pathname.endsWith('/read'))
@@ -4308,6 +4324,7 @@ require('./community')(ctx2);
 require('./secure')(ctx2);
 require('./zuno19')(ctx2);
 require('./profilemod')(ctx2);
+require('./employee')(ctx2);
 require('./appeals')(ctx2);
 require('./chatthemes')(ctx2);
 require('./purge')(ctx2);
@@ -4335,6 +4352,7 @@ require('./zuno46').safety(ctx2);
 require('./zuno47')(ctx2);
 require('./zuno50')(ctx2);
 require('./zuno53')(ctx2);
+require('./zuno54')(ctx2);
 
 // Zuno's big lookup tables (users, servers, sessions…) don't inherit JavaScript's built-in object,
 // so an id like "__proto__" or "constructor" finds nothing instead of something unexpected. Done in

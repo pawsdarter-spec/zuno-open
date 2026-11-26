@@ -9,7 +9,7 @@ module.exports = function (z) {
 
   const taken = (name, me) =>
     Object.values(data.users).some(u => u.id !== me.id && u.username === name) ||
-    (data.heldNames[name]?.until > Date.now() && data.heldNames[name].id !== me.id) ||
+    (data.heldNames[name]?.until > Date.now() && data.heldNames[name].id !== me.id) || data.employeePolicies?.usernames?.[name] ||
     z.CONFIG.RESERVED_USERNAMES.includes(name) || (z.STAFF_NAMES.has(name) && !z.STAFF_NAMES.has(me.username));
 
   route('GET', '/api/me/username', async ({ me, query }) => {

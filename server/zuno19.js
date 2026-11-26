@@ -196,6 +196,8 @@ module.exports = function zuno19(z) {
     if (!t || !sv || !ch || !sv.members.includes(me.id) || !z.canView(z.ensureRoles(sv), ch, me.id)) fail(404, 'Thread not found.');
     const perms = z.permsIn(sv, ch, me.id);
     if (write) {
+      if (me.dmOnly) fail(403, 'This account is limited to direct messages and cannot post in servers.');
+      if ((me.mutedUntil || 0) > Date.now()) fail(403, `Your account is muted until ${new Date(me.mutedUntil).toLocaleString()}.`);
       if (!perms.has('send_messages')) fail(403, "You don't have permission to talk in this thread.");
       if (sv.timeouts?.[me.id] > Date.now()) fail(403, "You're timed out in this server.");
       if (t.archived) fail(400, 'This thread is closed. Reopen it to keep talking.');

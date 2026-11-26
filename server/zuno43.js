@@ -229,6 +229,8 @@ module.exports = function (z) {
     lastView.set(k, now);
     if (lastView.size > 50000) lastView.delete(lastView.keys().next().value);
     u.views ||= {};
+    u.profileViewTotal ??= Object.values(u.views).reduce((a, v) => a + v, 0);
+    u.profileViewTotal += 1;
     u.views[day()] = (u.views[day()] || 0) + 1;
     const cutoff = day(now - 60 * 864e5);
     for (const d of Object.keys(u.views)) if (d < cutoff) delete u.views[d];
@@ -236,10 +238,11 @@ module.exports = function (z) {
     return { ok: true };
   });
   route('GET', '/api/me/profile-stats', async ({ me }) => {
+    if (!Number.isFinite(me.profileViewTotal)) { me.profileViewTotal = Object.values(me.views || {}).reduce((a, v) => a + v, 0); save(); }
     const sum = days => Object.entries(me.views || {}).filter(([d]) => d >= day(Date.now() - (days - 1) * 864e5)).reduce((a, [, v]) => a + v, 0);
     const prevWeek = Object.entries(me.views || {}).filter(([d]) => d >= day(Date.now() - 13 * 864e5) && d < day(Date.now() - 6 * 864e5)).reduce((a, [, v]) => a + v, 0);
     const daily = [...Array(14)].map((_, i) => me.views?.[day(Date.now() - (13 - i) * 864e5)] || 0);
-    return { today: sum(1), week: sum(7), month: sum(30), prevWeek, daily, likes: Object.keys(me.likedBy || {}).length, comments: (me.profileComments || []).length };
+    return { today: sum(1), week: sum(7), month: sum(30), totalViews: Number(me.profileViewTotal) || Object.values(me.views || {}).reduce((a, v) => a + v, 0), prevWeek, daily, likes: Object.keys(me.likedBy || {}).length, comments: (me.profileComments || []).length };
   });
 
   // ======================= 0.43.1: security =======================

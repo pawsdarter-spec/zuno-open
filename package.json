@@ -1,7 +1,7 @@
 {
   "name": "zuno",
   "productName": "Zuno",
-  "version": "0.53.0",
+  "version": "0.55.0",
   "description": "Zuno: chat with your friends. Accounts, friends, direct messages and expressive profiles.",
   "author": "Zuno",
   "main": "electron/main.js",
@@ -11,7 +11,7 @@
     "start": "node server/index.js",
     "app": "electron .",
     "dist": "electron-builder",
-    "test": "node test/smoke.js && node test/cloud.js && node test/security.js"
+    "test": "node test/smoke.js && node test/cloud.js && node test/security.js && node test/performance.js && node test/profile-update.js"
   },
   "engines": {
     "node": ">=18"
@@ -59,7 +59,9 @@
     "protocols": [
       {
         "name": "Zuno",
-        "schemes": ["zuno"]
+        "schemes": [
+          "zuno"
+        ]
       }
     ],
     "publish": [

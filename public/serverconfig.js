@@ -417,8 +417,9 @@ function ssAppearance(body, sv) {
       <div class="sv-colors">${['', ...swatches].map(c => `<button type="button" class="sv-color${c === (sv.accentColor || '') ? ' on' : ''}${c ? '' : ' none'}" data-ac="${c}" style="${c ? `background:${c}` : ''}" aria-label="${c || 'Default'}">${c ? '' : '✕'}</button>`).join('')}</div>
     </div>
     <div class="setting-group"><h4 class="setting-head">Custom invite link</h4>
-      <p class="muted small" style="margin:0 0 10px">A short, easy-to-remember invite like <b>zuno.invite/night-owls</b>.</p>
-      <form class="copy-row" id="vanity-form"><span class="vanity-pre">zuno.invite/</span><input name="vanity" maxlength="24" value="${esc(sv.vanity || '')}" placeholder="your-server" autocomplete="off"><button class="btn btn-primary btn-sm">Save</button></form>
+      ${sv.vanityUnlocked || (sv.memberCount || 0) >= 10 ? `<p class="muted small" style="margin:0 0 10px">Your server has unlocked custom invite links. Share a short link like <b>zuno.invite/night-owls</b>.</p>
+      <form class="copy-row" id="vanity-form"><span class="vanity-pre">zuno.invite/</span><input name="vanity" maxlength="24" value="${esc(sv.vanity || '')}" placeholder="your-server" autocomplete="off"><button class="btn btn-primary btn-sm">Save</button></form>` : `<p class="muted small" style="margin:0 0 10px">Custom invite links unlock at <b>10 server members</b>. Invite ${Math.max(0, 10 - (sv.memberCount || 0))} more ${10 - (sv.memberCount || 0) === 1 ? 'member' : 'members'} to unlock your own <b>zuno.invite/your-server</b> link.</p>
+      <div class="copy-row" aria-label="Custom invite locked"><span class="vanity-pre">zuno.invite/</span><input value="Unlocks at 10 members" disabled><button class="btn btn-grey btn-sm" type="button" disabled>Locked</button></div>`}
     </div>`;
   const preview = () => {
     const s = svById(sv.id) || sv;

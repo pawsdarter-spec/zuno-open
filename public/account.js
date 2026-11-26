@@ -158,6 +158,7 @@ const US_WORDS = {
   media: 'profile effects sounds volume autoplay animations gif video',
   privacy: 'privacy safety block blocked message requests spam dms',
   standing: 'standing warnings timeout ban',
+  employee: 'employee staff dashboard users badges profiles pronouns display name username mute ban blacklist hold vanity moderation',
   bloom: 'bloom subscription perks gift premium',
   appearance: 'appearance accent color theme compact cozy text size font bubbles classic reduce motion',
   notifications: 'notifications sound desktop pop-up',
@@ -175,7 +176,7 @@ openSettings = function (section) {
   if (state.me.isStaff && !$('[data-s="setup"]', nav)) {
     const b = document.createElement('button');
     b.dataset.s = 'setup'; b.textContent = 'Setup Status';
-    $('[data-s="moderation"]', nav)?.after(b);
+    $('[data-s="employee"]', nav)?.after(b);
     b.addEventListener('click', () => showSettingsSection('setup'));
   }
   const box = document.createElement('div');

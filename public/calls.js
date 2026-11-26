@@ -1,7 +1,7 @@
 'use strict';
 // Zuno calls: DM voice/video calls, voice channels, and screen sharing.
-// The Zuno server only passes "how to connect" messages along; the audio and
-// video travel directly between the computers in the call (WebRTC).
+// The Zuno server only passes "how to connect" messages along; the audio and video travel between
+// the computers in the call (WebRTC), through the relay when one is set up.
 
 const Calls = (() => {
   // Connection helpers. The server adds a TURN relay when one is set up, so calls work on strict networks too.
@@ -187,10 +187,21 @@ const Calls = (() => {
   // (0.46) Messages to each person go out one after another. Sent all at once, a connection's
   // network paths could arrive before the offer they belong to and were lost, so far-away calls
   // (that need every path) often never connected.
-  const sigQ = new Map();
+  // (0.56) Messages that pile up while one is on its way go together in the next request, so joining
+  // a big call is a handful of requests instead of hundreds (which used to hit Zuno's flood limit and
+  // lose some, leaving you unable to hear some people).
+  const sigQ = new Map(), sigWait = new Map();
   const signal = (to, data) => {
     const room = c.room;
-    const next = (sigQ.get(to) || Promise.resolve()).then(() => (c.room === room ? api('POST', '/api/rtc/signal', { room, to, data }).catch(() => {}) : null));
+    let box = sigWait.get(to);
+    if (box && box.room === room) { box.list.push(data); return box.done; }
+    box = { room, list: [data] };
+    sigWait.set(to, box);
+    const next = (sigQ.get(to) || Promise.resolve()).then(() => new Promise(r => setTimeout(r, 30))).then(() => {
+      if (sigWait.get(to) === box) sigWait.delete(to);
+      return c.room === room ? api('POST', '/api/rtc/signal', box.list.length === 1 ? { room, to, data: box.list[0] } : { room, to, batch: box.list }).catch(() => {}) : null;
+    });
+    box.done = next;
     sigQ.set(to, next);
     next.then(() => { if (sigQ.get(to) === next) sigQ.delete(to); });
     return next;
@@ -431,7 +442,9 @@ const Calls = (() => {
   function makePC(userId, initiator, opts = {}) {
     const old = pcs.get(userId);
     if (old) { old.zunoDead = true; clearTimeout(old.zunoWatch); clearTimeout(old.zunoDrop); old.close(); }
-    const relayOnly = !!opts.relay && hasRelay;
+    // (0.56) With a relay set up, calls always go through it: nobody in a call connects straight to
+    // anyone else's computer, so nobody's network address is shared with the others.
+    const relayOnly = hasRelay;
     const pc = new RTCPeerConnection({ iceServers: ICE, iceTransportPolicy: relayOnly ? 'relay' : 'all', bundlePolicy: 'max-bundle' });
     pc.zunoInit = initiator; pc.zunoRelay = relayOnly;
     pc.zunoCid = opts.cid || Math.random().toString(36).slice(2, 10); // (0.46) which connection a message belongs to
@@ -456,6 +469,7 @@ const Calls = (() => {
         clearTimeout(pc.zunoWatch); clearTimeout(pc.zunoDrop); tries.delete(userId);
         relayStop(userId, true);
         if (c.phase !== 'connected') { c.phase = 'connected'; c.startedAt ||= Date.now(); stopTone(); clearTimeout(ringTimer); render(); }
+        tuneSenders();
       }
       // A short "disconnected" usually fixes itself; if it doesn't within 5s, try to recover.
       if (st === 'disconnected') { clearTimeout(pc.zunoDrop); pc.zunoDrop = setTimeout(() => { if (!pc.zunoDead && pc.connectionState === 'disconnected') recover(userId, pc); }, 5000); }
@@ -668,7 +682,9 @@ const Calls = (() => {
         const threshold = !v.sensAuto ? 1.5 + (Number(v.sens) || 0) * 0.35 : 9;
         if (gate) {
           if (level > threshold) gateOpenAt = Date.now();
-          const open = Date.now() - gateOpenAt < 400;
+          // (0.56) While Zuno is in the background the browser slows this check to about once a second,
+          // so the gate would chop your words: it stays open then, like with the gate off.
+          const open = document.hidden || Date.now() - gateOpenAt < 400;
           if (localAudio) { const want = micLive() && open; if (localAudio.enabled !== want) localAudio.enabled = want; }
           now = open && !muted;
         } else if (localAudio && localAudio.enabled !== micLive()) localAudio.enabled = micLive();
@@ -790,6 +806,7 @@ const Calls = (() => {
       const t = pc.getTransceivers().find(x => x.receiver.track?.kind === 'video');
       if (t) await t.sender.replaceTrack(track);
     }
+    tuneSenders();
   }
   async function toggleCamera(force) {
     const on = force ?? !c.video;
@@ -896,6 +913,23 @@ const Calls = (() => {
         p.encodings = p.encodings?.length ? p.encodings : [{}];
         p.encodings[0].maxBitrate = rate; p.encodings[0].maxFramerate = streamQ.fps;
         p.degradationPreference = smooth ? 'maintain-framerate' : 'maintain-resolution';
+        await t.sender.setParameters(p);
+      } catch {}
+    }
+  }
+  // (0.56) In bigger calls your camera and voice go to everyone separately, so each copy is made
+  // lighter as the call grows: a 6-person call no longer needs 5 full-quality uploads.
+  async function tuneSenders() {
+    const n = pcs.size;
+    const cam = n > 6 ? 180e3 : n > 4 ? 260e3 : n > 2 ? 500e3 : 1.2e6;
+    for (const pc of pcs.values()) for (const t of pc.getTransceivers()) {
+      const tr = t.sender.track;
+      if (!tr || tr === screenTrack) continue;
+      try {
+        const p = t.sender.getParameters();
+        p.encodings = p.encodings?.length ? p.encodings : [{}];
+        if (tr.kind === 'video') { p.encodings[0].maxBitrate = cam; p.encodings[0].scaleResolutionDownBy = n > 4 ? 2 : 1; }
+        else p.encodings[0].maxBitrate = n > 4 ? 32000 : 48000;
         await t.sender.setParameters(p);
       } catch {}
     }
@@ -1040,6 +1074,7 @@ const Calls = (() => {
     }
     if (type === 'rtc-peer-left') { dropPeer(d.userId); if (c.kind !== 'dm') sounds.leave(); render(); if (c.screen) setTimeout(applyStreamEncoding, 500); }
     if (type === 'rtc-peer-joined' && c.screen) setTimeout(applyStreamEncoding, 2500);
+    if (type === 'rtc-peer-joined' || type === 'rtc-peer-left') setTimeout(tuneSenders, 3000);
     if (type === 'rtc-signal') onSignal(d).catch(err => console.warn('call signal', err));
     if (type === 'rtc-relay') relayIn(d);
     if (type === 'rtc-state') { if (!d.screen) hiddenStreams.delete(d.userId); peerStates.set(d.userId, { muted: d.muted, deafened: d.deafened, video: d.video, screen: d.screen }); applyPeerMutes(); render(); }

@@ -245,12 +245,13 @@ module.exports = function (z) {
     const sv = u.serverTag && data.servers[u.serverTag];
     if (!sv?.tag || !sv.members.includes(u.id)) return { serverTag: null }; // null (not missing), so taking a tag off clears it everywhere
     const emojiId = sv.tag.emojiId && (sv.emojis || []).some(e => e.id === sv.tag.emojiId) ? sv.tag.emojiId : null;
-    return { serverTag: { text: sv.tag.text, color: sv.tag.color || null, emoji: emojiId ? null : oneEmoji(sv.tag.emoji) || null, emojiId, serverId: sv.id, server: sv.name } };
+    const emoji = emojiId ? null : oneEmoji(sv.tag.emoji) || null;
+    return { serverTag: { text: sv.tag.text, color: sv.tag.color || null, emoji, emojiId, icon: !emojiId && !emoji ? sv.tag.icon || null : null, serverId: sv.id, server: sv.name } };
   });
   route('PATCH', '/api/servers/:id/tag', async ({ me, params, body }) => {
     const sv = z.getServer(me, params.id);
     z.need(sv, me, 'manage_server');
-    if (body.text === null || body.text === '') delete sv.tag;
+    if (body.text === null || body.text === '') { if (sv.tag?.icon) z.removeUpload(sv.tag.icon); delete sv.tag; }
     else {
       const text = clean(body.text, 10).toUpperCase(); // checked below, not cut short, so "TOOLONG" isn't quietly saved as "TOOL"
       if (!TAG_TEXT.test(text)) fail(400, 'Tags are 2 to 4 letters or numbers.');
@@ -260,7 +261,10 @@ module.exports = function (z) {
       // Or one of this server's own custom emoji (0.30).
       const emojiId = String(body.emojiId || '');
       if (emojiId && !(sv.emojis || []).some(e => e.id === emojiId)) fail(400, "That emoji isn't one of this server's emoji.");
-      sv.tag = { text, ...(tagColor(body.color) ? { color: tagColor(body.color) } : {}), ...(emojiId ? { emojiId } : emoji ? { emoji } : {}) };
+      // (0.56) A tag picture stays unless an emoji replaces it or it's taken off.
+      const icon = !emojiId && !emoji && body.icon !== null && /^\/uploads\/[a-z0-9]+\.(png|gif|webp|jpg)$/.test(sv.tag?.icon || '') ? sv.tag.icon : null;
+      if (sv.tag?.icon && sv.tag.icon !== icon) z.removeUpload(sv.tag.icon);
+      sv.tag = { text, ...(tagColor(body.color) ? { color: tagColor(body.color) } : {}), ...(emojiId ? { emojiId } : emoji ? { emoji } : icon ? { icon } : {}) };
     }
     z.audit(sv, me, 'server_update', null, sv.tag ? `server tag ${sv.tag.text}` : 'removed the server tag');
     save(); z.refreshServer(sv);

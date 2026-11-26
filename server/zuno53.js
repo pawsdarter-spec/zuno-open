@@ -145,6 +145,8 @@ module.exports = function (z) {
     for (const id of friends) z.send(id, 'refresh', {});
   }
 
+  hooks.deleteAccount = deleteOwnAccount;
+
   // ======================= the Verified Creator badge, dark =======================
   hooks.publicUser.push(u => (u?.creatorDark ? { creatorDark: true } : {}));
   hooks.patchMe.push((me, body) => { if ('creatorDark' in body) me.creatorDark = !!body.creatorDark; });

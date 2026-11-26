@@ -1262,7 +1262,9 @@ document.addEventListener('scroll', e => {
   lastMsgTop = el.scrollTop;
   // Any scroll up by you lets go of the bottom straight away; getting back down to it sticks again.
   // Pictures loading above the bottom aren't you, so they don't count.
-  if (up && gap > 2 && Date.now() - lastScrollIntent < 1200) stickToBottom = false;
+  // (0.56) Trackpads keep scrolling for a few seconds after your fingers stop, so that counts too
+  // (before, the chat could snap back to the bottom halfway through a long flick upward).
+  if (up && gap > 2 && Date.now() - lastScrollIntent < 3500) stickToBottom = false;
   else if (gap < STICK_PX) stickToBottom = true;
 }, true);
 const _renderMessages19 = renderMessages;

@@ -1,0 +1,44 @@
+/* Zuno 0.56 */
+
+/* ---------- server rail: the white pill sits on the window's edge, also for servers in a folder ---------- */
+.rail-folder.open .rail-item::before { left: -8px; }
+
+/* ---------- server tags: a quiet grey chip after the name, with its icon ---------- */
+.srv-tag, :is([data-nf], [data-nx]) .srv-tag {
+  display: inline-flex; align-items: center; gap: 3px; height: 18px; padding: 0 5px 0 4px; margin-left: 6px; border-radius: 4px;
+  background: color-mix(in srgb, var(--text) 9%, transparent) !important; color: var(--header) !important; -webkit-text-fill-color: currentColor;
+  font-family: var(--font) !important; font-size: 12px; font-weight: 600; letter-spacing: 0; line-height: 1; vertical-align: 1px;
+  text-shadow: none !important; box-shadow: none; filter: none;
+}
+.srv-tag::before { content: none; }
+.srv-tag:not(:has(img, i))::before { content: ""; width: 10px; height: 12px; flex: none; background: var(--tc, var(--brand)); clip-path: path("M5 0 L10 2 V6.5 C10 9.2 7.8 11.1 5 12 C2.2 11.1 0 9.2 0 6.5 V2 Z"); }
+.srv-tag i { font-style: normal; font-size: 12px; line-height: 1; }
+.srv-tag .st-cemoji { width: 14px; height: 14px; margin: 0; border-radius: 2px; object-fit: contain; }
+.srv-tag[data-tagsv]:not([data-tagsv=""]):hover { filter: none; background: color-mix(in srgb, var(--text) 15%, transparent) !important; }
+.tp-opt .srv-tag { height: 22px; font-size: 13px; padding: 0 7px 0 6px; }
+.tp-opt .srv-tag .st-cemoji { width: 16px; height: 16px; }
+
+.st56 { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 10px 0 4px; }
+.st56-cur:empty { display: none; }
+.st56-cur img { width: 28px; height: 28px; object-fit: contain; border-radius: 6px; background: var(--input); padding: 3px; }
+.st56-note { flex-basis: 100%; }
+
+/* ---------- badges in a narrow profile ---------- */
+.pcard .pc-head:has(.pc-badges.tray-open) { height: auto; min-height: 46px; }
+.pcard .pc-head .pc-badges.tray-open { flex-wrap: wrap; justify-content: flex-end; max-width: calc(100% - 120px); }
+
+/* ---------- emoji card: favorite ---------- */
+.emoji-info .ei56-row { padding: 8px 2px 2px; }
+.emoji-info .ei56-row .btn { width: 100%; }
+
+/* ---------- confirm your email ---------- */
+.vb56 { position: fixed; top: calc(var(--tb, 0px) + 10px); left: 50%; transform: translateX(-50%); z-index: 90; display: flex; align-items: center; gap: 8px; max-width: min(760px, calc(100vw - 24px)); padding: 8px 8px 8px 14px; border-radius: 12px; background: var(--floating, #111); color: var(--text); box-shadow: 0 8px 28px rgba(0, 0, 0, .35), inset 0 0 0 1px var(--border); font-size: 13px; }
+.vb56 > span { flex: 1; min-width: 0; }
+.vb56 .btn { flex: none; }
+.vb56.urgent { box-shadow: 0 8px 28px rgba(0, 0, 0, .35), inset 0 0 0 1px #f23f43; }
+.vb56-x { flex: none; width: 26px; height: 26px; border-radius: 8px; color: var(--muted); }
+.vb56-x:hover { background: var(--hover); color: var(--text); }
+@media (max-width: 760px) {
+  .vb56 { top: auto; bottom: calc(76px + env(safe-area-inset-bottom, 0px)); flex-wrap: wrap; }
+  .vb56 > span { flex-basis: 100%; }
+}

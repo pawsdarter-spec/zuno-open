@@ -110,7 +110,7 @@ module.exports = function features(z) {
     const email = clean(body.email, 254).toLowerCase();
     if (!z.EMAIL_RE.test(email)) fail(400, 'Please enter a valid email address.');
     { const why = await z.checkEmail?.(email); if (why) fail(400, why); } // (0.53.1) no throwaway emails
-    if (users().some(u => u.email === email && u.id !== me.id)) fail(409, 'Another account already uses that email.');
+    if (users().some(u => u.email === email && u.id !== me.id) || hooks.emailTaken?.(email, me.id)) fail(409, 'Another account already uses that email.');
     const oldEmail = me.email;
     me.email = email; me.emailVerified = false;
     save();
@@ -191,17 +191,25 @@ module.exports = function features(z) {
   });
 
   // Email check: proves the email belongs to them (needs email set up).
-  route('POST', '/api/me/verify-email', async ({ me, req }) => {
-    if (!me.email) fail(400, 'Add an email first.');
-    if (me.emailVerified) return { ok: true, already: true };
-    if (!MAIL_KEY()) fail(503, "Email checks aren't set up on this Zuno yet.");
-    z.limit('verify:' + me.id, 3, 60 * 60e3, "You've asked for a few emails already. Check your inbox (and spam).");
+  // (0.56) Also sent by itself to every new account, which must confirm its email within 14 days.
+  async function sendVerify(me, req) {
+    if (!me.email || me.emailVerified || !MAIL_KEY()) return false;
     prune(data.verifies);
     const token = crypto.randomBytes(24).toString('base64url');
     data.verifies[sha(token)] = { uid: me.id, email: me.email, exp: Date.now() + 24 * 3600e3 };
     save();
     const sent = await sendMail(me.email, 'Check your email for Zuno', mailHtml('Is this you?', `Click below to confirm <b>${me.email}</b> for your Zuno account <b>${me.username}</b>.`, `${siteUrl(req)}/verify?token=${token}`, 'Confirm my email'));
-    if (!sent) { delete data.verifies[sha(token)]; save(); fail(502, mailFailText()); }
+    if (!sent) { delete data.verifies[sha(token)]; save(); return false; }
+    return true;
+  }
+  hooks.sendVerify = sendVerify;
+  hooks.mailReady = () => !!MAIL_KEY();
+  route('POST', '/api/me/verify-email', async ({ me, req }) => {
+    if (!me.email) fail(400, 'Add an email first.');
+    if (me.emailVerified) return { ok: true, already: true };
+    if (!MAIL_KEY()) fail(503, "Email checks aren't set up on this Zuno yet.");
+    z.limit('verify:' + me.id, 3, 60 * 60e3, "You've asked for a few emails already. Check your inbox (and spam).");
+    if (!await sendVerify(me, req)) fail(502, mailFailText());
     return { ok: true };
   });
   route('POST', '/api/verify-email', async ({ body }) => {

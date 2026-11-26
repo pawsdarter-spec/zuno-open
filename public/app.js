@@ -12,16 +12,20 @@ const $$ = (sel, el = document) => [...el.querySelectorAll(sel)];
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
 // Zuno the mascot, drawn in SVG so it can blink and wiggle. mood: 'happy' | 'sleepy' | 'curious'
+// Each drawing gets its own gradient id: with one shared id, the body went blank whenever the first
+// drawing on the page was hidden (the updating screen, Wrapped and so on).
+let mascotN = 0;
 function mascot(mood = 'happy', extraClass = '') {
+  const gid = 'zmBody' + (++mascotN);
   const eyes = mood === 'sleepy'
     ? '<g class="zm-eyes"><path d="M37 72 q8 7 16 0" stroke="#0d6f66" stroke-width="4.5" fill="none" stroke-linecap="round"/><path d="M67 72 q8 7 16 0" stroke="#0d6f66" stroke-width="4.5" fill="none" stroke-linecap="round"/></g>'
     : `<g class="zm-eyes"><ellipse cx="45" cy="${mood === 'curious' ? 67 : 70}" rx="8" ry="11" fill="#0d6f66"/><ellipse cx="75" cy="${mood === 'curious' ? 67 : 70}" rx="8" ry="11" fill="#0d6f66"/><ellipse cx="42.5" cy="${mood === 'curious' ? 62 : 65}" rx="3" ry="4" fill="#c8faf3"/><ellipse cx="72.5" cy="${mood === 'curious' ? 62 : 65}" rx="3" ry="4" fill="#c8faf3"/></g>`;
   const lines = mood === 'happy' ? '<g stroke="#7fe3d6" stroke-width="5" stroke-linecap="round" opacity=".8"><path d="M22 34 l-6 -9"/><path d="M12 48 l-10 -3"/><path d="M98 34 l6 -9"/><path d="M108 48 l10 -3"/></g>' : '';
   return `<svg class="zm ${extraClass}" viewBox="0 0 120 100" aria-hidden="true">
-    <defs><linearGradient id="zmBody" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e2fdf9"/><stop offset="1" stop-color="#9eefe5"/></linearGradient></defs>
+    <defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e2fdf9"/><stop offset="1" stop-color="#9eefe5"/></linearGradient></defs>
     ${lines}
     <g class="zm-sprout"><path d="M57 35 C48 20 52 7 61 2 C66 14 67 26 62 35Z" fill="#c6f8f1"/><path d="M62 36 C66 23 74 15 85 15 C83 27 75 35 64 38Z" fill="#b2f3ea"/></g>
-    <path d="M10 100 C10 60 32 33 60 33 C88 33 110 60 110 100Z" fill="url(#zmBody)"/>
+    <path d="M10 100 C10 60 32 33 60 33 C88 33 110 60 110 100Z" fill="url(#${gid})"/>
     ${eyes}
     <ellipse cx="20" cy="97" rx="13" ry="8" fill="#d2fbf5"/><ellipse cx="100" cy="97" rx="13" ry="8" fill="#d2fbf5"/>
   </svg>`;
@@ -262,10 +266,18 @@ function toast(msg, isErr = false) {
 }
 
 // ======================= api =======================
+// (0.56) A random id for this browser, sent only when making an account (Zuno allows two per person).
+function zunoDevice() {
+  try {
+    let v = localStorage.getItem('zuno_dv');
+    if (!/^[A-Za-z0-9_-]{16,64}$/.test(v || '')) { v = [...crypto.getRandomValues(new Uint8Array(18))].map(b => b.toString(16).padStart(2, '0')).join(''); localStorage.setItem('zuno_dv', v); }
+    return v;
+  } catch { return ''; }
+}
 async function api(method, url, body) {
   const res = await fetch(url, {
     method,
-    headers: { 'Content-Type': 'application/json', ...(state.token ? { Authorization: `Bearer ${state.token}` } : {}) },
+    headers: { 'Content-Type': 'application/json', ...(state.token ? { Authorization: `Bearer ${state.token}` } : {}), ...(url === '/api/register' ? { 'X-Zuno-Device': zunoDevice() } : {}) },
     body: body ? JSON.stringify(body) : undefined,
   });
   const data = await res.json().catch(() => ({}));

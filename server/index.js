@@ -34,7 +34,7 @@ const MIN_DESKTOP = PKG.zunoMinDesktop || '0';
 const PUBLIC_DIR = path.join(__dirname, '..', 'public');
 
 // ---------- hooks (server/features.js plugs into these) ----------
-const hooks = { callDone: [], friend: [], posted: [], roomChange: [], rtcState: [], onEdit: [], onDelete: [], newSession: [], patchPrefs: [], beforeEdit: [], attachmentView: [], beforePost: [], afterPost: [], onJoin: [], onLeave: [], onReact: [], onRegister: [], publicUser: [], serverSummary: [], channelPerms: [], patchMe: [], patchServer: [], meExtras: [], groupView: null, login: [], rawRoutes: [], ringtone: null, onRead: [], dmExtras: [], canUseFlair: null, giftDelivered: [], canReadAttachment: [], autoBadges: [] };
+const hooks = { beforeRegister: [], callDone: [], friend: [], posted: [], roomChange: [], rtcState: [], onEdit: [], onDelete: [], newSession: [], patchPrefs: [], beforeEdit: [], attachmentView: [], beforePost: [], afterPost: [], onJoin: [], onLeave: [], onReact: [], onRegister: [], publicUser: [], serverSummary: [], channelPerms: [], patchMe: [], patchServer: [], meExtras: [], groupView: null, login: [], rawRoutes: [], ringtone: null, onRead: [], dmExtras: [], canUseFlair: null, giftDelivered: [], canReadAttachment: [], autoBadges: [] };
 
 // ---------- helpers ----------
 const newId = () => Date.now().toString(36) + crypto.randomBytes(4).toString('hex');
@@ -556,7 +556,9 @@ function shieldBlocks(req, res) {
   if (b.reset < now) { b.n = 0; b.reset = now + SHIELD_WINDOW; b.over = Math.max(0, b.over - 1); }
   // App files are cheap (kept in memory) and a page load asks for many: they count a quarter.
   const was = b.n;
-  b.n += req.url.startsWith('/api/') || req.url.startsWith('/uploads/') || req.url.startsWith('/files/') ? 1 : 0.25;
+  // Call traffic (connection messages, voice through Zuno, call state) comes in quick bursts from
+  // people already signed in and in the call, so it counts a tenth: a 6-person call no longer trips it.
+  b.n += /^\/api\/rtc\/(signal|relay|state)\b/.test(req.url) ? 0.1 : req.url.startsWith('/api/') || req.url.startsWith('/uploads/') || req.url.startsWith('/files/') ? 1 : 0.25;
   if (b.n <= SHIELD_MAX) return false;
   if ((was <= SHIELD_MAX && ++b.over >= 3) || (was < SHIELD_MAX * 3 && b.n >= SHIELD_MAX * 3)) {
     b.jail = now + SHIELD_JAIL;
@@ -782,6 +784,7 @@ route('POST', '/api/register', async ({ body, req, res }) => {
   await judgeText({ username, 'display name': clean(body.displayName, 32) });
   if (Object.values(data.users).some(u => u.email === email)) fail(409, 'An account with that email already exists.');
   if ((data.bannedEmails || []).includes(sha(email))) fail(403, 'That email belongs to an account that was banned from Zuno.');
+  for (const fn of hooks.beforeRegister) await fn({ email, username, req, res });
   if (CONFIG.RESERVED_USERNAMES.includes(username) || (STAFF_NAMES.has(username) && process.env.ZUNO_STAFF_SETUP !== '1') || Object.values(data.users).some(u => u.username === username) || (data.heldNames?.[username]?.until > Date.now()) || data.employeePolicies?.usernames?.[username]) fail(409, 'That username is unavailable.');
   const id = newId();
   data.users[id] = {
@@ -800,9 +803,9 @@ route('POST', '/api/register', async ({ body, req, res }) => {
   welcome(data.users[id]);
   if (joinOfficial(data.users[id])) refreshServer(officialServer());
   save();
-  hooks.onRegister.forEach(fn => fn(data.users[id]));
+  hooks.onRegister.forEach(fn => fn(data.users[id], req));
   const token = createSession(id, req);
-  res.setHeader('Set-Cookie', sessionCookie(token, req));
+  res.setHeader('Set-Cookie', [sessionCookie(token, req), ...(req.zunoCookies || [])]);
   return { token };
 }, { auth: false });
 
@@ -3805,7 +3808,9 @@ route('POST', '/api/rtc/signal', async ({ me, body }) => {
   const room = rooms.get(String(body.room || ''));
   if (!room?.has(me.id) || !room.has(body.to)) return { ok: false };
   if (!stillInvited(me.id, String(body.room)) || !stillInvited(body.to, String(body.room))) { soonEnforceRooms(); return { ok: false }; }
-  send(body.to, 'rtc-signal', { room: body.room, from: me.id, data: body.data });
+  // Several messages in one go (an offer and its network paths), delivered in order.
+  const list = Array.isArray(body.batch) ? body.batch.slice(0, 100) : [body.data];
+  for (const data of list) if (data && typeof data === 'object') send(body.to, 'rtc-signal', { room: body.room, from: me.id, data });
   return { ok: true };
 });
 // Someone clipped the call: everyone in it is told, so nobody is clipped without knowing.
@@ -4404,6 +4409,7 @@ require('./zuno50')(ctx2);
 require('./zuno53')(ctx2);
 require('./zuno54')(ctx2);
 require('./zuno55')(ctx2);
+require('./zuno56')(ctx2);
 
 // Zuno's big lookup tables (users, servers, sessions…) don't inherit JavaScript's built-in object,
 // so an id like "__proto__" or "constructor" finds nothing instead of something unexpected. Done in

@@ -228,7 +228,7 @@ step('avatars and other public pictures stay public', async () => {
 
 async function main() {
   server = spawn(process.execPath, [path.join(__dirname, '..', 'server', 'index.js')], {
-    env: { ...process.env, PORT: String(PORT), ZUNO_DATA_DIR: DIR, STRIPE_SECRET_KEY: '', RESEND_API_KEY: '', ZUNO_STAFF_SETUP: '1', ZUNO_STAFF: 'employee_staff', ZUNO_TRUST_XFF: '1', TURNSTILE_SITE_KEY: '', TURNSTILE_SECRET_KEY: '', ZUNO_REQUIRE_TURNSTILE: '', ANTHROPIC_API_KEY: '', ZUNO_STAFF_DASHBOARD_PASSWORD: 'ZUNO_TEST_STAFF_PASSWORD' },
+    env: { ...process.env, PORT: String(PORT), ZUNO_DATA_DIR: DIR, STRIPE_SECRET_KEY: '', RESEND_API_KEY: '', ZUNO_STAFF_SETUP: '1', ZUNO_STAFF: 'employee_staff', ZUNO_TRUST_XFF: '1', ZUNO_SIGNUP_NET_MAX: '100000', TURNSTILE_SITE_KEY: '', TURNSTILE_SECRET_KEY: '', ZUNO_REQUIRE_TURNSTILE: '', ANTHROPIC_API_KEY: '', ZUNO_STAFF_DASHBOARD_PASSWORD: 'ZUNO_TEST_STAFF_PASSWORD' },
     stdio: ['ignore', 'pipe', 'pipe'],
   });
   let output = '';

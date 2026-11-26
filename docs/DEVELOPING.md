@@ -241,7 +241,7 @@ Test with your browser's device toolbar (iPhone size) and on a real phone if you
   `public/polish.js`, which asks Zuno to pass the file through instead.
 - The live event stream never takes the login token in its URL: the app gets a 30-second, one-use
   ticket from `POST /api/events/ticket` (`LiveStream` in `public/app.js`). Bots connect with
-  `Authorization: Bot <token>` (or `?bot=`).
+  `Authorization: Bot <token>`. (Tokens in the address, `?bot=`, are refused since 0.57; a browser can POST `/api/events/ticket` with that header and connect with `?ticket=`.)
 - Scripts must be separate `.js` files (the Content Security Policy blocks scripts written inside
   HTML pages).
 
@@ -283,3 +283,23 @@ event stream tickets, who can open attachments, the Turnstile config). All three
   "development mode" on developer.spotify.com, only accounts added to it under **User Management**
   can connect.
 
+
+## Bot embeds, buttons, menus and forms (0.57)
+
+Code: `server/zuno57.js`, `public/zuno57.js`, `public/zuno57.css`.
+
+- Bots (only bots) can add `embeds` (up to 5: `title`, `url`, `description`, `color` `#rrggbb`,
+  `author.name`, up to 15 `fields` `{ name, value, inline }`, `image` / `thumbnail`, `footer`,
+  `timestamp`) and `components` (up to 5 rows; a row is up to 5 buttons or one select) to
+  `POST`/`PATCH` messages. Embed pictures must be image attachments the bot uploaded itself
+  (`POST /api/attachments` is open to bots), so they stay private like any attachment.
+- Buttons: `{ type: 'button', id, label, emoji, style: primary|secondary|success|danger|link, url (link only), disabled }`.
+  Selects: `{ type: 'select', id, placeholder, min, max, options: [{ label, value, description, emoji, default }] }`.
+- A click (`POST /api/interactions`) sends the bot an `interaction` event `{ id, type: button|select|modal, componentId, values, fields, messageId, channelId|dm, user }`.
+  The bot answers within 15 minutes with `POST /api/interactions/:id/respond`:
+  `{ type: 'reply', content, embeds, components, ephemeral }`, `{ type: 'update', ... }` (edits the clicked message),
+  `{ type: 'modal', modal: { id, title, inputs: [{ id, label, style: short|paragraph, placeholder, required, min, max, value }] } }`, or `{ type: 'ack' }`.
+  Ephemeral replies are never saved; they live in memory for 15 minutes so their buttons work.
+- Limits: bots mention at most 10 people and 3 roles per message, `@everyone`/`@here` once per 30 minutes per server
+  (4 a day), 30 pings a minute per server. Bots with Manage Channels can make channels: 3 per server per 10 minutes,
+  10 per server a day, 20 a day overall.

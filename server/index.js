@@ -65,7 +65,10 @@ const TURNSTILE_HOSTNAME = String(process.env.TURNSTILE_HOSTNAME || '').trim().t
 const turnstileOn = () => !!(TURNSTILE_SITE_KEY && TURNSTILE_SECRET_KEY);
 async function verifyTurnstile(token, req) {
   if (!turnstileOn()) {
-    if (process.env.ZUNO_REQUIRE_TURNSTILE === '1') fail(503, 'Account verification is not set up yet. Please try again later.');
+    // (0.57) The hosted Zuno (Render) refuses sign-ups without the bot check unless told otherwise;
+    // a copy run on someone's own computer or Wi-Fi doesn't need it.
+    const required = process.env.ZUNO_REQUIRE_TURNSTILE === '1' || (process.env.RENDER && process.env.ZUNO_REQUIRE_TURNSTILE !== '0');
+    if (required) fail(503, 'Account verification is not set up yet. Please try again later.');
     return;
   }
   if (typeof token !== 'string' || !token.trim() || token.length > 2048) fail(400, 'Please complete the bot verification before creating an account.');
@@ -818,24 +821,29 @@ route('POST', '/api/login', async ({ body, req, res }) => {
     // A banned account can still log in by its old username while it can appeal.
     || (!login.includes('@') && Object.values(data.users).find(u => u.banned?.snapshot?.username === login));
   if (user && hooks.loginGate) hooks.loginGate(user, req); // (0.45.2) the founder's trusted-devices lock
-  // Each account allows 10 wrong passwords per 15 minutes, wherever they come from.
-  const lock = user && loginFails.get(user.id);
-  if (lock && lock.n >= 10 && Date.now() - lock.at < 15 * 60e3) fail(429, 'Too many wrong passwords for this account. Wait 15 minutes, or reset your password.');
+  // (0.57) Wrong passwords lock an account only for the network they come from (10 per 15 minutes),
+  // so nobody can lock someone else out on purpose. Across every network an account allows 50;
+  // past that, only networks it has logged in from before can keep trying.
+  const fresh = v => v && Date.now() - v.at < 15 * 60e3;
+  const net = networkOf(req), pairKey = user ? `acct:${user.id}|${net}` : null;
+  const lock = user && loginFails.get(pairKey), total = user && loginFails.get(user.id);
+  if (fresh(lock) && lock.n >= 10) fail(429, 'Too many wrong passwords for this account. Wait 15 minutes, or reset your password.');
+  if (fresh(total) && total.n >= 50 && !Object.values(data.sessions).some(s => s && typeof s === 'object' && s.uid === user.id && s.net === net)) fail(429, 'Too many wrong passwords for this account. Wait 15 minutes, or reset your password.');
   const passwordOk = await checkPassword(String(body.password || ''), user ? user.passwordHash : DUMMY_HASH);
   // (0.43.1) Wrong passwords from one network are capped too (it can't just try account after account).
   const visitorKey = 'visitor:' + visitorTag(req), visitorLock = loginFails.get(visitorKey);
-  if (visitorLock && visitorLock.n >= 30 && Date.now() - visitorLock.at < 15 * 60e3) fail(429, 'Too many wrong passwords from this network. Wait 15 minutes.');
+  if (fresh(visitorLock) && visitorLock.n >= 30) fail(429, 'Too many wrong passwords from this network. Wait 15 minutes.');
   if (!user || !passwordOk) {
-    loginFails.set(visitorKey, { n: (visitorLock && Date.now() - visitorLock.at < 15 * 60e3 ? visitorLock.n : 0) + 1, at: visitorLock && Date.now() - visitorLock.at < 15 * 60e3 ? visitorLock.at : Date.now() });
+    const bump = (k, v) => loginFails.set(k, { n: (fresh(v) ? v.n : 0) + 1, at: fresh(v) ? v.at : Date.now() });
+    bump(visitorKey, visitorLock);
     if (user) {
-      const n = (lock && Date.now() - lock.at < 15 * 60e3 ? lock.n : 0) + 1;
-      loginFails.set(user.id, { n, at: Date.now() });
-      // The owner hears about it once, when the account gets locked for 15 minutes.
-      if (n === 10 && !user.bot && !user.system) systemMessage(user.id, `⚠️ **Someone tried to log in to your account** and got the password wrong 10 times, so logging in is paused for 15 minutes.\n\nIf this wasn't you, your password still kept them out. To be safe, use a strong password and turn on two-factor login in **Settings › My Account**.`);
+      bump(pairKey, lock); bump(user.id, total);
+      // The owner hears about it once, when someone gets their password wrong 10 times.
+      if (loginFails.get(user.id).n === 10 && !user.bot && !user.system) systemMessage(user.id, `⚠️ **Someone tried to log in to your account** and got the password wrong 10 times.\n\nIf this wasn't you, your password still kept them out, and they've been paused for 15 minutes. You can still log in as normal. To be safe, use a strong password and turn on two-factor login in **Settings › My Account**.`);
     }
     fail(401, 'Login or password is invalid.');
   }
-  loginFails.delete(user.id);
+  loginFails.delete(pairKey); loginFails.delete(user.id);
   // Two-factor login answers with a second step instead of a token.
   for (const fn of hooks.login) { const step = fn(user, req); if (step) return step; }
   const token = createSession(user.id, req);
@@ -846,6 +854,7 @@ route('POST', '/api/login', async ({ body, req, res }) => {
 route('POST', '/api/logout', async ({ me, token, req, res }) => {
   delete data.sessions[token]; if (me) pruneDevices(me.id); save();
   res.setHeader('Set-Cookie', sessionCookie('', req, true));
+  res.setHeader('Clear-Site-Data', '"cache"'); // (0.57) private pictures and files the browser kept go too
   return { ok: true };
 });
 
@@ -1638,7 +1647,7 @@ for (const [prefix, resolve] of [['/api/dms/:target', dmConv], ['/api/channels/:
     const mode = conv.canWrite();
     const content = cleanContent(body, me);
     const gif = await shareGif(me, cleanGif(body.gif));
-    if (!content && !gif && !body.attachmentIds?.length && !body.poll && !body.forward && !body.e2e && !body.sticker) fail(400, "You can't send an empty message.");
+    if (!content && !gif && !body.attachmentIds?.length && !body.poll && !body.forward && !body.e2e && !body.sticker && !body.embeds?.length && !body.components?.length) fail(400, "You can't send an empty message.");
     if (body.attachmentIds?.length && conv.kind === 'channel' && !conv.perms.has('attach_files')) fail(403, "You don't have permission to attach files in this channel.");
     const replyTo = cleanReply(conv, body.replyTo);
     const command = botCommandFor(conv, me, content);
@@ -1649,7 +1658,7 @@ for (const [prefix, resolve] of [['/api/dms/:target', dmConv], ['/api/channels/:
     if (replyTo) extra.replyTo = body.replyPing === false ? { ...replyTo, noPing: true } : replyTo; // (0.45.1) reply without pinging
     if (command) extra.command = { name: command.name, botId: command.botId };
     for (const fn of hooks.beforePost) fn({ conv, me, body, content, extra });
-    if (!content && !extra.gif && !extra.attachments && !extra.poll && !extra.forward && !extra.e2e && !extra.sticker) fail(400, "You can't send an empty message.");
+    if (!content && !extra.gif && !extra.attachments && !extra.poll && !extra.forward && !extra.e2e && !extra.sticker && !extra.embeds && !extra.components) fail(400, "You can't send an empty message.");
     if (mode === 'new-request') {
       const fresh = Date.now() - (me.createdAt || 0) < 3 * 864e5;
       limit('knock:' + me.id, fresh ? 5 : 20, 3600e3, fresh ? 'New accounts can message 5 new people an hour. Try again later.' : "You've messaged a lot of new people. Try again in a bit.");
@@ -1675,7 +1684,7 @@ for (const [prefix, resolve] of [['/api/dms/:target', dmConv], ['/api/channels/:
     const content = cleanContent(body, me);
     const change = {};
     for (const fn of hooks.beforeEdit) fn({ conv, me, m, body, content, change });
-    if (!content && !m.gif && !m.attachments && !change.e2e) fail(400, "A message can't be empty. Delete it instead.");
+    if (!content && !m.gif && !m.attachments && !change.e2e && !('embeds' in change ? change.embeds : m.embeds)?.length && !('components' in change ? change.components : m.components)?.length) fail(400, "A message can't be empty. Delete it instead.");
     // Edit history: earlier versions stay viewable (the last 10).
     const edits = m.e2e ? m.edits : [...(m.edits || []), { content: m.content, at: m.editedAt || m.createdAt }].slice(-10);
     const message = st.messages[i] = { ...m, content, editedAt: Date.now(), ...(edits ? { edits } : {}), ...change };
@@ -2896,6 +2905,13 @@ route('DELETE', '/api/servers/:id/members/:userId', async ({ me, params }) => {
 // ---- channels ----
 route('POST', '/api/servers/:id/channels', async ({ me, params, body }) => {
   const sv = getManagedServer(me, params.id, 'manage_channels');
+  // (0.57) Bots can make channels, but slowly, so a bot can't flood a server with them.
+  if (me.bot) {
+    if (!devBot(me)) fail(403, "Bots can't do that.");
+    limit(`bot-ch:${me.id}:${sv.id}`, 3, 10 * 60e3, 'Bots can make 3 channels per server every 10 minutes.');
+    limit(`bot-ch-day:${me.id}:${sv.id}`, 10, 864e5, 'Bots can make 10 channels per server a day.');
+    limit(`bot-ch-all:${me.id}`, 20, 864e5, 'This bot has made 20 channels today. Try again tomorrow.');
+  }
   const type = body.type === 'voice' || body.type === 'stage' ? 'voice' : 'text';
   const layout = body.type === 'forum' || body.type === 'media' ? body.type : null; // forum & media channels are text channels laid out differently (zuno28.js)
   const name = channelName(body.name, type);
@@ -3376,7 +3392,7 @@ function newBotToken(bot) {
 const botFromToken = t => { const id = t && data.botTokens[sha(t)]; const u = id && data.users[id]; return u && !u.app?.deleted ? u : null; };
 // What bots are allowed to call. Everything else is for people only.
 const BOT_ROUTES = [
-  /^GET \/api\/me$/, /^GET \/api\/servers\/[^/]+$/, /^GET \/api\/users\/[^/]+$/, /^GET \/api\/perms$/,
+  /^GET \/api\/me$/, /^POST \/api\/events\/ticket$/, /^GET \/api\/servers\/[^/]+$/, /^GET \/api\/users\/[^/]+$/, /^GET \/api\/perms$/,
   /^(GET|POST) \/api\/channels\/[^/]+\/messages$/, /^(PATCH|DELETE) \/api\/channels\/[^/]+\/messages\/[^/]+$/,
   /^POST \/api\/channels\/[^/]+\/messages\/[^/]+\/react$/, /^POST \/api\/channels\/[^/]+\/typing$/,
   /^(GET|PUT) \/api\/bots\/@me(\/commands)?$/, /^PATCH \/api\/bots\/@me$/,
@@ -3386,6 +3402,8 @@ const BOT_ROUTES = [
   /^POST \/api\/servers\/[^/]+\/roles$/, /^(PATCH|DELETE) \/api\/servers\/[^/]+\/roles\/[^/]+$/,
   /^(PUT|DELETE) \/api\/servers\/[^/]+\/members\/[^/]+\/roles\/[^/]+$/,
   /^PATCH \/api\/channels\/[^/]+$/, /^PUT \/api\/channels\/[^/]+\/overrides$/, /^GET \/api\/channels\/[^/]+\/overrides$/,
+  // (0.57) uploading files, making channels (slowly), and answering buttons, menus and forms.
+  /^POST \/api\/attachments$/, /^POST \/api\/servers\/[^/]+\/channels$/, /^POST \/api\/interactions\/[^/]+\/respond$/,
 ];
 const botAllowed = (method, pathname) => BOT_ROUTES.some(re => re.test(`${method} ${pathname}`));
 // (security) A bot only ever reaches servers it's actually in, and channels it can see there,
@@ -3848,6 +3866,11 @@ route('POST', '/api/rtc/state', async ({ me, body }) => {
 const eventTickets = new Map();
 setInterval(() => { const now = Date.now(); for (const [t, g] of eventTickets) if (g.expiresAt <= now) eventTickets.delete(t); }, 60e3).unref();
 route('POST', '/api/events/ticket', async ({ token, me }) => {
+  if (me && devBot(me)) {
+    const ticket = crypto.randomBytes(32).toString('hex');
+    eventTickets.set(ticket, { botId: me.id, uid: me.id, expiresAt: Date.now() + 30e3 });
+    return { ticket, expiresIn: 30 };
+  }
   if (!token || !me || me.bot) fail(401, 'Not signed in.');
   const ticket = crypto.randomBytes(32).toString('hex');
   eventTickets.set(ticket, { sessionToken: token, uid: me.id, expiresAt: Date.now() + 30e3 });
@@ -4026,8 +4049,9 @@ async function serveFromCloud(req, res, name, extra = {}) {
     const to = pub || storage.presignedUrl(name, {
       ...(extra['Content-Type'] ? { 'response-content-type': extra['Content-Type'] } : {}),
       ...(download ? { 'response-content-disposition': extra['Content-Disposition'] } : {}),
+      ...(isPrivate ? { 'response-cache-control': 'private, max-age=86400' } : {}),
     });
-    res.writeHead(302, { Location: to, 'Cache-Control': `${isPrivate ? 'private' : 'public'}, max-age=3600`, 'X-Content-Type-Options': 'nosniff' });
+    res.writeHead(302, { Location: to, 'Cache-Control': isPrivate ? 'private, max-age=300' : 'public, max-age=3600', 'X-Content-Type-Options': 'nosniff' });
     return res.end();
   }
   try {
@@ -4078,7 +4102,8 @@ const attachmentWhere = new Map(); // attachment id -> Set of "kind|id" ("ch|cha
 let attachmentScanAt = 0;
 const fileToAttachment = new Map(); let fileMapAt = 0;
 const accessCache = new Map(); // "userId|attachmentId" -> time
-const attIdsOf = m => [...(m.attachments || []), ...(m.forward?.attachments || [])].map(a => a?.id).filter(Boolean);
+// (0.57) Pictures inside a bot's embeds count as that message's files too.
+const attIdsOf = m => [...(m.attachments || []), ...(m.forward?.attachments || []), ...(m.embeds || []).flatMap(e => [e?.image, e?.thumbnail])].map(a => a?.id).filter(Boolean);
 function noteAttachments(where, m) { for (const id of attIdsOf(m)) { let s = attachmentWhere.get(id); if (!s) attachmentWhere.set(id, (s = new Set())); s.add(where); } }
 function scanAttachments() {
   attachmentWhere.clear();
@@ -4124,8 +4149,11 @@ function canReadAttachment(user, a) {
   if (!user || !a) return false;
   if (a.owner === user.id || isStaff(user)) return true;
   if (hooks.canReadAttachment.some(fn => fn(user, a))) return true; // e.g. a video being watched together in your call
+  // (0.57) A remembered answer is only reused for a minute, and only after checking again that you're
+  // still in that server or chat and can still see that channel (cheap; no message scan), so losing
+  // access (kicked, role removed, channel locked) stops it straight away.
   const key = user.id + '|' + a.id, hit = accessCache.get(key);
-  if (hit && Date.now() - hit < 5 * 60e3) return true;
+  if (hit && Date.now() - hit.at < 60e3 && canSeeAt(user, hit.where, { createdAt: hit.createdAt })) return true;
   if (!attachmentWhere.size || (!attachmentWhere.has(a.id) && Date.now() - attachmentScanAt > 10e3)) scanAttachments();
   // Thread replies don't go through postMessage, so a file just sent in a thread is looked for there.
   else if (!attachmentWhere.has(a.id)) for (const [id, t] of Object.entries(data.threads || {})) for (const m of t.messages || []) if (attIdsOf(m).includes(a.id)) noteAttachments('th|' + id, m);
@@ -4134,7 +4162,7 @@ function canReadAttachment(user, a) {
     const msg = (messagesAt(where) || []).find(m => attIdsOf(m).includes(a.id));
     if (msg && canSeeAt(user, where, msg)) {
       if (accessCache.size > 20000) accessCache.clear();
-      accessCache.set(key, Date.now());
+      accessCache.set(key, { at: Date.now(), where, createdAt: msg.createdAt });
       return true;
     }
   }
@@ -4147,9 +4175,9 @@ function mediaUser(req) {
   if (authz.startsWith('Bearer ')) return userFromToken(authz.slice(7).trim());
   return userFromToken(cookieToken(req));
 }
-// Private files can be kept by the browser that opened them (they never change), but never by
-// shared caches.
-const PRIVATE_MEDIA = { 'Cache-Control': 'private, max-age=31536000, immutable', 'X-Content-Type-Options': 'nosniff' };
+// Private files can be kept by the browser that opened them for an hour (0.57: was a year), never by
+// shared caches. Logging out also clears the browser's copies (Clear-Site-Data).
+const PRIVATE_MEDIA = { 'Cache-Control': 'private, max-age=3600', 'X-Content-Type-Options': 'nosniff' };
 function denyMedia(res, signedIn) { res.writeHead(signedIn ? 404 : 401, { 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' }); res.end(); }
 
 // ---------- server ----------
@@ -4268,17 +4296,19 @@ async function handleRequest(req, res) {
 
   if (req.method === 'GET' && url.pathname === '/api/events') {
     // People connect with a one-use ticket (POST /api/events/ticket), so the login token never
-    // goes in a URL. Bots still connect with their token, as before.
+    // goes in a URL. (0.57) Bots send their token in the Authorization header, or get a ticket too;
+    // a token in the address (?bot=) is refused, since addresses end up in logs.
     const ticket = url.searchParams.get('ticket');
     if (ticket) {
       const grant = eventTickets.get(ticket);
       eventTickets.delete(ticket); // one use, even when it has expired
-      const user = grant && grant.expiresAt > Date.now() ? userFromKey(grant.sessionToken) : null;
-      if (!user || user.id !== grant.uid) return json(401, { error: 'Event connection ticket expired. Reconnect to continue.' });
-      return openStream(req, res, user, grant.sessionToken);
+      const user = grant && grant.expiresAt > Date.now() ? (grant.botId ? data.users[grant.botId] : userFromKey(grant.sessionToken)) : null;
+      if (!user || user.id !== grant.uid || (grant.botId && (!devBot(user) || user.app?.deleted))) return json(401, { error: 'Event connection ticket expired. Reconnect to continue.' });
+      return openStream(req, res, user, grant.botId ? null : grant.sessionToken);
     }
+    if (url.searchParams.has('bot')) return json(401, { error: 'Bot tokens no longer go in the address. Send "Authorization: Bot <token>", or POST /api/events/ticket with that header and connect with ?ticket=.' });
     const auth = req.headers.authorization || '';
-    const bot = botFromToken(url.searchParams.get('bot') || (auth.startsWith('Bot ') ? auth.slice(4).trim() : ''));
+    const bot = botFromToken(auth.startsWith('Bot ') ? auth.slice(4).trim() : '');
     if (!bot) return json(401, { error: 'Not signed in.' });
     return openStream(req, res, bot, null);
   }
@@ -4416,6 +4446,7 @@ require('./zuno53')(ctx2);
 require('./zuno54')(ctx2);
 require('./zuno55')(ctx2);
 require('./zuno56')(ctx2);
+require('./zuno57')(ctx2);
 
 // Zuno's big lookup tables (users, servers, sessions…) don't inherit JavaScript's built-in object,
 // so an id like "__proto__" or "constructor" finds nothing instead of something unexpected. Done in

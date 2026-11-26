@@ -51,6 +51,7 @@ async function main() {
   await api('PUT', '/api/bots/@me/commands', { commands: [
     { name: 'ping', description: 'Check that I am awake' },
     { name: 'roll', description: 'Roll a die', usage: '[sides]' },
+    { name: 'menu', description: 'Show buttons and a dropdown' },
   ] });
   // Listen for live events (messages, commands, joins).
   const res = await fetch(ZUNO + '/api/events', { headers: { Authorization: 'Bot ' + TOKEN } });
@@ -64,6 +65,7 @@ async function main() {
       const event = /^event: (.*)$/m.exec(block)?.[1];
       const data = JSON.parse(/^data: (.*)$/m.exec(block)?.[1] || 'null');
       if (event === 'command') await onCommand(data);
+      if (event === 'interaction') await onClick(data);
       if (event === 'message' && data.message.content === 'hello bot') {
         await api('POST', \`/api/channels/\${data.channelId}/messages\`, { content: 'Hi there! 👋' });
       }
@@ -74,6 +76,25 @@ async function onCommand(c) {
   const reply = content => api('POST', \`/api/channels/\${c.channelId}/messages\`, { content, replyTo: c.messageId });
   if (c.name === 'ping') await reply('Pong! 🏓');
   if (c.name === 'roll') await reply(\`🎲 \${c.user.displayName} rolled **\${1 + Math.floor(Math.random() * (Number(c.args) || 6))}**\`);
+  // Embeds and buttons. Pictures in embeds: upload with POST /api/attachments, then use the id.
+  if (c.name === 'menu') await api('POST', \`/api/channels/\${c.channelId}/messages\`, {
+    embeds: [{ title: 'Pick a flavour', description: 'Buttons, a dropdown and a form.', color: '#04c5ae' }],
+    components: [
+      { items: [{ type: 'button', id: 'hi', label: 'Say hi', style: 'primary' }, { type: 'button', id: 'form', label: 'Fill a form' }] },
+      { items: [{ type: 'select', id: 'flavour', placeholder: 'Choose…', options: [{ label: 'Mint', value: 'mint' }, { label: 'Berry', value: 'berry' }] }] },
+    ],
+  });
+}
+// Someone clicked a button, picked from a menu, or sent a form. Answer within 15 minutes with
+// type "reply" (ephemeral: true = only they see it), "update" (change the clicked message),
+// "modal" (show a form) or "ack".
+async function onClick(i) {
+  const answer = body => api('POST', \`/api/interactions/\${i.id}/respond\`, body);
+  if (i.componentId === 'hi') await answer({ type: 'reply', ephemeral: true, content: \`Hi \${i.user.displayName}! Only you can see this.\` });
+  else if (i.componentId === 'flavour') await answer({ type: 'reply', content: \`\${i.user.displayName} picked **\${i.values[0]}**\` });
+  else if (i.componentId === 'form') await answer({ type: 'modal', modal: { id: 'about', title: 'About you', inputs: [{ id: 'name', label: 'Nickname' }] } });
+  else if (i.type === 'modal') await answer({ type: 'reply', ephemeral: true, content: \`Thanks, \${i.fields.name}!\` });
+  else await answer({ type: 'ack' });
 }
 main().catch(e => { console.error(e); process.exit(1); });
 `;

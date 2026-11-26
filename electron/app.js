@@ -59,7 +59,7 @@ function checkReleases() {
   const check = () => updater.checkForUpdates().catch(() => {});
   setTimeout(check, 3000);
   setInterval(check, 10 * 60 * 1000);
-  ipcMain.handle('zuno:check-updates', () => { check(); return true; });
+  ipcMain.handle('zuno:check-updates', guard('page', () => { check(); return true; }, false));
 }
 
 // ---------- settings saved in the user's app-data folder ----------
@@ -193,6 +193,8 @@ function createWindow() {
   const sendState = () => win.webContents.send('zuno:window-state', { maximized: win.isMaximized() });
   for (const ev of ['maximize', 'unmaximize', 'enter-full-screen', 'leave-full-screen']) win.on(ev, sendState);
 
+  // (0.57) Pages can't embed their own browser views.
+  win.webContents.on('will-attach-webview', e => e.preventDefault());
   // Links in messages open in the normal web browser, not inside Zuno.
   win.webContents.setWindowOpenHandler(({ url }) => {
     if (/^https?:\/\//i.test(url)) shell.openExternal(url);
@@ -229,41 +231,109 @@ function buildMenu() {
   Menu.setApplicationMenu(Menu.buildFromTemplate(template));
 }
 
+// ---------- who may use the desktop functions ----------
+// (0.57) The window can show three kinds of page: Zuno's own app pages (files inside the app),
+// the official Zuno (heyzuno.uk, or the server this computer hosts), or a server someone picked
+// in Server Settings. Every message from a page is checked: it must come from the main window's
+// top frame (never an embedded frame or another window), and its address decides what it may do.
+const { dialog } = require('electron');
+const { pathToFileURL } = require('url');
+const originOf = u => { try { const o = new URL(u).origin; return o && o !== 'null' ? o : ''; } catch { return ''; } };
+const OWN_FILES = pathToFileURL(__dirname + path.sep).href;
+const OFFICIAL = new Set([originOf(ONLINE_SERVER), 'https://heyzuno.uk', 'https://www.heyzuno.uk', 'https://zuno-tau7.onrender.com'].filter(Boolean));
+function chosenOrigin() { const cfg = readConfig(); return cfg.mode === 'remote' && cfg.serverUrl ? originOf(cfg.serverUrl) : ''; }
+function trustOfUrl(url) {
+  url = String(url || '');
+  if (url.startsWith('file:')) return url.startsWith(OWN_FILES) ? 'local' : null;
+  const o = originOf(url);
+  if (!o) return null;
+  if (OFFICIAL.has(o) || (hostedUrl && o === originOf(hostedUrl))) return 'official';
+  if (o === chosenOrigin()) return 'chosen';
+  return null;
+}
+function trustOf(e) {
+  if (!win || win.isDestroyed() || e.sender !== win.webContents) return null;
+  const f = e.senderFrame;
+  if (!f || f.parent) return null; // only the top frame, never something embedded in the page
+  return trustOfUrl(f.url);
+}
+// Wraps a handler: pages that aren't allowed get `denied` back and nothing happens.
+// need: 'page' (any of the three) or 'local' (only Zuno's own app pages).
+function guard(need, fn, denied = undefined) {
+  return (e, ...args) => {
+    const t = trustOf(e);
+    if (!t || (need === 'local' && t !== 'local')) return denied;
+    return fn(e, t, ...args);
+  };
+}
+// A server picked in Server Settings is run by someone else, so it has to ask before it can see
+// what's on screen. The answer lasts until the app closes.
+const screenOk = new Set();
+async function askScreen(origin, what) {
+  if (screenOk.has(origin)) return true;
+  const { response } = await dialog.showMessageBox(win, {
+    type: 'question', buttons: ['Allow', "Don't allow"], defaultId: 1, cancelId: 1, noLink: true,
+    title: 'Screen sharing', message: `Let ${origin} ${what}?`,
+    detail: "This server isn't the official Zuno. Only allow it if you trust whoever runs it.",
+  });
+  if (response !== 0) return false;
+  screenOk.add(origin);
+  return true;
+}
+
 // ---------- microphone, camera and screen sharing for calls ----------
-let pickedSource = null, streamSound = true;
+// (0.57) Screen sharing only ever hands over the screen or window you picked in Zuno's picker,
+// within two minutes of picking it. Nothing is chosen for you.
+let picked = null, streamSound = true, listed = new Map();
 function setupMediaPermissions() {
   const allowed = ['media', 'display-capture', 'notifications', 'fullscreen', 'clipboard-sanitized-write', 'speaker-selection'];
-  session.defaultSession.setPermissionRequestHandler((_wc, permission, cb) => cb(allowed.includes(permission)));
-  session.defaultSession.setPermissionCheckHandler((_wc, permission) => allowed.includes(permission));
-  // Screen sharing: the page shows a picker, then asks for the screen; we hand over the one picked.
-  session.defaultSession.setDisplayMediaRequestHandler(async (_req, cb) => {
+  const okFor = (wc, url) => !!win && !win.isDestroyed() && wc === win.webContents && trustOfUrl(url) !== null;
+  session.defaultSession.setPermissionRequestHandler((wc, permission, cb, details) => cb(allowed.includes(permission) && okFor(wc, details?.requestingUrl || wc?.getURL?.())));
+  session.defaultSession.setPermissionCheckHandler((wc, permission, origin) => allowed.includes(permission) && okFor(wc, origin || wc?.getURL?.()));
+  session.defaultSession.setDisplayMediaRequestHandler(async (req, cb) => {
     try {
+      const frame = req.frame;
+      const trust = frame && !frame.parent ? trustOfUrl(frame.url) : null;
+      if (!trust || !picked || Date.now() - picked.at > 2 * 60e3) return cb({});
       const sources = await desktopCapturer.getSources({ types: ['screen', 'window'] });
-      const src = sources.find(s => s.id === pickedSource) || sources[0];
+      const src = sources.find(s => s.id === picked.id);
+      if (!src) return cb({});
+      if (trust === 'chosen' && !(await askScreen(originOf(frame.url), `share "${src.name}"`))) return cb({});
+      // A second try without sound may follow right away, so the pick stays good for a few seconds.
+      picked.at = Math.min(picked.at, Date.now() - 2 * 60e3 + 15e3);
       // Sound comes along on Windows (the whole computer's sound; the page asks Chromium to leave
       // Zuno's own sounds out). Before this, streams from the app never had any sound.
-      cb(src ? { video: src, ...(streamSound && process.platform === 'win32' ? { audio: 'loopback' } : {}) } : {});
+      cb({ video: src, ...(streamSound && process.platform === 'win32' ? { audio: 'loopback' } : {}) });
     } catch { cb({}); }
   });
 }
-ipcMain.handle('zuno:screen-sources', async () => {
+ipcMain.handle('zuno:screen-sources', guard('page', async (e, trust) => {
+  if (trust === 'chosen' && !(await askScreen(originOf(e.senderFrame.url), 'see your screens and windows so you can pick one to share'))) return [];
   const sources = await desktopCapturer.getSources({ types: ['screen', 'window'], thumbnailSize: { width: 320, height: 180 } });
-  return sources.filter(s => s.name !== 'Zuno').map(s => ({ id: s.id, name: s.name, thumb: s.thumbnail.toDataURL() }));
-});
-ipcMain.handle('zuno:open-spotify', async (_e, uri) => {
+  const out = sources.filter(s => s.name !== 'Zuno');
+  listed = new Map(out.map(s => [s.id, Date.now()]));
+  return out.map(s => ({ id: s.id, name: s.name, thumb: s.thumbnail.toDataURL() }));
+}, []));
+ipcMain.handle('zuno:open-spotify', guard('page', async (_e, _t, uri) => {
   if (!/^spotify:(track|album|playlist|artist|episode|show):[A-Za-z0-9]{10,40}$/.test(String(uri))) return false;
   try { await shell.openExternal(uri); return true; } catch { return false; }
-});
-ipcMain.handle('zuno:pick-source', (_e, id) => { pickedSource = id; return true; });
-ipcMain.handle('zuno:stream-sound', (_e, on) => { streamSound = on !== false; return true; });
+}, false));
+// Only an id from the list just shown in the picker counts.
+ipcMain.handle('zuno:pick-source', guard('page', (_e, _t, id) => {
+  if (typeof id !== 'string' || !listed.has(id) || Date.now() - listed.get(id) > 5 * 60e3) return false;
+  picked = { id, at: Date.now() };
+  return true;
+}, false));
+ipcMain.handle('zuno:stream-sound', guard('page', (_e, _t, on) => { streamSound = on !== false; return true; }, false));
 
 // ---------- messages from the page ----------
-ipcMain.handle('zuno:info', () => {
+ipcMain.handle('zuno:info', guard('local', () => {
   const cfg = readConfig();
   return { mode: cfg.mode, serverUrl: cfg.serverUrl, port: PORT, lanAddresses: lanAddresses(), version: RUNNING_VERSION };
-});
+}, null));
 // Tells the page which version is running, whether it was just updated, and if a newer one is waiting.
-ipcMain.handle('zuno:version', () => {
+// Where Zuno is installed on this computer is only told to Zuno's own pages.
+ipcMain.handle('zuno:version', guard('page', (_e, trust) => {
   const cfg = readConfig();
   // Someone who already used Zuno before versions were tracked counts as updated too.
   const usedBefore = fs.existsSync(path.join(app.getPath('userData'), 'data', 'db.json'));
@@ -273,12 +343,13 @@ ipcMain.handle('zuno:version', () => {
     try { saved = JSON.parse(fs.readFileSync(configFile(), 'utf8')); } catch {}
     writeConfig({ ...saved, lastVersion: RUNNING_VERSION }); // only remember the version, nothing else
   }
-  return { version: RUNNING_VERSION, updatedFrom: previous && previous !== RUNNING_VERSION ? previous : null, readyVersion, execPath: process.execPath, packaged: app.isPackaged, appDir: APP_DIR };
-});
+  const paths = trust === 'chosen' ? {} : { execPath: process.execPath, appDir: APP_DIR };
+  return { version: RUNNING_VERSION, updatedFrom: previous && previous !== RUNNING_VERSION ? previous : null, readyVersion, packaged: app.isPackaged, ...paths };
+}, null));
 // The custom title bar's buttons.
 // Mini mode (0.28): a small window that stays on top of everything, showing just your call.
 let beforeMini = null;
-ipcMain.handle('zuno:window', (_e, action) => {
+ipcMain.handle('zuno:window', guard('page', (_e, _t, action) => {
   if (!win) return null;
   if (action === 'mini-on' && !beforeMini) {
     beforeMini = { bounds: win.getBounds(), maximized: win.isMaximized(), min: win.getMinimumSize() };
@@ -301,42 +372,37 @@ ipcMain.handle('zuno:window', (_e, action) => {
   if (action === 'maximize') win.isMaximized() ? win.unmaximize() : win.maximize();
   if (action === 'close') win.close();
   return { maximized: win.isMaximized() };
-});
-ipcMain.on('zuno:restart', () => {
+}, null));
+ipcMain.on('zuno:restart', guard('page', () => {
   try { serverModule?.flush(); } catch {}
   if (updater && updateDownloaded) return updater.quitAndInstall(false, true); // install the downloaded version, then reopen
   app.relaunch();
   app.exit(0);
-});
-ipcMain.handle('zuno:host', async (_e) => {
-  // Only the app's own pages can switch it to hosting, never a web page loaded in it.
-  const from = _e.senderFrame?.url || _e.sender?.getURL?.() || '';
-  if (!from.startsWith('file:')) return { ok: false };
+}));
+// Only the app's own pages can switch it to hosting or to another server, never a web page loaded in it.
+ipcMain.handle('zuno:host', guard('local', async () => {
   writeConfig({ ...readConfig(), mode: 'host', modeChosen: true });
   await loadApp();
   return { ok: true };
-});
-ipcMain.handle('zuno:connect', async (_e, input) => {
-  // (0.47) Only the app's own "Server Settings" page can switch servers, never a web page loaded in it.
-  const from = _e.senderFrame?.url || _e.sender?.getURL?.() || '';
-  if (!from.startsWith('file:')) return { ok: false, error: 'Open Server Settings from the Zuno menu to change servers.' };
+}, { ok: false }));
+ipcMain.handle('zuno:connect', guard('local', async (_e, _t, input) => {
   const origin = normalizeUrl(input);
   if (!origin) return { ok: false, error: "That doesn't look like a server address." };
   if (!(await isZunoServer(origin))) return { ok: false, error: `No Zuno server answered at ${origin}. Check the address and that their Zuno is open.` };
   writeConfig({ ...readConfig(), mode: 'remote', serverUrl: origin, modeChosen: origin !== ONLINE_SERVER });
   win.loadURL(origin);
   return { ok: true };
-});
-ipcMain.handle('zuno:server-settings', () => { showConnect(); });
-ipcMain.on('zuno:badge', (_e, count) => {
-  try { app.setBadgeCount(Math.max(0, Number(count) || 0)); } catch {}
+}, { ok: false, error: 'Open Server Settings from the Zuno menu to change servers.' }));
+ipcMain.handle('zuno:server-settings', guard('page', () => { showConnect(); }));
+ipcMain.on('zuno:badge', guard('page', (_e, _t, count) => {
+  try { app.setBadgeCount(Math.max(0, Math.min(9999, Number(count) || 0))); } catch {}
   if (count > 0 && win && !win.isFocused()) win.flashFrame(true);
-});
-ipcMain.on('zuno:focus', () => {
+}));
+ipcMain.on('zuno:focus', guard('page', () => {
   if (!win) return;
   if (win.isMinimized()) win.restore();
   win.show(); win.focus();
-});
+}));
 
 // ---------- activity status: which game is open, and what Spotify is playing ----------
 // Zuno only checks the names of running programs against this list of games, plus Spotify's
@@ -624,7 +690,7 @@ function ensureOverlay() {
   placeOverlay();
   return overlay;
 }
-ipcMain.on('zuno:overlay', (_e, st) => {
+ipcMain.on('zuno:overlay', guard('page', (_e, _t, st) => {
   // st: { on, corner, people: [{ name, avatar, speaking, muted }] } — or null when you leave the call.
   if (!st || !st.on || !st.people?.length) { if (overlay && !overlay.isDestroyed()) overlay.hide(); return; }
   if (st.corner && st.corner !== overlayCorner) { overlayCorner = st.corner; placeOverlay(); }
@@ -632,7 +698,7 @@ ipcMain.on('zuno:overlay', (_e, st) => {
   const sendIt = () => o.webContents.send('overlay:state', st);
   if (o.webContents.isLoading()) o.webContents.once('did-finish-load', sendIt); else sendIt();
   if (!overlayHidden && !o.isVisible()) o.showInactive();
-});
+}));
 app.whenReady().then(() => {
   try {
     globalShortcut.register('Shift+`', () => {

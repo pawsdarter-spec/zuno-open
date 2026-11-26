@@ -94,8 +94,11 @@ step('event stream: one-use tickets, no login token in the URL, bots still conne
   const app = (await ok('POST', '/api/apps', { name: 'Ticket Bot', description: 'test' }, u.token)).app;
   const bot = (await ok('POST', `/api/apps/${app.id}/token`, {}, u.token)).token;
   assert.equal(await streamStatus('/api/events', { Authorization: `Bot ${bot}` }), 200, 'bots connect with the Bot header');
-  assert.equal(await streamStatus(`/api/events?bot=${encodeURIComponent(bot)}`), 200, 'bots connect with ?bot=');
-  assert.ok([401, 403].includes((await request('POST', '/api/events/ticket', { headers: { Authorization: `Bot ${bot}` }, body: {} })).res.status), "bots don't use tickets");
+  assert.equal(await streamStatus(`/api/events?bot=${encodeURIComponent(bot)}`), 401, 'bot tokens never go in the address');
+  const bt = (await request('POST', '/api/events/ticket', { headers: { Authorization: `Bot ${bot}` }, body: {} })).data.ticket;
+  assert.match(String(bt), /^[a-f0-9]{64}$/, 'bots can get a one-use ticket');
+  assert.equal(await streamStatus(`/api/events?ticket=${bt}`), 200);
+  assert.equal(await streamStatus(`/api/events?ticket=${bt}`), 401);
 });
 
 step('Employee Dashboard: staff-only profile, badge, naming and restriction controls', async () => {

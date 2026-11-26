@@ -785,6 +785,10 @@ async function renderAdmin(body, quiet = false) {
         ${d.system.storedMessages != null ? `<div class="ad-row"><span>Messages kept in memory</span><b>${fmtNum(d.system.storedMessages)}</b></div><div class="ad-row"><span>Logged-in devices</span><b>${fmtNum(d.system.logins)}</b></div>` : ''}
         <div class="ad-row"><span>AI name judge</span>${check(d.system.aiJudge)}</div><div class="ad-row"><span>Cloud storage</span>${check(d.system.cloudStorage)}</div><div class="ad-row"><span>Sign-up bot check</span>${check(d.system.turnstile)}</div>
         <div class="ad-row"><span>Email</span>${check(d.system.email)}</div><div class="ad-row"><span>Stripe (Bloom payments)</span>${check(d.system.stripe)}</div></div>
+      <div class="setting-group ad-source"><h4 class="setting-head">Download Zuno</h4>
+        <p class="muted small">A zip of the exact code Zuno is running right now (version ${esc(d.system.version || '')}). Passwords, the database, uploads and git history are never included.</p>
+        <button class="btn btn-primary btn-sm" type="button" id="ad-source-dl">Download latest Zuno (.zip)</button> <span class="muted small" id="ad-source-status" role="status"></span>
+      </div>
       <div class="setting-group ad-update-publisher"><h4 class="setting-head">Website update publisher</h4>
         <p class="muted small">Write the update announcement before publishing. Everyone online receives it immediately; people who are offline see it when they next open Zuno. Publishing the notice does not deploy code by itself.</p>
         <form id="ad-update-form" class="ad-update-form">
@@ -807,6 +811,18 @@ async function renderAdmin(body, quiet = false) {
     try { await api('PUT', '/api/admin/gift-event', { name: e.target.name.value, days: Number(e.target.days.value), goal: Number(e.target.goal.value) }); toast('Gifting event started'); renderAdmin(body); } catch (err) { toast(err.message, true); }
   });
   $('[data-ge-stop]', body)?.addEventListener('click', () => confirmDialog('End the gifting event?', 'The banner goes away for everyone. Badges already earned stay.', 'End Event', async () => { try { await api('PUT', '/api/admin/gift-event', { stop: true }); renderAdmin(body); } catch (err) { toast(err.message, true); } }));
+  $('#ad-source-dl', body)?.addEventListener('click', async e => {
+    const btn = e.currentTarget, status = $('#ad-source-status', body);
+    btn.disabled = true; status.textContent = 'Preparing…';
+    try {
+      const r = await api('POST', '/api/admin/source-ticket');
+      const a = document.createElement('a');
+      a.href = r.url; a.download = r.name; a.rel = 'noopener';
+      document.body.appendChild(a); a.click(); a.remove();
+      status.textContent = `${r.name} · ${r.files} files · ${r.sizeMB} MB`;
+    } catch (err) { status.textContent = ''; toast(err.message, true); }
+    finally { btn.disabled = false; }
+  });
   $('#ad-update-form', body)?.addEventListener('submit', async e => {
     e.preventDefault();
     const form = e.currentTarget;

@@ -1235,7 +1235,9 @@ document.addEventListener('click', e => {
   const bd = document.createElement('div');
   bd.id = 'member-backdrop'; bd.className = 'member-backdrop';
   bd.addEventListener('click', closeMemberDrawer);
-  ($('#app') || document.body).appendChild(bd); // inside #app so it stays under the drawer when an app background gives #app its own layer
+  // (0.55.1) Right behind the drawer, in the same layer: on phones the chat area is its own layer
+  // (for swipes), and a backdrop outside it sat on top of the member list, so it couldn't scroll.
+  if (panel.parentNode) panel.before(bd); else ($('#app') || document.body).appendChild(bd);
   if (!panel.children.length) renderMemberList();
 }, true);
 // Opening someone's profile from the drawer, or going somewhere else, closes it.

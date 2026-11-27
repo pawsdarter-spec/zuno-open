@@ -785,7 +785,7 @@ async function renderAdmin(body, quiet = false) {
         ${d.system.storedMessages != null ? `<div class="ad-row"><span>Messages kept in memory</span><b>${fmtNum(d.system.storedMessages)}</b></div><div class="ad-row"><span>Logged-in devices</span><b>${fmtNum(d.system.logins)}</b></div>` : ''}
         <div class="ad-row"><span>AI name judge</span>${check(d.system.aiJudge)}</div><div class="ad-row"><span>Cloud storage</span>${check(d.system.cloudStorage)}</div><div class="ad-row"><span>Sign-up bot check</span>${check(d.system.turnstile)}</div>
         <div class="ad-row"><span>Email</span>${check(d.system.email)}</div><div class="ad-row"><span>Stripe (Bloom payments)</span>${check(d.system.stripe)}</div></div>
-      <div class="setting-group ad-source"${state.me.isFounder ? '' : ' hidden'}><h4 class="setting-head">Download Zuno</h4>
+      <div class="setting-group ad-source"><h4 class="setting-head">Download Zuno</h4>
         <p class="muted small">A zip of the exact code Zuno is running right now (version ${esc(d.system.version || '')}). Passwords, the database, uploads and git history are never included.</p>
         <button class="btn btn-primary btn-sm" type="button" id="ad-source-dl">Download latest Zuno (.zip)</button> <span class="muted small" id="ad-source-status" role="status"></span>
       </div>

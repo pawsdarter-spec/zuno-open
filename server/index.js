@@ -4264,7 +4264,7 @@ async function handleRequest(req, res) {
   if (url.pathname === '/.well-known/security.txt') {
     const base = (PUBLIC_URL || 'https://heyzuno.uk');
     res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'public, max-age=86400' });
-    return res.end(`Contact: ${base}/security\nPolicy: ${base}/security\nExpires: ${new Date(Date.now() + 180 * 864e5).toISOString()}\nPreferred-Languages: en\n`);
+    return res.end(`Contact: mailto:support@heyzuno.uk\nContact: ${base}/security\nPolicy: ${base}/security\nExpires: ${new Date(Date.now() + 180 * 864e5).toISOString()}\nPreferred-Languages: en\n`);
   }
   if (url.pathname === '/status') return serveStatic('/status.html', res, req);
   // Uploaded files can never run as a page here, whatever is inside them.

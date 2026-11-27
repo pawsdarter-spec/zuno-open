@@ -75,7 +75,8 @@ module.exports = function (z) {
   const tickets = new Map(); // one-time download tickets, memory only
 
   route('POST', '/api/admin/source-ticket', async ({ me, token }) => {
-    if (!z.isFounder(me.id) || me.system) fail(403, 'Only the founder can download Zuno.');
+    // (0.57.3) Zuno Managers can download it too (they hand it to the developers).
+    if ((!z.isFounder(me.id) && !z.isManager(me)) || me.system) fail(403, 'Only the founder and Zuno Managers can download Zuno.');
     z.needReauth(token);
     const t = crypto.randomBytes(24).toString('base64url');
     tickets.set(t, Date.now() + 60e3);

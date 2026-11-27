@@ -2187,6 +2187,7 @@ async function renderAbout(body) {
           <a class="btn btn-grey btn-sm" href="/security" target="_blank" rel="noopener">Report a security problem</a>
           <button class="btn btn-grey btn-sm" id="about-bug">Report a Bug</button>
         </div>
+        <div class="muted small" style="margin-top:8px">Need help? Email <a href="mailto:support@heyzuno.uk">support@heyzuno.uk</a></div>
       </div>
     </div>
     ${notes.items?.length ? `<div class="setting-group about-latest"><h4 class="setting-head">New in ${esc(notes.version)}${notes.title ? ` · ${esc(notes.title)}` : ''}</h4><ul>${notes.items.map(i => `<li>${esc(i)}</li>`).join('')}</ul></div>` : ''}

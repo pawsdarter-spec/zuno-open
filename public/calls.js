@@ -30,7 +30,7 @@ const Calls = (() => {
   const meters = new Map();      // userId -> { analyser, data }
   const speaking = new Set();
   let ringing = null;            // incoming ring: { room, from, video, timer }
-  let ringTimer = null, toneTimer = null, meterTimer = null, clockTimer = null;
+  let ringTimer = null, toneTimer = null, meterTimer = null, clockTimer = null, mediaWatchTimer = null;
   let actx = null;
 
   try { const saved = JSON.parse(localStorage.getItem('zuno_voice') || '{}'); c.muted = !!saved.muted; c.deafened = !!saved.deafened; } catch {}
@@ -156,16 +156,21 @@ const Calls = (() => {
   let ringAudio = null;
   function startRing(kind, special) {
     stopTone();
-    const fallback = () => (kind === 'incoming' ? loopTone(sounds.incoming, 16 * B * 1000 + 300) : loopTone(sounds.outgoing, 2200));
-    // (0.42) Zuno's ringtone is "Call Song", and once in a while (1 in 10) a hidden one plays instead.
-    const zunoTone = () => (Math.random() < 0.1 ? '/tones/HiddenCall.mp3' : '/tones/CallSong.mp3');
-    const src = special ? `/tones/${encodeURIComponent(special)}.mp3` : kind === 'incoming' ? state.extras?.ringtone?.url || zunoTone() : zunoTone(); // (0.43.1) the caller hears it too
-    if (!src) return fallback();
+    const fallback = () => (kind === 'incoming' ? loopTone(sounds.incoming, 16 * B * 1000 + 300) : loopTone(sounds.outgoing, 2600));
+    // Incoming and outgoing have deliberately different Zuno-made melodies. A personal uploaded
+    // ringtone is used only for incoming calls; the caller hears the outgoing ringback pattern.
+    if (kind === 'outgoing' && !special) return fallback();
+    const src = special ? `/tones/${encodeURIComponent(special)}.mp3` : (state.extras?.ringtone?.url || '/tones/CallSong.mp3');
     const audio = new Audio(src);
     audio.loop = true;
-    audio.volume = kind === 'incoming' ? 0.8 : 0.45;
+    audio.preload = 'auto';
+    audio.volume = kind === 'incoming' ? 0.82 : 0.48;
     ringAudio = audio;
     audio.play().catch(() => { if (ringAudio === audio) { ringAudio = null; fallback(); } });
+    // Browsers may pause media after a tab is backgrounded; restart only while this ring is active.
+    audio.addEventListener('pause', () => {
+      if (ringAudio === audio && (ringing || c.phase === 'calling')) audio.play().catch(() => {});
+    });
   }
   // Settings uses this to let you hear a ringtone. Returns a function that stops it.
   function previewRing(src) {
@@ -466,7 +471,7 @@ const Calls = (() => {
   const MAX_TRIES = 3;
   function makePC(userId, initiator, opts = {}) {
     const old = pcs.get(userId);
-    if (old) { old.zunoDead = true; clearTimeout(old.zunoWatch); clearTimeout(old.zunoDrop); clearInterval(old.zunoStatsTimer); old.close(); }
+    if (old) { old.zunoDead = true; clearTimeout(old.zunoWatch); clearTimeout(old.zunoDrop); clearTimeout(old.zunoIceDrop); clearTimeout(old.zunoLater); clearInterval(old.zunoStatsTimer); old.close(); }
     // (0.56) With a relay set up, calls always go through it: nobody in a call connects straight to
     // anyone else's computer, so nobody's network address is shared with the others.
     const relayOnly = hasRelay;
@@ -481,9 +486,21 @@ const Calls = (() => {
       const r = remote.get(userId) || {};
       r[e.track.kind] = e.track;
       remote.set(userId, r);
-      if (e.track.kind === 'audio') attachAudio(userId, e.track);
-      else e.track.onunmute = () => render();
+      if (e.track.kind === 'audio') {
+        e.track.onended = () => { const current = remote.get(userId); if (current?.audio === e.track) { current.audio = null; remote.set(userId, current); } if (!pc.zunoDead && pcs.get(userId) === pc && c.room) recover(userId, pc); };
+        attachAudio(userId, e.track);
+      } else e.track.onunmute = () => render();
       render();
+    };
+    pc.oniceconnectionstatechange = () => {
+      if (pc.zunoDead) return;
+      if (pc.iceConnectionState === 'failed') recover(userId, pc);
+      else if (pc.iceConnectionState === 'disconnected') {
+        clearTimeout(pc.zunoIceDrop);
+        pc.zunoIceDrop = setTimeout(() => {
+          if (!pc.zunoDead && pc.iceConnectionState === 'disconnected') recover(userId, pc);
+        }, 6500);
+      } else if (pc.iceConnectionState === 'connected' || pc.iceConnectionState === 'completed') clearTimeout(pc.zunoIceDrop);
     };
     // Watchdog: some browsers sit on "connecting" for a very long time instead of failing.
     pc.zunoWatch = setTimeout(() => { if (!pc.zunoDead && pc.connectionState !== 'connected') recover(userId, pc); }, 15000);
@@ -638,7 +655,7 @@ const Calls = (() => {
   function dropPeer(userId) {
     relayStop(userId, false);
     const p = pcs.get(userId);
-    if (p) { p.zunoDead = true; clearTimeout(p.zunoWatch); clearTimeout(p.zunoDrop); p.close(); }
+    if (p) { p.zunoDead = true; clearTimeout(p.zunoWatch); clearTimeout(p.zunoDrop); clearTimeout(p.zunoIceDrop); clearTimeout(p.zunoLater); clearInterval(p.zunoStatsTimer); p.close(); }
     pcs.delete(userId); tries.delete(userId);
     pending.delete(userId); peerStates.delete(userId); remote.delete(userId);
     audioEls.get(userId)?.remove(); audioEls.delete(userId);
@@ -694,7 +711,12 @@ const Calls = (() => {
     for (const el of audioEls.values()) if (el.paused) el.play().catch(() => {});
   };
   for (const ev of ['pointerdown', 'touchend', 'keydown']) addEventListener(ev, wakeAudio, { capture: true, passive: true });
-  document.addEventListener('visibilitychange', () => { if (!document.hidden) { wakeAudio(); applyPeerMutes(); } });
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) {
+      wakeAudio(); applyPeerMutes();
+      for (const [id, pc] of pcs) if (pc.connectionState === 'failed' || pc.iceConnectionState === 'failed' || pc.connectionState === 'disconnected') recover(id, pc);
+    }
+  });
   function routeThroughGain(userId, el) {
     try {
       gains.get(userId)?.src.disconnect();
@@ -710,6 +732,8 @@ const Calls = (() => {
     let el = audioEls.get(userId);
     if (!el) { el = document.createElement('audio'); el.autoplay = true; el.setAttribute('playsinline', ''); $('#call-audio').appendChild(el); audioEls.set(userId, el); }
     el.srcObject = new MediaStream([track]);
+    el.autoplay = true;
+    el.playsInline = true;
     routeThroughGain(userId, el);
     applyPeerMutes();
     el.play().catch(() => {});
@@ -757,6 +781,40 @@ const Calls = (() => {
     if (changed) for (const el of $$('[data-speak]')) el.classList.toggle('speaking', speaking.has(el.dataset.speak));
   }
 
+  // ---------- call health watchdog ----------
+  // A peer can remain nominally connected while its media track or audio element has stopped.
+  // Check both transport and playback, without treating ordinary silence as a fault.
+  async function checkMediaHealth() {
+    if (!c.room) return;
+    if (!document.hidden) {
+      if (actx?.state === 'suspended') actx.resume().then(applyPeerMutes).catch(() => {});
+      for (const [id, el] of audioEls) {
+        if (id.endsWith(':screen')) continue;
+        const tr = remote.get(id)?.audio;
+        if (tr?.readyState === 'ended') {
+          const current = remote.get(id);
+          if (current?.audio === tr) { current.audio = null; remote.set(id, current); }
+          const pc = pcs.get(id);
+          if (pc && !pc.zunoDead) recover(id, pc);
+          continue;
+        }
+        if (tr?.readyState === 'live' && el.paused && el.srcObject) el.play().catch(() => {});
+      }
+    }
+    // A USB headset can disappear without firing a useful devicechange event on some browsers.
+    if (localAudio?.readyState === 'ended') {
+      try { await refreshMic(); } catch {}
+    }
+    for (const [id, pc] of pcs) {
+      if (pc.zunoDead) continue;
+      if (pc.connectionState === 'failed' || pc.iceConnectionState === 'failed') recover(id, pc);
+    }
+  }
+  function startMediaWatch() {
+    clearInterval(mediaWatchTimer);
+    mediaWatchTimer = setInterval(() => checkMediaHealth().catch(() => {}), 3500);
+  }
+
   // ---------- starting & ending ----------
   async function begin(room, info) {
     if (c.room && c.room !== room) await hangup({ quiet: true });
@@ -768,6 +826,7 @@ const Calls = (() => {
     try { r = await api('POST', '/api/rtc/join', { room, ...myState() }); }
     catch (e) { toast(e.message, true); cleanup(); return false; }
     c.ringtone = r.ringtone || null;
+    startMediaWatch();
     for (const u of r.users || []) state.users[u.id] = { ...state.users[u.id], ...u };
     for (const p of r.peers) { peerStates.set(p.userId, p); await callPeer(p.userId); }
     if (info.kind === 'voice') { c.phase = 'connected'; c.startedAt = Date.now(); sounds.join(); }
@@ -829,6 +888,7 @@ const Calls = (() => {
     meters.clear(); speaking.clear();
     clearInterval(meterTimer); meterTimer = null;
     clearInterval(clockTimer); clockTimer = null;
+    clearInterval(mediaWatchTimer); mediaWatchTimer = null;
     clearTimeout(ringTimer); stopTone();
     Object.assign(c, { room: null, kind: null, peerId: null, groupId: null, serverId: null, channelId: null, phase: 'idle', video: false, screen: false, startedAt: 0 });
     render();

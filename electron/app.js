@@ -197,13 +197,13 @@ function createWindow() {
   win.webContents.on('will-attach-webview', e => e.preventDefault());
   // Links in messages open in the normal web browser, not inside Zuno.
   win.webContents.setWindowOpenHandler(({ url }) => {
-    if (/^https?:\/\//i.test(url)) shell.openExternal(url);
+    if (/^(https?:\/\/|mailto:)/i.test(url)) shell.openExternal(url);
     return { action: 'deny' };
   });
   win.webContents.on('will-navigate', (e, url) => {
     const current = win.webContents.getURL();
     const sameSite = (url.startsWith('file:') && current.startsWith('file:')) || (current && !current.startsWith('file:') && new URL(url).origin === new URL(current).origin);
-    if (!sameSite) { e.preventDefault(); if (/^https?:\/\//i.test(url)) shell.openExternal(url); }
+    if (!sameSite) { e.preventDefault(); if (/^(https?:\/\/|mailto:)/i.test(url)) shell.openExternal(url); }
   });
   win.webContents.on('did-fail-load', (_e, code, desc, url, isMainFrame) => {
     if (isMainFrame && !url.startsWith('file:') && code !== -3) showConnect(`Couldn't reach ${url} (${desc}).`);

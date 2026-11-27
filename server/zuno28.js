@@ -417,7 +417,7 @@ module.exports = function (z) {
   function vapidJwt(endpoint) {
     const aud = new URL(endpoint).origin;
     const head = Buffer.from(JSON.stringify({ typ: 'JWT', alg: 'ES256' })).toString('base64url');
-    const sub = process.env.ZUNO_PUSH_CONTACT || (z.PUBLIC_URL ? z.PUBLIC_URL : 'mailto:support@zuno.app');
+    const sub = process.env.ZUNO_PUSH_CONTACT || (z.PUBLIC_URL ? z.PUBLIC_URL : 'mailto:support@heyzuno.uk');
     const claims = Buffer.from(JSON.stringify({ aud, exp: Math.floor(Date.now() / 1000) + 12 * 3600, sub })).toString('base64url');
     const sig = crypto.sign('sha256', Buffer.from(`${head}.${claims}`), { key: vapidKey(), dsaEncoding: 'ieee-p1363' }).toString('base64url');
     return `${head}.${claims}.${sig}`;

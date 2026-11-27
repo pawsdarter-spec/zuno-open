@@ -243,10 +243,30 @@ const Calls = (() => {
     if (!c.room) return;
     const old = localAudio;
     localAudio = null;
-    try { await ensureMic(); } catch { localAudio = old; return toast("Couldn't switch microphones.", true); }
-    for (const pc of pcs.values()) { const t = pc.getTransceivers()[0]; if (t) await t.sender.replaceTrack(localAudio).catch(() => {}); }
+    try { await ensureMic(); } catch { localAudio = old; return toast("Couldn't switch microphones. Check your browser's microphone permission.", true); }
+    for (const pc of pcs.values()) {
+      const audio = pc.getTransceivers().find(t => t.sender?.track?.kind === 'audio' || t.receiver?.track?.kind === 'audio');
+      if (audio) await audio.sender.replaceTrack(localAudio).catch(() => {});
+    }
     old?.stop();
   }
+  // Recover gracefully when a USB/Bluetooth microphone is unplugged during a call.
+  let micRecoverTimer = null;
+  if (navigator.mediaDevices?.addEventListener) navigator.mediaDevices.addEventListener('devicechange', async () => {
+    if (!c.room) return;
+    const selected = voiceSettings().micId;
+    if (!selected) return;
+    try {
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      if (!devices.some(d => d.kind === 'audioinput' && d.deviceId === selected)) {
+        const settings = voiceSettings(); settings.micId = '';
+        try { localStorage.setItem('zuno_voice_settings', JSON.stringify(settings)); } catch {}
+        clearTimeout(micRecoverTimer);
+        micRecoverTimer = setTimeout(() => refreshMic(), 350);
+        toast('Your microphone was disconnected. Switching to the default microphone.');
+      }
+    } catch {}
+  });
   // ---------- (0.47) voice changer (beta) ----------
   // Your mic goes through a small sound chain before it's sent: a higher or deeper voice, a robot,
   // an old radio, or an echo. Everyone hears the changed voice; "Off" sends your mic as it is.
@@ -312,6 +332,11 @@ const Calls = (() => {
     const s = await navigator.mediaDevices.getUserMedia({ audio: micConstraints(), video: false });
     localAudio = voiceFx(s.getAudioTracks()[0], voiceSettings().fx);
     localAudio.enabled = micLive();
+    localAudio.onended = () => {
+      if (!c.room || c.muted || c.deafened) return;
+      clearTimeout(micRecoverTimer);
+      micRecoverTimer = setTimeout(() => refreshMic(), 700);
+    };
     // (0.45.1) The meter listens to a copy of the mic, so it still hears you while the voice gate
     // (sensitivity / strong noise suppression) has your sent sound switched off.
     meterTrack?.stop();
@@ -441,7 +466,7 @@ const Calls = (() => {
   const MAX_TRIES = 3;
   function makePC(userId, initiator, opts = {}) {
     const old = pcs.get(userId);
-    if (old) { old.zunoDead = true; clearTimeout(old.zunoWatch); clearTimeout(old.zunoDrop); old.close(); }
+    if (old) { old.zunoDead = true; clearTimeout(old.zunoWatch); clearTimeout(old.zunoDrop); clearInterval(old.zunoStatsTimer); old.close(); }
     // (0.56) With a relay set up, calls always go through it: nobody in a call connects straight to
     // anyone else's computer, so nobody's network address is shared with the others.
     const relayOnly = hasRelay;
@@ -482,8 +507,40 @@ const Calls = (() => {
       a.sender.replaceTrack(localAudio);
       v.sender.replaceTrack(currentVideo());
       sa.sender.replaceTrack(screenAudio);
+      tuneVoiceSender(a.sender, 96000);
     }
+    pc.zunoQuality = { rtt: null, loss: null, bitrate: 96000, label: 'Good' };
+    let statsBusy = false;
+    pc.zunoStatsTimer = setInterval(async () => {
+      if (statsBusy || pc.zunoDead || pc.connectionState !== 'connected') return;
+      statsBusy = true;
+      try {
+        const report = await pc.getStats();
+        let loss = null, rtt = null;
+        report.forEach(v => {
+          if (v.type === 'remote-inbound-rtp' && v.kind === 'audio' && Number.isFinite(v.fractionLost)) loss = v.fractionLost;
+          if (v.type === 'candidate-pair' && v.state === 'succeeded' && v.nominated && Number.isFinite(v.currentRoundTripTime)) rtt = v.currentRoundTripTime;
+        });
+        const poor = (loss != null && loss > 0.08) || (rtt != null && rtt > 0.4);
+        const fair = !poor && ((loss != null && loss > 0.03) || (rtt != null && rtt > 0.25));
+        const bitrate = Math.min(poor ? 48000 : fair ? 64000 : 96000, pcs.size > 4 ? 32000 : pcs.size > 2 ? 48000 : 96000); // (0.57.2) bigger calls keep 0.56's lower caps
+        pc.zunoQuality = { loss, rtt, bitrate, label: poor ? 'Weak' : fair ? 'Fair' : 'Good' };
+        const micSender = pc.getTransceivers().find(t => t.sender?.track?.kind === 'audio')?.sender;
+        if (micSender) await tuneVoiceSender(micSender, bitrate);
+      } catch {} finally { statsBusy = false; }
+    }, 5000);
     return pc;
+  }
+  async function tuneVoiceSender(sender, bitrate) {
+    try {
+      const p = sender.getParameters();
+      p.encodings = p.encodings?.length ? p.encodings : [{}];
+      if (p.encodings[0].maxBitrate !== bitrate) {
+        p.encodings[0].maxBitrate = bitrate;
+        if ('priority' in p.encodings[0]) p.encodings[0].priority = 'high';
+        await sender.setParameters(p);
+      }
+    } catch {}
   }
   // Only the person who started the connection rebuilds it; the other side asks them to.
   function recover(userId, pc) {
@@ -519,6 +576,12 @@ const Calls = (() => {
     // Fresh connection, through the relay when there is one.
     callPeer(userId, { relay: true }).catch(() => {});
   }
+  // A laptop waking from sleep or changing Wi-Fi often keeps a stale ICE route. Retry immediately
+  // when the browser reports that network access has returned.
+  addEventListener('online', () => {
+    if (!c.room) return;
+    for (const [id, pc] of pcs) if (pc.connectionState !== 'connected') recover(id, pc);
+  });
   async function callPeer(userId, opts = {}) {
     const pc = makePC(userId, true, opts);
     await pc.setLocalDescription(tuneSdp(await pc.createOffer()));
@@ -1236,6 +1299,7 @@ const Calls = (() => {
     isSpeaking: id => speaking.has(id),
     // (0.38) The connection to someone in the call, for the signal bars.
     stats: id => pcs.get(id)?.getStats() || Promise.resolve(null),
+    voiceQuality: id => pcs.get(id)?.zunoQuality || null,
     peerIds: () => [...pcs.keys()],
     stageHtml: () => `<div class="call-tiles stage${focusClass()}">${participants().map(tile).join('')}</div>${controls()}`,
     wireStage: root => { attachVideos(root); wireControls(root); },

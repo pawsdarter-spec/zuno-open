@@ -725,7 +725,7 @@ renderDeveloper = async function (body, ...a) {
 const _openSettings27 = openSettings;
 openSettings = function (...a) {
   const r = _openSettings27(...a);
-  if (state.me?.isFounder && !$('.settings-nav [data-s="admin"]')) {
+  if ((state.me?.isFounder || state.me?.isManager) && !$('.settings-nav [data-s="admin"]')) {
     const anchor = $('.settings-nav [data-s="employee"]') || $('.settings-nav [data-s="buginbox"]');
     if (anchor) {
       anchor.insertAdjacentHTML('afterend', '<button data-s="admin">Admin Dashboard</button>');
@@ -762,7 +762,7 @@ async function renderAdmin(body, quiet = false) {
   const up = s => { const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60); return h > 48 ? `${Math.floor(h / 24)} days` : h ? `${h}h ${m}m` : `${m}m`; };
   const ge = d.giftEvent && d.giftEvent.endsAt > Date.now() ? d.giftEvent : null;
   const check = ok => (ok ? '<span class="ad-ok">On</span>' : '<span class="ad-off">Off</span>');
-  body.innerHTML = `<div class="admin-dash"><h2>Admin Dashboard <span class="muted small">only you can see this · updates every 30s</span></h2>
+  body.innerHTML = `<div class="admin-dash"><h2>Admin Dashboard <span class="muted small">${state.me.isFounder ? 'only you and Zuno Managers can see this' : 'only the founder and Zuno Managers can see this'} · updates every 30s</span></h2>
     <div class="ad-tiles">
       ${tile('People', fmtNum(d.people.total), `+${d.people.newToday} today · +${d.people.newWeek} this week`)}
       ${tile('Online now', fmtNum(d.people.online))}
@@ -785,7 +785,7 @@ async function renderAdmin(body, quiet = false) {
         ${d.system.storedMessages != null ? `<div class="ad-row"><span>Messages kept in memory</span><b>${fmtNum(d.system.storedMessages)}</b></div><div class="ad-row"><span>Logged-in devices</span><b>${fmtNum(d.system.logins)}</b></div>` : ''}
         <div class="ad-row"><span>AI name judge</span>${check(d.system.aiJudge)}</div><div class="ad-row"><span>Cloud storage</span>${check(d.system.cloudStorage)}</div><div class="ad-row"><span>Sign-up bot check</span>${check(d.system.turnstile)}</div>
         <div class="ad-row"><span>Email</span>${check(d.system.email)}</div><div class="ad-row"><span>Stripe (Bloom payments)</span>${check(d.system.stripe)}</div></div>
-      <div class="setting-group ad-source"><h4 class="setting-head">Download Zuno</h4>
+      <div class="setting-group ad-source"${state.me.isFounder ? '' : ' hidden'}><h4 class="setting-head">Download Zuno</h4>
         <p class="muted small">A zip of the exact code Zuno is running right now (version ${esc(d.system.version || '')}). Passwords, the database, uploads and git history are never included.</p>
         <button class="btn btn-primary btn-sm" type="button" id="ad-source-dl">Download latest Zuno (.zip)</button> <span class="muted small" id="ad-source-status" role="status"></span>
       </div>

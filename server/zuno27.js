@@ -778,7 +778,8 @@ module.exports = function zuno27(z) {
   // ======================= the founder's admin dashboard =======================
   // Only the founder (CONFIG.FOUNDER) can open it: people, activity, money, moderation queues and
   // how the server itself is doing, plus the switch for gifting events.
-  const needFounder = me => { if (!z.isFounder(me.id)) fail(403, 'Only the founder can see this.'); };
+  // (0.57.2) Zuno Managers can use the Admin Dashboard too (downloading the code stays founder-only).
+  const needFounder = me => { if (!z.isFounder(me.id) && !z.isManager(me)) fail(403, 'Only the founder and Zuno Managers can see this.'); };
   route('GET', '/api/admin/dashboard', async ({ me }) => {
     needFounder(me);
     const now = Date.now(), day = 864e5;

@@ -371,7 +371,7 @@ function publicUserFresh(u) {
 // Only ever sent to the account owner: includes their email.
 function privateMe(u) {
   const prefs = { ...PREF_DEFAULTS, ...(u.prefs || {}) };
-  return { ...publicUser(u), statusPref: u.status, email: u.email || '', prefs, isStaff: isStaff(u), inboxCount: (u.inbox || []).length, suspendedUntil: isSuspended(u) ? u.suspendedUntil : null, bloomInfo: bloomStatus(u), limits: perksFor(u), favGifs: u.favGifs || [], blocked: u.blocked || [], ban: banView(u), isFounder: u.username === CONFIG.FOUNDER };
+  return { ...publicUser(u), statusPref: u.status, email: u.email || '', prefs, isStaff: isStaff(u), isManager: isManager(u), inboxCount: (u.inbox || []).length, suspendedUntil: isSuspended(u) ? u.suspendedUntil : null, bloomInfo: bloomStatus(u), limits: perksFor(u), favGifs: u.favGifs || [], blocked: u.blocked || [], ban: banView(u), isFounder: u.username === CONFIG.FOUNDER };
 }
 // What a banned person sees about their ban (and their appeal).
 function banView(u) {
@@ -448,7 +448,7 @@ function broadcastUser(u) {
   const pu = publicUser(u);
   // (0.57.1) Your own copy also says whether you're staff, so getting or losing the Staff or
   // Manager badge shows or hides the staff pages (Employee Dashboard, Moderation) without a reload.
-  send(u.id, 'user', { ...pu, isStaff: isStaff(u) });
+  send(u.id, 'user', { ...pu, isStaff: isStaff(u), isManager: isManager(u) });
   for (const f of new Set([...friendIds(u.id), ...serverMates(u.id)])) send(f, 'user', pu);
 }
 // (0.45) Pending friend requests as "from>to" pairs, rebuilt only when the list changes.

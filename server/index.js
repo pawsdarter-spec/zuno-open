@@ -446,7 +446,9 @@ function serverMates(id) {
 function broadcastUser(u) {
   clearPublicCache();
   const pu = publicUser(u);
-  send(u.id, 'user', pu);
+  // (0.57.1) Your own copy also says whether you're staff, so getting or losing the Staff or
+  // Manager badge shows or hides the staff pages (Employee Dashboard, Moderation) without a reload.
+  send(u.id, 'user', { ...pu, isStaff: isStaff(u) });
   for (const f of new Set([...friendIds(u.id), ...serverMates(u.id)])) send(f, 'user', pu);
 }
 // (0.45) Pending friend requests as "from>to" pairs, rebuilt only when the list changes.

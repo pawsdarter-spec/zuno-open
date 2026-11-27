@@ -59,7 +59,7 @@ async function renderEmployeeDashboard(body) {
   const drawUser = u => {
     selected = u;
     const badges = Object.entries(BADGE_INFO || {}).filter(([k]) => !k.startsWith('bloom') && k !== 'creator_dark' && (k !== 'staff' || state.me.isFounder || (state.me.badges || []).includes('zuno_manager')) && (k !== 'zuno_manager' || state.me.isFounder));
-    const isStaffTarget = !!u.isStaff || (u.badges || []).includes('staff');
+    const isStaffTarget = !!u.isStaff || (u.badges || []).includes('staff') || (u.badges || []).includes('zuno_manager');
     results.innerHTML = `<div class="emp-selected"><div class="emp-selected-top"><div><h4>${esc(u.displayName)}</h4><span class="muted">@${esc(u.username)} · ${esc(u.id)}</span></div><button class="btn btn-grey btn-sm" id="emp-clear">Clear</button></div>
       <div class="emp-status">${u.banned ? '<span class="red">Banned</span>' : u.suspendedUntil > Date.now() ? 'Timed out' : 'Account active'} · ${u.warnings || 0} warning(s) · ${u.dmOnly ? 'DM-only' : 'Standard server access'}${u.mutedUntil > Date.now() ? ' · Muted' : ''}</div>
       <div class="emp-sub"><h4>Profile identity</h4><div class="emp-fields"><label>Username<input id="emp-username" value="${esc(u.username)}" maxlength="32"></label><label>Display name<input id="emp-display" value="${esc(u.displayName)}" maxlength="32"></label><label>Pronouns<input id="emp-pronouns" value="${esc(u.pronouns || '')}" maxlength="24"></label></div><button class="btn btn-primary btn-sm" id="emp-profile-save">Save profile identity</button></div>

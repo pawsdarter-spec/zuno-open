@@ -536,7 +536,8 @@ function connect() {
     else if (!row) removeMessage(conv, id);
   });
   es.addEventListener('voice-state', e => onVoiceState(JSON.parse(e.data)));
-  for (const ev of ['call-ring', 'call-ended', 'call-declined', 'rtc-peer-joined', 'rtc-peer-left', 'rtc-signal', 'rtc-state', 'rtc-relay']) {
+  es.addEventListener('open', () => Calls.resync?.()); // (0.58) back online: make sure you're still in your call
+  for (const ev of ['call-ring', 'call-ended', 'call-declined', 'rtc-peer-joined', 'rtc-peer-left', 'rtc-signal', 'rtc-state', 'rtc-relay', 'rtc-sfu']) {
     es.addEventListener(ev, e => Calls.onEvent(ev, JSON.parse(e.data)));
   }
   // Reconnecting (with a new ticket) is handled inside LiveStream.

@@ -303,3 +303,23 @@ Code: `server/zuno57.js`, `public/zuno57.js`, `public/zuno57.css`.
 - Limits: bots mention at most 10 people and 3 roles per message, `@everyone`/`@here` once per 30 minutes per server
   (4 a day), 30 pings a minute per server. Bots with Manage Channels can make channels: 3 per server per 10 minutes,
   10 per server a day, 20 a day overall.
+
+## Calls through Cloudflare's call server (0.58)
+
+Code: `server/zuno58.js`, the "calls through Cloudflare's call server" section of `public/calls.js`,
+`public/zuno58.js` (Admin Dashboard switch).
+
+- Needs `ZUNO_CF_SFU_APP_ID` and `ZUNO_CF_SFU_APP_SECRET` (Cloudflare › Realtime › SFU), then
+  Admin Dashboard › Calls › "New calls". Each call keeps the mode it started with; with the switch off
+  calls use the old direct (mesh) connections.
+- Each person has two connections, both to Cloudflare: `pub` sends mic / video (camera or screen) /
+  screen sound once, `sub` receives everyone else. Track names are `<userId>-<slot>`. Each connection
+  runs one thing at a time (a queue); anything uncertain replaces both connections (`sfuRestart`) and
+  others pick up the new session from the `rtc-sfu` event.
+- The server only proxies to Cloudflare (it holds the secret) and only lets people in the same call
+  receive each other. `/api/rtc/sfu/publish|subscribe|answer|unsubscribe`.
+- Dropped live connections: you stay in your call for 30 seconds (`callGrace`), and the app calls
+  `/api/rtc/rejoin` when its live connection opens again, so Wi-Fi blips and Zuno restarts no longer
+  end calls. A DM call the other person hung up on stays ended (`endedRooms`).
+- Testing without Cloudflare: `ZUNO_SFU_BASE` points the server at a stand-in with the same API
+  (a headless-Chrome forwarder was used for 0.58's tests).

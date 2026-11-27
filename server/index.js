@@ -3758,6 +3758,8 @@ function leaveRoom(roomId, userId) {
   for (const id of room.keys()) send(id, 'rtc-peer-left', { room: roomId, userId });
   for (const fn of hooks.roomChange) fn(roomId, userId, 'leave', room);
   if (roomId.startsWith('dm:')) {
+    endedRooms.set(roomId, Date.now());
+    for (const [k, t] of endedRooms) if (Date.now() - t > 15 * 60e3) endedRooms.delete(k);
     // A DM call ends when either person leaves (and stops ringing if nobody answered).
     for (const id of roomId.slice(3).split(':')) if (id !== userId) send(id, 'call-ended', { room: roomId });
     rooms.delete(roomId);
@@ -3769,6 +3771,9 @@ function leaveRoom(roomId, userId) {
   }
   voiceUpdate(roomId);
 }
+const callGrace = new Map(); // userId -> timer that takes them out of their calls if they don't come back
+// (0.58) Calls that really ended (someone hung up), so coming back after a blip doesn't restart them.
+const endedRooms = new Map(); // roomId -> when
 function closeRoom(roomId) {
   for (const id of roomMembers(roomId)) { send(id, 'call-ended', { room: roomId }); }
   rooms.delete(roomId);
@@ -3815,7 +3820,31 @@ route('POST', '/api/rtc/join', async ({ me, body }) => {
     callUpdate(roomId, c => ({ ...c, state: 'ongoing', answeredAt: log.answeredAt, joined: [...new Set([...(c.joined || []), me.id])] }));
   }
   voiceUpdate(roomId);
-  return { peers, users: peers.map(p => publicUser(data.users[p.userId])).filter(Boolean), ringtone };
+  return { peers, users: peers.map(p => publicUser(data.users[p.userId])).filter(Boolean), ringtone, ...(hooks.rtcJoinExtra ? hooks.rtcJoinExtra(roomId, me, isNew) : {}) };
+});
+// (0.58) Your app's live connection came back: if Zuno lost track of you in your call (you were
+// gone longer than 30 seconds, or Zuno restarted), you're put back quietly, without ringing anyone.
+// A DM call the other person hung up on stays ended.
+route('POST', '/api/rtc/rejoin', async ({ me, body }) => {
+  const roomId = String(body.room || '');
+  let access;
+  try { access = roomAccess(me, roomId); } catch { return { ended: true }; }
+  if (!stillInvited(me.id, roomId)) return { ended: true };
+  const room = rooms.get(roomId);
+  if (room?.has(me.id)) return { here: true };
+  if (roomId.startsWith('dm:') && endedRooms.has(roomId) && !room?.size) return { ended: true };
+  if (roomId.startsWith('vc:') && me.dmOnly) return { ended: true };
+  for (const other of userRooms(me.id)) if (other !== roomId) leaveRoom(other, me.id);
+  const isNew = !room?.size;
+  if (!rooms.has(roomId)) rooms.set(roomId, new Map());
+  const r = rooms.get(roomId);
+  const peers = [...r.entries()].filter(([id]) => id !== me.id).map(([id, st]) => ({ userId: id, ...st }));
+  r.set(me.id, { muted: !!body.muted || (access.kind === 'voice' && !can(access.server, me.id, 'speak', access.channel)), deafened: !!body.deafened, video: !!body.video, screen: !!body.screen });
+  for (const fn of hooks.roomChange) fn(roomId, me.id, 'join', r);
+  if (!voiceSince.has(roomId + '|' + me.id)) voiceSince.set(roomId + '|' + me.id, Date.now());
+  for (const p of peers) send(p.userId, 'rtc-peer-joined', { room: roomId, userId: me.id, user: publicUser(me), state: r.get(me.id), quiet: true });
+  voiceUpdate(roomId);
+  return { rejoined: true, peers, users: peers.map(p => publicUser(data.users[p.userId])).filter(Boolean), ...(hooks.rtcJoinExtra ? hooks.rtcJoinExtra(roomId, me, isNew, !!body.sfu) : {}) };
 });
 route('POST', '/api/rtc/leave', async ({ me, body }) => {
   leaveRoom(String(body.room || ''), me.id);
@@ -3904,6 +3933,7 @@ function openStream(req, res, user, token = null) {
   const mine = streams.get(user.id);
   if (mine.size >= 10) { const old = mine.values().next().value; mine.delete(old); try { old.end(); } catch {} }
   mine.add(res);
+  clearTimeout(callGrace.get(user.id)); callGrace.delete(user.id); // back in time: stay in your call
   if (!wasOnline) broadcastUser(user);
 
   const ping = setInterval(() => streamWrite(res, ': ping\n\n'), 25000);
@@ -3913,7 +3943,15 @@ function openStream(req, res, user, token = null) {
     set?.delete(res);
     if (set && set.size === 0) {
       streams.delete(user.id);
-      for (const roomId of userRooms(user.id)) leaveRoom(roomId, user.id);
+      // (0.58) A dropped live connection (a Wi-Fi blip, a phone in the background, Zuno restarting)
+      // used to take you out of your call on the spot, and in a DM call that ended it for both of
+      // you. Now you get 30 seconds to come back first; your app rejoins quietly when it does.
+      clearTimeout(callGrace.get(user.id));
+      if (userRooms(user.id).length) callGrace.set(user.id, setTimeout(() => {
+        callGrace.delete(user.id);
+        if (streams.get(user.id)?.size) return;
+        for (const roomId of userRooms(user.id)) leaveRoom(roomId, user.id);
+      }, 30000));
       broadcastUser(user); // went offline
     }
   });
@@ -4398,7 +4436,7 @@ const feat = require('./features')({
   PKG, lastPost, removeMember, streamWrite, needReauth, isFounder,
 });
 const ctx2 = {
-  isFounder, officialServer, messagePreview, checkName, badUsername, NAME_ERROR, cleanName, stripInvisible, topPos, judgeText, noteAttachmentFile: a => { if (a?.thumb) fileToAttachment.set(path.basename(a.thumb), a.id); }, purgeBannedAccount, restoreBannedAccount, tellFounder, APPEAL_DAYS,
+  stillInvited, isFounder, officialServer, messagePreview, checkName, badUsername, NAME_ERROR, cleanName, stripInvisible, topPos, judgeText, noteAttachmentFile: a => { if (a?.thumb) fileToAttachment.set(path.basename(a.thumb), a.id); }, purgeBannedAccount, restoreBannedAccount, tellFounder, APPEAL_DAYS,
   staffGuard, isManager, overStaff, pruneDevices, liveSids, sessionSid, data, save, route, fail, hooks, clean, newId, send, emit, publicUser, privateMe, broadcastUser, postMessage, systemMessage,
   dmConv, groupConv, channelConv, findMessage, getServer, ensureRoles, need, can, refreshServer, audit, isStaff, needStaff, isBlocked, areFriends,
   friendIds, createSession, endSessions, limit, visitorTag, sniff, storeUpload, removeUpload, PERM_INFO, PERM_KEYS, SYSTEM_ID, PUBLIC_URL, dmKey,
@@ -4449,6 +4487,7 @@ require('./zuno54')(ctx2);
 require('./zuno55')(ctx2);
 require('./zuno56')(ctx2);
 require('./zuno57')(ctx2);
+require('./zuno58')(ctx2);
 
 // Zuno's big lookup tables (users, servers, sessions…) don't inherit JavaScript's built-in object,
 // so an id like "__proto__" or "constructor" finds nothing instead of something unexpected. Done in

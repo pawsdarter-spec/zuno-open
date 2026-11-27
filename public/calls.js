@@ -253,6 +253,7 @@ const Calls = (() => {
       const audio = pc.getTransceivers().find(t => t.sender?.track?.kind === 'audio' || t.receiver?.track?.kind === 'audio');
       if (audio) await audio.sender.replaceTrack(localAudio).catch(() => {});
     }
+    if (sfu) await sfuSend('mic', localAudio);
     old?.stop();
   }
   // Recover gracefully when a USB/Bluetooth microphone is unplugged during a call.
@@ -597,6 +598,7 @@ const Calls = (() => {
   // when the browser reports that network access has returned.
   addEventListener('online', () => {
     if (!c.room) return;
+    if (sfu && (sfu.pub.connectionState !== 'connected' || sfu.sub.connectionState !== 'connected')) sfuRestart('back online');
     for (const [id, pc] of pcs) if (pc.connectionState !== 'connected') recover(id, pc);
   });
   async function callPeer(userId, opts = {}) {
@@ -781,6 +783,180 @@ const Calls = (() => {
     if (changed) for (const el of $$('[data-speak]')) el.classList.toggle('speaking', speaking.has(el.dataset.speak));
   }
 
+  // ======================= (0.58) calls through Cloudflare's call server =======================
+  // When the server says a call uses the call server (SFU), nobody connects to anybody else. You
+  // keep two connections, both to Cloudflare: "pub" sends your voice, your camera or screen, and your
+  // screen's sound, once; "sub" receives everyone else's. Each connection does one thing at a time
+  // (a queue), and anything uncertain (a dropped connection, a failed request) replaces both
+  // connections cleanly instead of patching them: everyone else then picks up the new ones.
+  let sfu = null;
+  const SFU_KINDS = { mic: 'audio', video: 'video', screenaudio: 'audio' };
+  const sfuIce = () => [{ urls: 'stun:stun.cloudflare.com:3478' }, ...ICE.filter(s => [].concat(s.urls).some(u => /^turns?:/.test(u)))];
+  function sfuQueue(s, name, fn) {
+    const run = s[name + 'Q'].then(() => (sfu === s && !s.dead ? fn() : null));
+    s[name + 'Q'] = run.catch(() => {});
+    return run;
+  }
+  function sfuWatch(s, pc) {
+    pc.onconnectionstatechange = () => {
+      if (sfu !== s || s.dead) return;
+      const st = pc.connectionState;
+      if (st === 'connected') { clearTimeout(s.dropTimer); s.tries = 0; return; }
+      if (st === 'failed') return sfuRestart('connection failed');
+      if (st === 'disconnected') { clearTimeout(s.dropTimer); s.dropTimer = setTimeout(() => { if (sfu === s && pc.connectionState !== 'connected') sfuRestart('connection lost'); }, 4000); }
+    };
+  }
+  function sfuNew(attempt, tries = 0) {
+    const s = { attempt, tries, dead: false, pubQ: Promise.resolve(), subQ: Promise.resolve(), tx: {}, peers: new Map(), owners: new Map(), pubId: null };
+    s.pub = new RTCPeerConnection({ iceServers: sfuIce(), bundlePolicy: 'max-bundle' });
+    s.sub = new RTCPeerConnection({ iceServers: sfuIce(), bundlePolicy: 'max-bundle' });
+    sfuWatch(s, s.pub); sfuWatch(s, s.sub);
+    s.sub.ontrack = e => {
+      const o = s.owners.get(e.transceiver.mid);
+      if (!o || sfu !== s) return;
+      if (o.slot === 'screenaudio') return attachScreenAudio(o.uid, e.track);
+      const r = remote.get(o.uid) || {};
+      r[e.track.kind] = e.track;
+      remote.set(o.uid, r);
+      if (e.track.kind === 'audio') attachAudio(o.uid, e.track);
+      else e.track.onunmute = () => render();
+      render();
+    };
+    s.quality = { rtt: null, loss: null, bitrate: 96000, label: 'Good' };
+    s.statsTimer = setInterval(() => sfuStats(s).catch(() => {}), 5000);
+    return s;
+  }
+  async function sfuStart(peers) {
+    sfu = sfuNew(1);
+    await sfuSend('mic', localAudio);
+    if (currentVideo()) await sfuSend('video', currentVideo());
+    if (screenAudio) await sfuSend('screenaudio', screenAudio);
+    for (const [uid, p] of Object.entries(peers || {})) sfuPeer(uid, p.pub, p.slots);
+  }
+  function sfuStop() {
+    const s = sfu;
+    if (!s) return;
+    sfu = null; s.dead = true;
+    clearTimeout(s.dropTimer); clearInterval(s.statsTimer);
+    try { s.pub.close(); } catch {}
+    try { s.sub.close(); } catch {}
+  }
+  // Everything dropped: start over with new connections (after a short, growing wait), send again
+  // and receive everyone again. Others hear about our new connection and pick it up.
+  function sfuRestart(why) {
+    const old = sfu;
+    if (!old || !c.room || old.restarting) return;
+    old.restarting = true;
+    const peers = [...old.peers].map(([uid, p]) => [uid, p.pub, [...p.want]]);
+    const tries = old.tries + 1;
+    sfuStop();
+    console.warn('call: reconnecting', why);
+    if (tries === 3) toast('Your call connection is having trouble. Still trying…', true);
+    setTimeout(async () => {
+      if (!c.room || sfu) return;
+      const s = sfu = sfuNew(old.attempt + 1, tries);
+      try {
+        await sfuSend('mic', localAudio);
+        if (currentVideo()) await sfuSend('video', currentVideo());
+        if (screenAudio) await sfuSend('screenaudio', screenAudio);
+      } catch {}
+      if (sfu === s) for (const [uid, pub, slots] of peers) sfuPeer(uid, pub, slots);
+    }, Math.min(8000, 500 * 2 ** Math.min(tries - 1, 4)));
+  }
+  // Send something (or swap what's being sent). The first time a kind is sent, Cloudflare is told.
+  function sfuSend(slot, track) {
+    const s = sfu;
+    if (!s) return Promise.resolve();
+    return sfuQueue(s, 'pub', async () => {
+      let t = s.tx[slot];
+      if (t) { await t.sender.replaceTrack(track || null).catch(() => {}); return; }
+      if (!track && slot !== 'mic') return; // nothing to send yet: wait until there is
+      t = s.tx[slot] = s.pub.addTransceiver(SFU_KINDS[slot], { direction: 'sendonly' });
+      await t.sender.replaceTrack(track || null);
+      if (slot === 'mic') tuneVoiceSender(t.sender, 96000);
+      await s.pub.setLocalDescription(tuneSdp(await s.pub.createOffer()));
+      try {
+        const r = await api('POST', '/api/rtc/sfu/publish', { room: c.room, attempt: s.attempt, sdp: s.pub.localDescription.sdp, tracks: [{ slot, mid: t.mid }] });
+        if (sfu !== s) return;
+        s.pubId = r.pub;
+        await s.pub.setRemoteDescription(r.answer);
+        if (slot === 'video') tuneSenders();
+      } catch (e) { if (sfu === s) sfuRestart('send: ' + e.message); }
+    });
+  }
+  // Someone's sending (or sends something new, or reconnected): receive what we don't have yet.
+  function sfuPeer(uid, pub, slots) {
+    const s = sfu;
+    if (!s || !pub || uid === state.me.id) return;
+    let p = s.peers.get(uid);
+    if (p && p.pub !== pub) { sfuForget(uid); p = null; }
+    if (!p) { p = { pub, want: new Set(), mids: new Map() }; s.peers.set(uid, p); }
+    for (const x of slots || []) p.want.add(x);
+    sfuQueue(s, 'sub', async () => {
+      const cur = s.peers.get(uid);
+      if (cur !== p) return;
+      const need = [...p.want].filter(x => !p.mids.has(x));
+      if (!need.length) return;
+      try {
+        const r = await api('POST', '/api/rtc/sfu/subscribe', { room: c.room, attempt: s.attempt, peerId: uid, pub, slots: need });
+        if (sfu !== s || r.gone || !r.offer) return;
+        for (const t of r.tracks || []) if (t.mid && !t.error) { p.mids.set(t.slot, t.mid); s.owners.set(t.mid, { uid, slot: t.slot }); }
+        await s.sub.setRemoteDescription(r.offer);
+        await s.sub.setLocalDescription(await s.sub.createAnswer());
+        await api('POST', '/api/rtc/sfu/answer', { room: c.room, attempt: s.attempt, sdp: s.sub.localDescription.sdp });
+      } catch (e) { if (sfu === s) sfuRestart('receive: ' + e.message); }
+    });
+  }
+  // Stop receiving someone (they left, or reconnected with new connections).
+  function sfuForget(uid) {
+    const s = sfu;
+    const p = s?.peers.get(uid);
+    if (!p) return;
+    s.peers.delete(uid);
+    const mids = [...p.mids.values()];
+    for (const m of mids) s.owners.delete(m);
+    if (mids.length) sfuQueue(s, 'sub', () => api('POST', '/api/rtc/sfu/unsubscribe', { room: c.room, attempt: s.attempt, mids }).catch(() => {}));
+  }
+  // Voice quality: the same steps as before (96 / 64 / 48 kbps), measured on the sending connection.
+  async function sfuStats(s) {
+    if (sfu !== s || s.pub.connectionState !== 'connected') return;
+    const report = await s.pub.getStats();
+    let loss = null, rtt = null;
+    report.forEach(v => {
+      if (v.type === 'remote-inbound-rtp' && v.kind === 'audio' && Number.isFinite(v.fractionLost)) loss = v.fractionLost;
+      if (v.type === 'candidate-pair' && v.state === 'succeeded' && v.nominated && Number.isFinite(v.currentRoundTripTime)) rtt = v.currentRoundTripTime;
+    });
+    const poor = (loss != null && loss > 0.08) || (rtt != null && rtt > 0.4);
+    const fair = !poor && ((loss != null && loss > 0.03) || (rtt != null && rtt > 0.25));
+    const bitrate = poor ? 48000 : fair ? 64000 : 96000;
+    s.quality = { loss, rtt, bitrate, label: poor ? 'Weak' : fair ? 'Fair' : 'Good' };
+    if (s.tx.mic) await tuneVoiceSender(s.tx.mic.sender, bitrate);
+  }
+  // (0.58) The live connection to Zuno came back (Wi-Fi blip, phone woke up, Zuno restarted): make
+  // sure Zuno still has us in the call. If it lost us, we're put back quietly; if the call really
+  // ended meanwhile, we leave it too.
+  let resyncing = false;
+  async function resync() {
+    const room = c.room;
+    if (!room || resyncing) return;
+    resyncing = true;
+    try {
+      const r = await api('POST', '/api/rtc/rejoin', { room, ...myState(), sfu: !!sfu });
+      if (c.room !== room) return;
+      if (r.ended) { toast(c.kind === 'dm' ? 'Call ended' : 'You were disconnected from the call.'); return hangup({ quiet: true }); }
+      if (!r.rejoined) return;
+      for (const u of r.users || []) state.users[u.id] = { ...state.users[u.id], ...u };
+      const ids = new Set((r.peers || []).map(p => p.userId));
+      for (const id of [...peerStates.keys()]) if (!ids.has(id)) { sfuForget(id); dropPeer(id); }
+      for (const p of r.peers || []) peerStates.set(p.userId, p);
+      if (r.sfu) { sfuStop(); await sfuStart(r.sfuPeers); }
+      else { sfuStop(); for (const p of r.peers || []) if (pcs.get(p.userId)?.connectionState !== 'connected') await callPeer(p.userId).catch(() => {}); }
+      render();
+    } catch {} finally { resyncing = false; }
+  }
+  // The connections that send our media (one per person before, or the one "pub" connection).
+  const sendPCs = () => (sfu ? [sfu.pub] : [...pcs.values()]);
+
   // ---------- call health watchdog ----------
   // A peer can remain nominally connected while its media track or audio element has stopped.
   // Check both transport and playback, without treating ordinary silence as a fault.
@@ -828,7 +1004,14 @@ const Calls = (() => {
     c.ringtone = r.ringtone || null;
     startMediaWatch();
     for (const u of r.users || []) state.users[u.id] = { ...state.users[u.id], ...u };
-    for (const p of r.peers) { peerStates.set(p.userId, p); await callPeer(p.userId); }
+    if (r.sfu) {
+      for (const p of r.peers) peerStates.set(p.userId, p);
+      await sfuStart(r.sfuPeers);
+      // Answering a call: the other person is already there, so it's connected now (with the call
+      // server there's no direct connection to wait for, which used to leave this on "Calling…").
+      if (r.peers.length && c.kind !== 'voice') { c.phase = 'connected'; c.startedAt ||= Date.now(); stopTone(); clearTimeout(ringTimer); }
+    }
+    else for (const p of r.peers) { peerStates.set(p.userId, p); await callPeer(p.userId); }
     if (info.kind === 'voice') { c.phase = 'connected'; c.startedAt = Date.now(); sounds.join(); }
     clearInterval(clockTimer); clockTimer = setInterval(updateClock, 1000);
     render();
@@ -881,7 +1064,7 @@ const Calls = (() => {
     // Everyone from the call you're leaving, including people whose connection hadn't finished
     // yet (they used to stay behind and show up in your next call or voice channel).
     for (const id of new Set([...pcs.keys(), ...peerStates.keys(), ...pending.keys(), ...remote.keys()])) dropPeer(id);
-    relayStopAll(); sigQ.clear(); pendingCid.clear(); relayToasted.clear();
+    sfuStop(); relayStopAll(); sigQ.clear(); pendingCid.clear(); relayToasted.clear();
     localAudio?.stop(); localAudio = null; meterTrack?.stop(); meterTrack = null;
     cameraTrack?.stop(); cameraTrack = null;
     screenStream?.getTracks().forEach(t => t.stop()); screenTrack = null; screenStream = null; screenAudio = null;
@@ -922,9 +1105,11 @@ const Calls = (() => {
     el.play().catch(() => {});
   }
   async function setScreenAudio(track) {
+    if (sfu) await sfuSend('screenaudio', track);
     for (const pc of pcs.values()) { const t = pc.getTransceivers()[2]; if (t) await t.sender.replaceTrack(track).catch(() => {}); }
   }
   async function setVideoTrack(track) {
+    if (sfu) await sfuSend('video', track);
     for (const pc of pcs.values()) {
       const t = pc.getTransceivers().find(x => x.receiver.track?.kind === 'video');
       if (t) await t.sender.replaceTrack(track);
@@ -1026,9 +1211,9 @@ const Calls = (() => {
     // what people notice. Only 60 FPS streams (games) trade sharpness for smoothness.
     const smooth = streamQ.fps >= 60;
     try { screenTrack.contentHint = smooth ? 'motion' : 'detail'; } catch {}
-    const viewers = Math.max(1, pcs.size);
+    const viewers = sfu ? 1 : Math.max(1, pcs.size); // through the call server, it's sent once
     const rate = Math.max(1.2e6, Math.round(STREAM_BITRATE[streamQ.res] * Math.min(1, 2 / viewers)));
-    for (const pc of pcs.values()) {
+    for (const pc of sendPCs()) {
       const t = pc.getTransceivers().find(x => x.sender.track === screenTrack);
       if (!t) continue;
       try {
@@ -1043,11 +1228,12 @@ const Calls = (() => {
   // (0.56) In bigger calls your camera and voice go to everyone separately, so each copy is made
   // lighter as the call grows: a 6-person call no longer needs 5 full-quality uploads.
   async function tuneSenders() {
-    const n = pcs.size;
+    const n = sfu ? 1 : pcs.size; // through the call server, everything is sent once at full quality
     const cam = n > 6 ? 180e3 : n > 4 ? 260e3 : n > 2 ? 500e3 : 1.2e6;
-    for (const pc of pcs.values()) for (const t of pc.getTransceivers()) {
+    for (const pc of sendPCs()) for (const t of pc.getTransceivers()) {
       const tr = t.sender.track;
       if (!tr || tr === screenTrack) continue;
+      if (sfu && t === sfu.tx.mic) continue; // the voice has its own quality steps
       try {
         const p = t.sender.getParameters();
         p.encodings = p.encodings?.length ? p.encodings : [{}];
@@ -1195,10 +1381,11 @@ const Calls = (() => {
       sounds.join();
       render();
     }
-    if (type === 'rtc-peer-left') { dropPeer(d.userId); if (c.kind !== 'dm') sounds.leave(); render(); if (c.screen) setTimeout(applyStreamEncoding, 500); }
+    if (type === 'rtc-sfu') sfuPeer(d.userId, d.pub, d.slots);
+    if (type === 'rtc-peer-left') { sfuForget(d.userId); dropPeer(d.userId); if (c.kind !== 'dm') sounds.leave(); render(); if (c.screen) setTimeout(applyStreamEncoding, 500); }
     if (type === 'rtc-peer-joined' && c.screen) setTimeout(applyStreamEncoding, 2500);
     if (type === 'rtc-peer-joined' || type === 'rtc-peer-left') setTimeout(tuneSenders, 3000);
-    if (type === 'rtc-signal') onSignal(d).catch(err => console.warn('call signal', err));
+    if (type === 'rtc-signal' && !sfu) onSignal(d).catch(err => console.warn('call signal', err));
     if (type === 'rtc-relay') relayIn(d);
     if (type === 'rtc-state') { if (!d.screen) hiddenStreams.delete(d.userId); peerStates.set(d.userId, { muted: d.muted, deafened: d.deafened, video: d.video, screen: d.screen }); applyPeerMutes(); render(); }
   }
@@ -1358,9 +1545,12 @@ const Calls = (() => {
     peerAudio, setPeerAudio, watching, setWatching, inCallWith: id => !!c.room && id !== state.me?.id && peerStates.has(id),
     isSpeaking: id => speaking.has(id),
     // (0.38) The connection to someone in the call, for the signal bars.
-    stats: id => pcs.get(id)?.getStats() || Promise.resolve(null),
-    voiceQuality: id => pcs.get(id)?.zunoQuality || null,
-    peerIds: () => [...pcs.keys()],
+    stats: id => (sfu ? (sfu.peers.has(id) ? sfu.sub.getStats() : Promise.resolve(null)) : pcs.get(id)?.getStats() || Promise.resolve(null)),
+    voiceQuality: id => (sfu ? (sfu.peers.has(id) ? sfu.quality : null) : pcs.get(id)?.zunoQuality || null),
+    peerIds: () => (sfu ? [...sfu.peers.keys()] : [...pcs.keys()]),
+    resync,
+    reconnect: () => sfuRestart('asked'),
+    sfuInfo: () => (sfu ? { attempt: sfu.attempt, pub: sfu.pub.connectionState, sub: sfu.sub.connectionState, peers: [...sfu.peers.keys()], mids: sfu.owners.size } : null),
     stageHtml: () => `<div class="call-tiles stage${focusClass()}">${participants().map(tile).join('')}</div>${controls()}`,
     wireStage: root => { attachVideos(root); wireControls(root); },
   };
